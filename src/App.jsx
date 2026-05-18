@@ -2,7 +2,7 @@ import DashboardLayout from "./components/layout/DashboardLayout";
 import StatCard from "./components/ui/StatCard";
 import SalesChart from "./components/charts/SalesChart";
 import RecentOrders from "./components/tables/RecentOrders";
-import { useApp } from "./context/AppContext"; // 👈 استدعاء الهوك هنا
+import { useApp } from "./context/ThemeContext"; // 👈 استدعاء الهوك هنا
 
 import {
   DollarSign,

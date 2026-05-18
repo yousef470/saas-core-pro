@@ -1,13 +1,16 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+
 import App from "./App";
+
 import "./styles/main.css";
-import { AppProvider } from "./context/AppContext"; // 👈 ضفنا الـ Provider هنا
+
+import { ThemeProvider } from "./context/ThemeContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <AppProvider> {/* 👈 لفينا الـ App عشان الـ Theme والـ RTL يشتغلوا في المشروع كله */}
+    <ThemeProvider>
       <App />
-    </AppProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );

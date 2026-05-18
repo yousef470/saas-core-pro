@@ -4,9 +4,16 @@ import {
   Menu,
 } from "lucide-react";
 
-
+import { useTheme } from "../../context/ThemeContext";
+import {
+  Moon,
+  Sun,
+  Languages,
+} from "lucide-react";
 
 function Navbar({ setIsOpen }) {
+
+    
   return (
     <header className="h-20 border-b border-slate-800 bg-slate-900 px-4 lg:px-8 flex items-center justify-between">
       <div className="flex items-center gap-4">
@@ -14,6 +21,23 @@ function Navbar({ setIsOpen }) {
           onClick={() => setIsOpen(true)}
           className="lg:hidden w-11 h-11 rounded-xl bg-slate-800 flex items-center justify-center"
         >
+            <button
+  onClick={() => setRtl(!rtl)}
+  className="w-11 h-11 rounded-xl bg-slate-800 flex items-center justify-center"
+>
+  <Languages size={18} />
+</button>
+
+<button
+  onClick={() => setDarkMode(!darkMode)}
+  className="w-11 h-11 rounded-xl bg-slate-800 flex items-center justify-center"
+>
+  {darkMode ? (
+    <Sun size={18} />
+  ) : (
+    <Moon size={18} />
+  )}
+</button>
           <Menu size={20} />
         </button>
 
@@ -22,6 +46,13 @@ function Navbar({ setIsOpen }) {
             size={18}
             className="text-slate-400"
           />
+
+          const {
+  darkMode,
+  setDarkMode,
+  rtl,
+  setRtl,
+} = useTheme();
 
           <input
             type="text"
