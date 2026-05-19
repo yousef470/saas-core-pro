@@ -1,112 +1,123 @@
+import useTheme from "../../hooks/useTheme";
+
 const orders = [
   {
     id: "#1024",
-    customer: "John Smith",
+    customer: "Ahmed Ali",
     product: "Pro Subscription",
+    status: "Completed",
     amount: "$120",
-    status: "Paid",
   },
   {
     id: "#1025",
-    customer: "Sarah Johnson",
-    product: "Starter Plan",
-    amount: "$80",
+    customer: "Sarah Mohamed",
+    product: "CRM Package",
     status: "Pending",
+    amount: "$80",
   },
   {
     id: "#1026",
-    customer: "Michael Brown",
-    product: "Enterprise Plan",
-    amount: "$320",
-    status: "Paid",
-  },
-  {
-    id: "#1027",
-    customer: "Emma Wilson",
-    product: "Business Plan",
-    amount: "$210",
-    status: "Refunded",
+    customer: "John Doe",
+    product: "Analytics",
+    status: "Completed",
+    amount: "$220",
   },
 ];
 
 function RecentOrders() {
-  return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 mt-8 overflow-x-auto">
-      <div className="mb-6">
-        <h3 className="text-xl font-bold">
-          Recent Orders
-        </h3>
+  const { rtl } = useTheme();
 
-        <p className="text-slate-400 text-sm">
-          Latest customer purchases
-        </p>
+  return (
+    <div
+      className="mt-8 rounded-2xl border overflow-hidden"
+      style={{
+        background: "var(--bg-card)",
+        borderColor: "var(--border)",
+      }}
+    >
+      <div className="p-6 border-b"
+        style={{
+          borderColor: "var(--border)",
+        }}
+      >
+        <h2 className="text-2xl font-bold">
+          {rtl
+            ? "أحدث الطلبات"
+            : "Recent Orders"}
+        </h2>
       </div>
 
-      <table className="w-full min-w-[700px]">
-        <thead>
-          <tr className="text-left border-b border-slate-800">
-            <th className="pb-4 text-slate-400 font-medium">
-              Order ID
-            </th>
-
-            <th className="pb-4 text-slate-400 font-medium">
-              Customer
-            </th>
-
-            <th className="pb-4 text-slate-400 font-medium">
-              Product
-            </th>
-
-            <th className="pb-4 text-slate-400 font-medium">
-              Amount
-            </th>
-
-            <th className="pb-4 text-slate-400 font-medium">
-              Status
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {orders.map((order) => (
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[700px]">
+          <thead>
             <tr
-              key={order.id}
-              className="border-b border-slate-800 hover:bg-slate-800/40 transition"
+              className="text-left"
+              style={{
+                color: "var(--text-muted)",
+              }}
             >
-              <td className="py-5 font-medium">
-                {order.id}
-              </td>
+              <th className="p-5">
+                {rtl ? "الطلب" : "Order"}
+              </th>
 
-              <td className="py-5">
-                {order.customer}
-              </td>
+              <th className="p-5">
+                {rtl ? "العميل" : "Customer"}
+              </th>
 
-              <td className="py-5 text-slate-300">
-                {order.product}
-              </td>
+              <th className="p-5">
+                {rtl ? "المنتج" : "Product"}
+              </th>
 
-              <td className="py-5">
-                {order.amount}
-              </td>
+              <th className="p-5">
+                {rtl ? "الحالة" : "Status"}
+              </th>
 
-              <td className="py-5">
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-medium
-                  ${
-                    order.status === "Paid"
-                      ? "bg-emerald-500/10 text-emerald-400"
-                      : order.status === "Pending"
-                      ? "bg-yellow-500/10 text-yellow-400"
-                      : "bg-red-500/10 text-red-400"
-                  }`}
-                >
-                  {order.status}
-                </span>
-              </td>
+              <th className="p-5">
+                {rtl ? "المبلغ" : "Amount"}
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {orders.map((order) => (
+              <tr
+                key={order.id}
+                className="border-t"
+                style={{
+                  borderColor: "var(--border)",
+                }}
+              >
+                <td className="p-5">
+                  {order.id}
+                </td>
+
+                <td className="p-5">
+                  {order.customer}
+                </td>
+
+                <td className="p-5">
+                  {order.product}
+                </td>
+
+                <td className="p-5">
+                  <span className="text-green-500">
+                    {rtl
+                      ? order.status ===
+                        "Completed"
+                        ? "مكتمل"
+                        : "قيد الانتظار"
+                      : order.status}
+                  </span>
+                </td>
+
+                <td className="p-5">
+                  {order.amount}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

@@ -6,6 +6,8 @@ import {
   Tooltip,
 } from "recharts";
 
+import useTheme from "../../hooks/useTheme";
+
 const data = [
   { name: "Jan", sales: 4000 },
   { name: "Feb", sales: 3000 },
@@ -16,26 +18,66 @@ const data = [
 ];
 
 function SalesChart() {
+  const { darkMode, rtl } = useTheme();
+
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-[300px] lg:h-[400px]">
+    <div
+      className="rounded-2xl border p-6 h-[300px] lg:h-[400px] transition-all duration-300"
+      style={{
+        background: "var(--bg-card)",
+        borderColor: "var(--border)",
+      }}
+    >
       <div className="mb-6">
         <h3 className="text-xl font-bold">
-          Sales Analytics
+          {rtl
+            ? "تحليلات المبيعات"
+            : "Sales Analytics"}
         </h3>
 
-        <p className="text-slate-400 text-sm">
-          Monthly revenue overview
+        <p
+          className="text-sm"
+          style={{
+            color: "var(--text-muted)",
+          }}
+        >
+          {rtl
+            ? "نظرة عامة على الإيرادات الشهرية"
+            : "Monthly revenue overview"}
         </p>
       </div>
 
-      <ResponsiveContainer width="100%" height="85%">
+      <ResponsiveContainer
+        width="100%"
+        height="85%"
+      >
         <AreaChart data={data}>
           <XAxis
             dataKey="name"
-            stroke="#94a3b8"
+            stroke={
+              darkMode
+                ? "#94a3b8"
+                : "#64748b"
+            }
           />
 
-          <Tooltip />
+          <Tooltip
+            contentStyle={{
+              background: darkMode
+                ? "#0f172a"
+                : "#ffffff",
+
+              border: darkMode
+                ? "1px solid #1e293b"
+                : "1px solid #e2e8f0",
+
+              borderRadius: "12px",
+
+              color: darkMode
+                ? "#ffffff"
+                : "#0f172a",
+            }}
+          />
 
           <Area
             type="monotone"

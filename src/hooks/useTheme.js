@@ -1,6 +1,9 @@
 import { useContext } from "react";
-import { ThemeContext } from "../context/ThemeContext"; // تأكد من المسار الصحيح
 
-export function useTheme() {
+import { ThemeContext } from "../context/ThemeContext";
+
+function useTheme() {
   return useContext(ThemeContext);
 }
+
+export default useTheme;
