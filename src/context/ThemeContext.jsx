@@ -1,45 +1,37 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useState, useEffect } from "react";
 
+// 1. هنعمل الـ Context هنا بس مش هنصدره (مش هنعمله export من هنا)
 const ThemeContext = createContext();
 
-function ThemeProvider({ children }) {
-  const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem("theme") === "dark";
-  });
+const ThemeProvider = ({ children }) => {
+  const [darkMode, setDarkMode] = useState(false);
+  const [rtl, setRtl] = useState(false);
 
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
     } else {
       document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
     }
+    
   }, [darkMode]);
+  console.log("darkMode:", darkMode);
 
-  const toggleTheme = () => {
-    setDarkMode((prev) => !prev);
-  };
+  useEffect(() => {
+    if (rtl) {
+      document.documentElement.dir = "rtl";
+    } else {
+      document.documentElement.dir = "ltr";
+    }
+  }, [rtl]);
 
   return (
-    <ThemeContext.Provider
-      value={{
-        darkMode,
-        toggleTheme,
-      }}
-    >
+    <ThemeContext.Provider value={{ darkMode, setDarkMode, rtl, setRtl }}>
       {children}
     </ThemeContext.Provider>
   );
-}
+};
 
+// 2. هنصدرهم هما الاتنين تحت هنا في آخر الملف عشان الـ ESLint يرتاح
+export { ThemeContext };
 export default ThemeProvider;
-
-export function useTheme() {
-  return useContext(ThemeContext);
-}

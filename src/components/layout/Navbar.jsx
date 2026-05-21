@@ -8,11 +8,8 @@ function Navbar({ setIsOpen }) {
 
   return (
     <header
-      className="h-20 border-b px-4 lg:px-8 flex items-center justify-between"
-      style={{
-        background: "var(--bg-card)",
-        borderColor: "var(--border)",
-      }}
+// مثال لكيفية كتابة الكلاسات:
+className="h-20 border-b px-4 lg:px-8 flex items-center justify-between bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
     >
       <div className="flex items-center gap-4">
         <button

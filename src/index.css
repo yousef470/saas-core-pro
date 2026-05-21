@@ -2,13 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body,
-#root {
-  height: 100%;
+/* 1. الألوان الافتراضية للمود الفاتح (Light Mode) */
+:root {
+  --bg-main: #f8fafc;   /* bg-slate-50 */
+  --bg-card: #ffffff;   /* bg-white */
+  --border: #e2e8f0;    /* border-slate-200 */
+  --text-main: #0f172a; /* text-slate-900 */
 }
 
+/* 2. الألوان لما كلاس الـ dark يتفعل (Dark Mode) */
+html.dark {
+  --bg-main: #020617;   /* bg-slate-950 */
+  --bg-card: #0f172a;   /* bg-slate-900 */
+  --border: #1e293b;    /* border-slate-800 */
+  --text-main: #f8fafc; /* text-slate-50 */
+}
+
+/* تطبيق الخلفية والنصوص على الموقع بالكامل تلقائياً */
 body {
-  margin: 0;
-  font-family: Inter, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  transition: background-color 0.3s, border-color 0.3s;
 }
