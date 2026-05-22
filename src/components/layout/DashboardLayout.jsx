@@ -1,39 +1,25 @@
 import { useState } from "react";
-
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 
-import useTheme from "../../hooks/useTheme";
-
-
 function DashboardLayout({ children }) {
+  // ستيت للتحكم في فتح وقفل الـ Sidebar على الموبايل
   const [isOpen, setIsOpen] = useState(false);
 
-  const { rtl } = useTheme();
-
   return (
-    <div
-      className="min-h-screen transition-all duration-300"
-      style={{
-        background: "var(--bg-main)",
-        color: "var(--text-main)",
-      }}
-    >
-      <Sidebar
-        isOpen={isOpen}
-      />
+    <div className="flex min-h-screen text-slate-900 dark:text-slate-100 transition-colors duration-300">
+      
+      {/* الـ Sidebar وبنمرر له الـ isOpen والـ setIsOpen عشان الموبايل */}
+      <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />
 
-      <div
-        className={`
-          min-h-screen transition-all duration-300
-          ${rtl ? "lg:mr-72" : "lg:ml-72"}
-        `}
-      >
-        <Navbar
-          setIsOpen={setIsOpen}
-        />
-
-        <main className="p-4 sm:p-6 lg:p-8">
+      {/* الجزء الخاص بالمحتوى والـ Navbar */}
+      <div className="flex-1 flex flex-col min-w-0 lg:ltr:pl-72 lg:rtl:pr-72 transition-[padding] duration-300">
+        
+        {/* الـ Navbar وبنمرر له الـ setIsOpen عشان زرار المنيو يفتح الـ Sidebar */}
+        <Navbar setIsOpen={setIsOpen} />
+        
+        {/* محتوى الصفحة الديناميكي مع مسافات مريحة للعين */}
+        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
           {children}
         </main>
       </div>
