@@ -3,7 +3,7 @@ import { DollarSign, Users, CreditCard, ArrowUpRight, ArrowDownRight, TrendingUp
 // استيراد مكونات Recharts للرسم البياني
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 // استيراد الـ Hook الموحد للثيم واللغة
-import { useTheme } from "../context/ThemeContext";
+import useTheme from "../hooks/useTheme";
 
 
 function Dashboard() {

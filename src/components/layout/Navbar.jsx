@@ -1,6 +1,6 @@
 import { Bell, Search, Menu, Moon, Sun, Languages } from "lucide-react";
 // تعديل الاستيراد ليقرأ مباشرة من الـ Context الموحد اللي صلحناه
-import { useTheme } from "../../context/ThemeContext"; 
+import useTheme from "../../hooks/useTheme";
 import { Link } from "react-router-dom";
 
 function Navbar({ setIsOpen }) {
