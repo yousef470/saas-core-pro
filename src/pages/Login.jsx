@@ -4,26 +4,26 @@ import AuthLayout from "../components/layout/AuthLayout";
 import useTheme from "../hooks/useTheme";
 
 function Login() {
-  // استخدام النظام الجديد (lang === "ar") بدلاً من rtl
   const { lang } = useTheme();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+
+  // 1️⃣ دالة الـ Submit منفصلة ومضمونة لمنع الريفريش والتوجيه الصح
+  const handleSubmit = (e) => {
+    e.preventDefault(); // منع المتصفح من عمل ريفريش وعلامة الاستفهام القديمة
+    e.stopPropagation(); // منع أي أكشن تاني يعطل التوجيه
+    
+    console.log("Submitting form, navigating to home...");
+    navigate("/"); // التوجيه للمسار الرئيسي المظبوط
+  };
 
   return (
     <AuthLayout
       title={lang === "ar" ? "تسجيل الدخول" : "Login"}
       subtitle={lang === "ar" ? "سجل الدخول إلى حسابك" : "Sign in to your account"}
     >
-      <form
-        className="space-y-5"
-        onSubmit={(e) => {
-          e.preventDefault();
-
-          // عطلنا دالة الـ login() المعلقة مؤقتاً عشان نتخطى الإيرور
-          // وتدخل للـ Dashboard علطول وتشوف الترجمة الشغالة!
-          navigate("dashboard/"); 
-        }}
-      >
+      {/* 2️⃣ ربط الفورم بالدالة الجديدة النظيفة */}
+      <form className="space-y-5" onSubmit={handleSubmit}>
         <div>
           <label className="block mb-2 text-sm">
             {lang === "ar" ? "البريد الإلكتروني" : "Email"}
@@ -39,6 +39,7 @@ function Login() {
               background: "var(--bg-main)",
               borderColor: "var(--border)",
             }}
+            required
           />
         </div>
 
@@ -55,10 +56,13 @@ function Login() {
               background: "var(--bg-main)",
               borderColor: "var(--border)",
             }}
+            required
           />
         </div>
 
+        {/* 3️⃣ تأكيد أن التايب هو submit */}
         <button
+          type="submit"
           className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 transition text-white font-medium"
         >
           {lang === "ar" ? "دخول" : "Login"}
@@ -72,10 +76,7 @@ function Login() {
         >
           {lang === "ar" ? "ليس لديك حساب؟" : "Don't have an account?"}
 
-          <Link
-            to="/register"
-            className="text-indigo-500 mx-2" // استبدلنا ml-2 بـ mx-2 عشان الـ RTL والـ LTR
-          >
+          <Link to="/register" className="text-indigo-500 mx-2">
             {lang === "ar" ? "إنشاء حساب" : "Register"}
           </Link>
         </p>

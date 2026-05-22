@@ -1,137 +1,104 @@
-import {
-  LayoutDashboard,
-  Users,
-  BarChart3,
-  Settings,
-  CreditCard,
-  LogOut,
-  X,
-} from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import useTheme from "../../hooks/useTheme"; 
 
-function Sidebar({ isOpen, setIsOpen }) {
+function Sidebar() {
+  const { lang, t } = useTheme();
   const location = useLocation();
 
-  // مصفوفة اللينكات النظيفة بدون تكرار
   const menuItems = [
     {
       path: "/",
-      icon: <LayoutDashboard size={20} />,
-      label: "Dashboard",
-      labelAr: "لوحة التحكم",
+      name: t.dashboard, 
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+        </svg>
+      ),
     },
     {
       path: "/crm",
-      icon: <Users size={20} />,
-      label: "CRM & Leads",
-      labelAr: "العملاء",
+      name: lang === "ar" ? "إدارة العملاء" : "CRM", 
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      ),
     },
     {
       path: "/analytics",
-      icon: <BarChart3 size={20} />,
-      label: "Analytics",
-      labelAr: "التحليلات",
-    },
-    {
-      path: "/billing",
-      icon: <CreditCard size={20} />,
-      label: "Billing",
-      labelAr: "الاشتراكات",
+      name: t.salesAnalytics || (lang === "ar" ? "التحليلات" : "Analytics"),
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+        </svg>
+      ),
     },
     {
       path: "/settings",
-      icon: <Settings size={20} />,
-      label: "Settings",
-      labelAr: "الإعدادات",
+      name: lang === "ar" ? "الإعدادات" : "Settings",
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      ),
     },
   ];
 
-  const isActive = (path) => location.pathname === path;
-
   return (
-    <>
-      {/* الخلفية الشفافة (Overlay) للموبايل */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
+    <aside 
+      className="w-64 min-h-[calc(100vh-64px)] p-4 border-e transition-all shrink-0 flex flex-col"
+      style={{
+        background: "var(--bg-sidebar)",
+        borderColor: "var(--border)",
+      }}
+    >
+    {/* سيكشن اللوجو المطور لـ SaaS-Core (ثابت بالإنجليزي) */}
+<div className="flex items-center gap-3 px-3 py-3 mb-6 border-b border-dashed" style={{ borderColor: "var(--border)" }}>
+  
+  {/* اللوجو الـ SVG الـ Premium */}
+  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 shrink-0">
+    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4L4 8l8 4 8-4-8-4z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 12l8 4 8-4M4 16l8 4 8-4" />
+    </svg>
+  </div>
+  
+  {/* نصوص الهوية - الاسم ثابت بالإنجليزية */}
+  <div className="flex flex-col min-w-0">
+    <span className="font-bold text-base tracking-tight truncate" style={{ color: "var(--text-main)" }}>
+      SaaS-Core
+    </span>
+    <span className="text-[10px] font-semibold uppercase tracking-wider opacity-70" style={{ color: "var(--text-muted)" }}>
+      {lang === "ar" ? "لوحة تحكم احترافية" : "Premium Admin"}
+    </span>
+  </div>
+</div>
 
-      {/* الـ Sidebar Container مع ضبط كامل للـ RTL والـ Responsive */}
-      <aside
-        className={`fixed top-0 bottom-0 z-50 w-72 max-w-[85vw] flex flex-col border-e transition-all duration-300 ease-in-out
-          lg:ltr:left-0 lg:rtl:right-0
-          ${
-            isOpen
-              ? "ltr:left-0 rtl:right-0 shadow-2xl"
-              : "ltr:-left-72 rtl:-right-72"
-          }
-        `}
-        style={{
-          background: "var(--bg-card)",
-          borderColor: "var(--border)",
-        }}
-      >
-        {/* الهيدر (اللوجو وزرار القفل) */}
-        <div
-          className="h-20 px-6 border-b flex items-center justify-between"
-          style={{ borderColor: "var(--border)" }}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-md shadow-indigo-500/20">
-              N
-            </div>
-            <span className="font-bold text-lg tracking-wide bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent">
-              Saas-core Pro
-            </span>
-          </div>
-
-          <button
-            onClick={() => setIsOpen(false)}
-            className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* لينكات التنقل */}
-        <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
-          {menuItems.map((item) => {
-            const active = isActive(item.path);
-            return (
-              <Link
-                key={item.path} // المفتاح بقا فريد ومستحيل يضرب إيرور
-                to={item.path}
-                onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group
-                  ${
-                    active
-                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/10"
-                      : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-indigo-600 dark:hover:text-indigo-400"
-                  }
-                `}
-              >
-                <span
-                  className={`transition-transform duration-200 group-hover:scale-110 ${active ? "text-white" : "text-slate-400 group-hover:text-indigo-600"}`}
-                >
-                  {item.icon}
-                </span>
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* الزرار السفلي */}
-        <div className="p-4 border-t" style={{ borderColor: "var(--border)" }}>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors">
-            <LogOut size={20} />
-            <span>Logout</span>
-          </button>
-        </div>
-      </aside>
-    </>
+      {/* قائمة التنقل */}
+      <nav className="space-y-2 flex-1">
+        {menuItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`flex items-center gap-3 px-4 h-12 rounded-xl text-sm font-medium transition-all ${
+                isActive 
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" 
+                  : "hover:bg-slate-100 dark:hover:bg-slate-800"
+              }`}
+              style={{
+                color: isActive ? "#fff" : "var(--text-main)",
+              }}
+            >
+              {item.icon}
+              <span>{item.name}</span>
+            </Link>
+          );
+        })}
+      </nav>
+    </aside>
   );
 }
 

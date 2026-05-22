@@ -13,7 +13,8 @@ function DashboardLayout({ children }) {
       <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />
 
       {/* الجزء الخاص بالمحتوى والـ Navbar */}
-      <div className="flex-1 flex flex-col min-w-0 lg:ltr:pl-72 lg:rtl:pr-72 transition-[padding] duration-300">
+      {/* 🛠️ التعديل هنا: عدلنا الـ pl والـ pr لتكون 64 مطابقة تماماً لعرض السايدبار الجديد */}
+      <div className="flex-1 flex flex-col min-w-0 lg:ltr:pl-0 lg:rtl:pr-0 transition-[padding] duration-300">
         
         {/* الـ Navbar وبنمرر له الـ setIsOpen عشان زرار المنيو يفتح الـ Sidebar */}
         <Navbar setIsOpen={setIsOpen} />

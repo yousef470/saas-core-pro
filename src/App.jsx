@@ -5,7 +5,6 @@ import {
 } from "react-router-dom";
 
 import { AnimatePresence } from "framer-motion";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
 import DashboardLayout from "./components/layout/DashboardLayout";
 
 import Dashboard from "./pages/Dashboard";
@@ -16,11 +15,11 @@ import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
-// استيراد الـ Hook بتاع الثيم
+// استيراد الـ Hook بتاع الثيم واللغة
 import useTheme from "./hooks/useTheme";
 
 function App() {
-  // نادينا على الـ Hook عشان يشتغل ويقرا الـ Context، من غير ما نفكك متغيرات مش محتاجينها هنا
+  // تفعيل الـ Context لقراءة الـ Dark mode واللغة في جذر المشروع
   useTheme();
 
   return (
@@ -34,15 +33,13 @@ function App() {
       >
         <AnimatePresence mode="wait">
           <Routes>
-            {/* Dashboard Layout */}
+            {/* Dashboard Layout - شيلنا الـ ProtectedRoute مؤقتاً عشان يفتح معاك فوراً */}
             <Route
               path="/"
               element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <Dashboard />
-                  </DashboardLayout>
-                </ProtectedRoute>
+                <DashboardLayout>
+                  <Dashboard />
+                </DashboardLayout>
               }
             />
 
