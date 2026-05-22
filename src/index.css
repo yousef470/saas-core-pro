@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden; /* يمنع ظهور السكرول الأفقي المزعج في الموبايل */
+  box-sizing: border-box;
+}
+
+*, ::before, ::after {
+  box-sizing: inherit;
+}
+
 /* 1. الألوان الافتراضية للمود الفاتح (Light Mode) */
 :root {
   --bg-main: #f8fafc;   /* bg-slate-50 */

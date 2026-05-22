@@ -1,13 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
 import useTheme from "../../hooks/useTheme"; 
+import { ArrowLeftRight } from "lucide-react"; 
 
-function Sidebar() {
+function Sidebar({ closeMenu }) { // closeMenu كـ Prop لقفل القائمة في الموبايل
   const { lang, t } = useTheme();
   const location = useLocation();
 
   const menuItems = [
     {
-      path: "/",
+      path: "/dashboard",
       name: t.dashboard, 
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -16,7 +17,7 @@ function Sidebar() {
       ),
     },
     {
-      path: "/crm",
+      path: "/dashboard/crm",
       name: lang === "ar" ? "إدارة العملاء" : "CRM", 
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -25,7 +26,7 @@ function Sidebar() {
       ),
     },
     {
-      path: "/analytics",
+      path: "/dashboard/analytics",
       name: t.salesAnalytics || (lang === "ar" ? "التحليلات" : "Analytics"),
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -34,7 +35,25 @@ function Sidebar() {
       ),
     },
     {
-      path: "/settings",
+      path: "/dashboard/users",
+      name: lang === "ar" ? "إدارة المستخدمين" : "Users Management",
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      ),
+    },
+    {
+      path: "/dashboard/billing",
+      name: lang === "ar" ? "الاشتراكات والفواتير" : "Billing & Plans",
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        </svg>
+      ),
+    },
+    {
+      path: "/dashboard/settings",
       name: lang === "ar" ? "الإعدادات" : "Settings",
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -47,42 +66,54 @@ function Sidebar() {
 
   return (
     <aside 
-      className="w-64 min-h-[calc(100vh-64px)] p-4 border-e transition-all shrink-0 flex flex-col"
+      className="w-full h-full p-4 border-e transition-all flex flex-col"
       style={{
         background: "var(--bg-sidebar)",
         borderColor: "var(--border)",
       }}
     >
-    {/* سيكشن اللوجو المطور لـ SaaS-Core (ثابت بالإنجليزي) */}
-<div className="flex items-center gap-3 px-3 py-3 mb-6 border-b border-dashed" style={{ borderColor: "var(--border)" }}>
-  
-  {/* اللوجو الـ SVG الـ Premium */}
-  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 shrink-0">
-    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4L4 8l8 4 8-4-8-4z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 12l8 4 8-4M4 16l8 4 8-4" />
-    </svg>
-  </div>
-  
-  {/* نصوص الهوية - الاسم ثابت بالإنجليزية */}
-  <div className="flex flex-col min-w-0">
-    <span className="font-bold text-base tracking-tight truncate" style={{ color: "var(--text-main)" }}>
-      SaaS-Core
-    </span>
-    <span className="text-[10px] font-semibold uppercase tracking-wider opacity-70" style={{ color: "var(--text-muted)" }}>
-      {lang === "ar" ? "لوحة تحكم احترافية" : "Premium Admin"}
-    </span>
-  </div>
-</div>
+      {/* سيكشن اللوجو المطور لـ SaaS-Core */}
+      <div className="flex items-center justify-between mb-6 border-b border-dashed pb-3" style={{ borderColor: "var(--border)" }}>
+        <div className="flex items-center gap-3 px-1 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 shrink-0">
+            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4L4 8l8 4 8-4-8-4z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 12l8 4 8-4M4 16l8 4 8-4" />
+            </svg>
+          </div>
+          
+          <div className="flex flex-col min-w-0">
+            <span className="font-bold text-base tracking-tight truncate" style={{ color: "var(--text-main)" }}>
+              SaaS-Core
+            </span>
+            <span className="text-[10px] font-semibold uppercase tracking-wider opacity-70 truncate" style={{ color: "var(--text-muted)" }}>
+              {lang === "ar" ? "لوحة تحكم احترافية" : "Premium Admin"}
+            </span>
+          </div>
+        </div>
 
-      {/* قائمة التنقل */}
-      <nav className="space-y-2 flex-1">
+        {closeMenu && (
+          <button 
+            onClick={closeMenu} 
+            className="lg:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+      </div>
+      
+      {/* قائمة التنقل (مرنة لتأخذ باقي المساحة المتاحة) */}
+      <nav className="space-y-2 flex-1 overflow-y-auto">
         {menuItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          // عدلت المقارنة للتأكد من مطابقة المسار بشكل صحيح دائمًا
+          const isActive = location.pathname === item.path || location.pathname === `${item.path}/`;
           return (
             <Link
               key={item.path}
               to={item.path}
+              onClick={closeMenu} 
               className={`flex items-center gap-3 px-4 h-12 rounded-xl text-sm font-medium transition-all ${
                 isActive 
                   ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" 
@@ -98,6 +129,25 @@ function Sidebar() {
           );
         })}
       </nav>
+
+      {/* 🔽 هنا الكعب المستقل (Footer) للسايد بار من تحت خالص بره قائمة الـ nav */}
+      <div className="pt-4 border-t mt-auto" style={{ borderColor: "var(--border)" }}>
+        <Link
+          to="/"
+          onClick={closeMenu}
+          className="flex items-center gap-3 w-full px-4 h-12 rounded-xl text-sm font-medium transition-all hover:bg-slate-100 dark:hover:bg-slate-800 group"
+          style={{ color: "var(--text-main)" }}
+        >
+          <ArrowLeftRight 
+            size={18} 
+            className="text-slate-400 group-hover:text-indigo-500 transition-colors" 
+          />
+          <span>
+            {lang === "ar" ? "الموقع الرئيسي" : "Main Website"}
+          </span>
+        </Link>
+      </div>
+
     </aside>
   );
 }

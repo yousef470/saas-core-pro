@@ -1,29 +1,42 @@
 import { useState } from "react";
-import Sidebar from "./Sidebar";
+import { Outlet } from "react-router-dom";
+import Sidebar from "./Sidebar"; // نقطة واحدة تعني نفس الفولدر
 import Navbar from "./Navbar";
 
-function DashboardLayout({ children }) {
-  // ستيت للتحكم في فتح وقفل الـ Sidebar على الموبايل
-  const [isOpen, setIsOpen] = useState(false);
+function DashboardLayout() {
+  const [isOpen, setIsOpen] = useState(false); // نفس الاسم الموحد
 
   return (
-    <div className="flex min-h-screen text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 transition-colors duration-300 overflow-hidden">
       
-      {/* الـ Sidebar وبنمرر له الـ isOpen والـ setIsOpen عشان الموبايل */}
-      <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />
+      {/* السايدبار للشاشات الكبيرة يظهر عند lg ليطابق الـ Navbar */}
+      <div className="hidden lg:block w-64 shrink-0 h-screen sticky top-0 border-e border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <Sidebar />
+      </div>
 
-      {/* الجزء الخاص بالمحتوى والـ Navbar */}
-      {/* 🛠️ التعديل هنا: عدلنا الـ pl والـ pr لتكون 64 مطابقة تماماً لعرض السايدبار الجديد */}
-      <div className="flex-1 flex flex-col min-w-0 lg:ltr:pl-0 lg:rtl:pr-0 transition-[padding] duration-300">
-        
-        {/* الـ Navbar وبنمرر له الـ setIsOpen عشان زرار المنيو يفتح الـ Sidebar */}
+      {/* السايدبار الطائر للموايل والتابلت */}
+      {isOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          <div 
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
+            onClick={() => setIsOpen(false)}
+          />
+          <div className="relative w-64 max-w-xs h-full bg-white dark:bg-slate-900 flex flex-col z-50 shadow-xl">
+            <Sidebar closeMenu={() => setIsOpen(false)} />
+          </div>
+        </div>
+      )}
+
+      {/* المحتوى الرئيسي */}
+      <div className="flex-1 flex flex-col min-w-0 w-full overflow-hidden">
+        {/* تمرير الدالة الصحيحة */}
         <Navbar setIsOpen={setIsOpen} />
         
-        {/* محتوى الصفحة الديناميكي مع مسافات مريحة للعين */}
-        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
-          {children}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 w-full max-w-[1500px] mx-auto min-w-0">
+          <Outlet />
         </main>
       </div>
+
     </div>
   );
 }
