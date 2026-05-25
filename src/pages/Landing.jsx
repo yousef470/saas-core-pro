@@ -1,17 +1,21 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // 🆕 ضفنا useNavigate هنا
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom"; 
 import useTheme from "../hooks/useTheme";
 import { 
-  Check, ArrowRight, Zap,  Star, 
-  Layout, BarChart2, Users, Layers, Mail, MessageSquare, Send 
+  ArrowRight, Zap,  Star,  Layout, BarChart2, Users, Layers,  Send ,MessageCircle
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 function Landing() {
 const { lang, darkMode, toggleDarkMode, toggleLanguage } = useTheme();
   const navigate = useNavigate(); // 🆕 تعريف الـ navigate
+
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [currentIndex, setCurrentIndex] = useState(0);
+const [isLoggedIn, setIsLoggedIn] = useState(
+  localStorage.getItem("isLoggedIn") === "true"
+);
 
   const navLinks = [
   { en: "Features", ar: "المميزات" },
@@ -19,7 +23,6 @@ const { lang, darkMode, toggleDarkMode, toggleLanguage } = useTheme();
   { en: "Testimonials", ar: "آراء العملاء" },
   { en: "Contact", ar: "اتصل بنا" }
 ];
-
   // 1. بيانات المميزات (Features)
   const features = [
     {
@@ -44,32 +47,43 @@ const { lang, darkMode, toggleDarkMode, toggleLanguage } = useTheme();
     }
   ];
 
-  // 2. بيانات الخطط والأسعار (Pricing)
-  const plans = [
-    {
-      name: lang === "ar" ? "الخطة الأساسية" : "Starter Plan",
-      price: "$19",
-      desc: lang === "ar" ? "مثالية للأفراد والشركات الناشئة" : "Best for individuals and startups",
-      features: lang === "ar" 
-        ? ["3 مشاريع نشطة", "تحليلات أساسية", "دعم عبر البريد 24/7"] 
-        : ["3 Active Projects", "Basic Analytics", "24/7 Email Support"],
-    },
-    {
-      name: lang === "ar" ? "الخطة المتقدمة" : "Pro Plan",
-      price: "$49",
-      desc: lang === "ar" ? "الخيار الأفضل للشركات المتنامية" : "Best for growing companies",
-      features: lang === "ar"
-        ? ["مشاريع غير محدودة", "تحليلات متقدمة لحظية", "نطاق مخصص (Custom Domain)", "دعم فني ذو أولوية"]
-        : ["Unlimited Projects", "Advanced Live Analytics", "Custom Domain", "Priority Support"],
-      popular: true,
-    }
-  ];
+const plans = [
+  { 
+    name: lang === "ar" ? "الخطة الأساسية" : "Starter Plan", 
+    price: "$19", 
+    desc: lang === "ar" ? "مثالية للأفراد والشركات الناشئة" : "Best for individuals and startups",
+    features: lang === "ar" 
+      ? ["3 مشاريع نشطة", "تحليلات أساسية", "دعم عبر البريد 24/7"] 
+      : ["3 Active Projects", "Basic Analytics", "24/7 Email Support"],
+    popular: false 
+  },
+  { 
+    name: lang === "ar" ? "الخطة المتقدمة" : "Pro Plan", 
+    price: "$49", 
+    desc: lang === "ar" ? "الخيار الأفضل للشركات المتنامية" : "Best for growing companies",
+    features: lang === "ar" 
+      ? ["مشاريع غير محدودة", "تحليلات متقدمة لحظية", "نطاق مخصص", "دعم فني ذو أولوية"] 
+      : ["Unlimited Projects", "Advanced Live Analytics", "Custom Domain", "Priority Support"],
+    popular: true 
+  },
+  { 
+    name: lang === "ar" ? "خطة الشركات" : "Enterprise Plan", 
+    price: lang === "ar" ? "تواصل معنا" : "Custom", 
+    desc: lang === "ar" ? "للمؤسسات الكبرى واحتياجات التوسع" : "For large-scale operations and scaling",
+    features: lang === "ar" 
+      ? ["كل مميزات Pro", "ميزات مخصصة (Custom)", "دعم مخصص 24/7", "مدير حساب خاص"] 
+      : ["Everything in Pro", "Custom Features & Integrations", "24/7 Dedicated Support", "Dedicated Account Manager"],
+    popular: false 
+  }
+];
 
   // 3. آراء الناس (Testimonials)
+ 
   const reviews = [
     {
       name: lang === "ar" ? "عبد الله القحطاني" : "Abdullah Al-Qahtani",
       role: "SaaS Founder",
+      image: "https://i.pravatar.cc/150?u=abdullah",
       comment: lang === "ar" 
         ? "هذا السكريبت وفر عليّ أسابيع من العمل. التصميم مرن جداً والـ Dark Mode فيه خيالي!" 
         : "This script saved me weeks of work. The design is fluid and the dark mode is just stunning!",
@@ -78,12 +92,32 @@ const { lang, darkMode, toggleDarkMode, toggleLanguage } = useTheme();
     {
       name: lang === "ar" ? "سارة جونز" : "Sarah Jones",
       role: "Product Manager",
+      image: "https://i.pravatar.cc/150?u=sarah",
       comment: lang === "ar" 
         ? "نظام الـ Layout المتجاوب مريح جداً على الموبايل، والعملاء أعجبوا بنظافة الواجهة." 
         : "The responsive layout works flawlessly on mobile, and our clients love the clean interface.",
       stars: 5
-    }
+    },
+
+  
+    {
+    name: lang === "ar" ? "مايكل براون" : "Michael Brown",
+    role: "Lead Developer",
+    image: "https://i.pravatar.cc/150?u=michael",
+    comment: lang === "ar" ? "الكود مرتب جداً وسهل التعديل، أنصح به بشدة." : "The code is well-structured and easy to customize, highly recommended.",
+    stars: 5
+   }
   ];
+
+
+
+  useEffect(() => {
+  const timer = setInterval(() => {
+    setCurrentIndex((prev) => (prev === reviews.length - 1 ? 0 : prev + 1));
+  }, 10000);
+  return () => clearInterval(timer);
+}, [reviews.length]);
+
 
   // 🆕 دالة انتقال مرنة تمنع الـ Conflict مع الـ Router وتمرر الـ state
   const handleCheckoutNavigation = (planName, planPrice) => {
@@ -91,11 +125,19 @@ const { lang, darkMode, toggleDarkMode, toggleLanguage } = useTheme();
   };
 
   const handleContactSubmit = (e) => {
+
     e.preventDefault();
     alert(lang === "ar" ? "تم إرسال رسالتك بنجاح!" : "Message sent successfully!");
     setEmail("");
     setMessage("");
   };
+const handleLogout = () => {
+  localStorage.removeItem("isLoggedIn");
+
+  setIsLoggedIn(false);
+
+  window.location.href = "/login";
+};
 
   return (
     <div dir={lang === "ar" ? "rtl" : "ltr"} className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300 text-slate-900 dark:text-white selection:bg-indigo-500 selection:text-white">
@@ -122,48 +164,63 @@ const { lang, darkMode, toggleDarkMode, toggleLanguage } = useTheme();
   </div>
 
   {/* الأزرار */}
-
   <div className="flex items-center gap-3">
-
-    
-{/* زر الدارك مود */}
-  <button 
-    onClick={toggleDarkMode} 
-    className="p-2 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/5 transition-all"
-  >
-    {darkMode ? "☀️" : "🌙"}
-  </button>
-{/* زر تبديل اللغة */}
-  <button 
-    onClick={toggleLanguage} 
-    className="text-xs font-bold px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/5 transition-all"
-  >
-    {lang === "ar" ? "EN" : "العربية"}
-  </button>
-{/* زر Login / Logout الديناميكي */}
-  {isLoggedIn ? (
-    <button 
-      onClick={handleLogout} // دالة تسجيل الخروج الخاصة بك
-      className="px-5 py-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 text-sm font-medium transition-all"
-    >
-      {lang === "ar" ? "تسجيل خروج" : "Logout"}
+    <button onClick={toggleDarkMode} className="p-2 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/5 transition-all">
+       {darkMode ? "☀️" : "🌙"}
     </button>
-  ) : (
-    <Link 
-      to="/auth" 
-      className="px-5 py-2 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/5 text-sm font-medium transition-all"
-    >
-      {lang === "ar" ? "دخول" : "Login"}
-    </Link>
-  )}
+  <button 
+  onClick={toggleLanguage} 
+  className="text-xs font-bold px-3 py-2 rounded-xl border border-white/10 hover:bg-white/5 transition-all"
+>
+  {lang === "ar" ? "EN" : "العربية"}
+</button>
+{isLoggedIn ? (
+  <button
+    onClick={handleLogout}
+    className="
+      h-10
+      px-5
+      rounded-xl
+      bg-red-500
+      hover:bg-red-600
+      text-white
+      text-sm
+      font-semibold
+      transition-all
+    "
+  >
+    {lang === "ar" ? "تسجيل الخروج" : "Logout"}
+  </button>
+) : (
+  <Link
+    to="/login"
+    className="
+      h-10
+      px-5
+      rounded-xl
+      bg-indigo-600
+      hover:bg-indigo-700
+      text-white
+      text-sm
+      font-semibold
+      transition-all
+      flex
+      items-center
+      justify-center
+    "
+  >
+    {lang === "ar" ? "تسجيل الدخول" : "Login"}
+  </Link>
+  
+)}
   </div>
 </nav>
 
 {/* 🚀 Hero Section - Adjusted for better visual hierarchy */}
-<header className="w-full pt-32 pb-20 px-6 flex flex-col items-center text-center">
+<header className="w-full min-h-[85vh] flex flex-col items-center justify-center px-6 pt-20 text-center">
   
   {/* Badge */}
-  <motion.div 
+<motion.div 
     initial={{ opacity: 0, y: -20 }} 
     animate={{ opacity: 1, y: 0 }} 
     className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 mb-8 border border-indigo-500/20"
@@ -213,151 +270,257 @@ const { lang, darkMode, toggleDarkMode, toggleLanguage } = useTheme();
   </motion.div>
 </header>
 
-      {/* ✨ 3. قسم المميزات (Features Section) */}
-      <section id="features" className="max-w-6xl mx-auto px-6 py-20 border-t border-slate-200 dark:border-slate-900">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="text-2xl md:text-3xl font-extrabold">{lang === "ar" ? "كل ما تحتاجه في مكان واحد" : "Everything You Need in One Place"}</h2>
-          <p className="text-sm text-slate-400 mt-2">{lang === "ar" ? "تم تصميم وتطوير المكونات بدقة متناهية لتوفير أفضل تجربة مستخدم (UI/UX)." : "Every layout item is carefully crafted to deliver the ultimate UI/UX experience."}</p>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((item, idx) => (
-            <div key={idx} className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow-md transition-all flex flex-col items-start text-start">
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 mb-4">{item.icon}</div>
-              <h3 className="font-bold text-base dark:text-white">{item.title}</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
 
-      {/* 💰 4. قسم الأسعار (Pricing Section) */}
-      <section className="max-w-6xl mx-auto px-6 py-20 border-t border-slate-200 dark:border-slate-900 bg-slate-100/50 dark:bg-slate-950/20 rounded-3xl">
-        <div className="text-center mb-16">
-          <h2 className="text-2xl md:text-3xl font-extrabold">{lang === "ar" ? "خطط أسعار مرنة تلائم نموك" : "Flexible Plans for Any Scale"}</h2>
-          <p className="text-sm text-slate-400 mt-2">{lang === "ar" ? "اختر الخطة المناسبة لك الآن، ويمكنك الترقية أو الإلغاء في أي وقت." : "Choose the plan that fits your current requirements. Cancel or upgrade anytime."}</p>
-        </div>
+{/* ✨ 3. قسم المميزات (Compact Bento Grid) */}
+<section id="features" className="max-w-6xl mx-auto px-6 py-12"> {/* قللنا py من 24 لـ 12 */}
+  <div className="text-center mb-12"> {/* قللنا mb من 20 لـ 12 */}
+    <h2 className="text-3xl font-black">
+      {lang === "ar" ? "كل ما تحتاجه في مكان واحد" : "Everything You Need in One Place"}
+    </h2>
+  </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-          {plans.map((plan, idx) => (
-            <div 
-              key={idx}
-              className={`p-8 rounded-2xl border bg-white dark:bg-slate-900 flex flex-col relative ${
-                plan.popular ? "border-indigo-600 dark:border-indigo-500 shadow-xl ring-1 ring-indigo-600/20 scale-105 z-10" : "border-slate-200 dark:border-slate-800"
-              }`}
-            >
-              {plan.popular && (
-                <span className={`absolute top-4 bg-indigo-600 text-white font-bold text-[10px] uppercase px-2.5 py-1 rounded-full tracking-wider flex items-center gap-1 ${lang === "ar" ? "left-4" : "right-4"}`}>
-                  <Star size={10} fill="currentColor" /> {lang === "ar" ? "الأكثر طلباً" : "Popular"}
-                </span>
-              )}
-              
-              <h3 className="font-extrabold text-xl">{plan.name}</h3>
-              <p className="text-xs text-slate-400 mt-1.5">{plan.desc}</p>
-              
-              <div className="my-6 flex items-baseline gap-1">
-                <span className="text-5xl font-black tracking-tight">{plan.price}</span>
-                <span className="text-xs text-slate-400">/{lang === "ar" ? "شهرياً" : "mo"}</span>
-              </div>
+  {/* قللنا الـ auto-rows من 200px لـ 160px ليكون السكشن أصغر */}
+  <div className="grid grid-cols-1 md:grid-cols-6 gap-3 auto-rows-[160px]">
+    
+    {/* 1. الميزة الرئيسية (مساحة أقل) */}
+    <div className="md:col-span-4 row-span-2 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b0c10] relative overflow-hidden group hover:border-indigo-500/50 transition-all">
+      <div className="relative z-10">
+        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 mb-4">{features[0].icon}</div>
+        <h3 className="text-2xl font-bold mb-2">{features[0].title}</h3>
+        <p className="text-sm text-slate-500 max-w-sm">{features[0].desc}</p>
+      </div>
+    </div>
 
-              <ul className="space-y-3.5 flex-1 mb-8">
-                {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
-                    <Check size={16} className="text-emerald-500 shrink-0" />
-                    <span className="text-start">{feature}</span>
-                  </li>
-                ))}
-              </ul>
+    {/* 2. ميزة صغيرة */}
+    <div className="md:col-span-2 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b0c10] flex flex-col justify-center hover:border-indigo-500/50 transition-all">
+      <h3 className="text-lg font-bold mb-1">{features[1].title}</h3>
+      <p className="text-xs text-slate-500">{features[1].desc}</p>
+    </div>
 
-              {/* 🆕 تم التحديث إلى زرار تكتيكي يستدعي دالة التوجيه الصريحة بدلاً من الـ Link المباشر */}
-              <button 
-                onClick={() => handleCheckoutNavigation(plan.name, plan.price)}
-                className={`w-full h-12 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
-                  plan.popular ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-600/20" : "border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
-                }`}
-              >
-                <span>{lang === "ar" ? "ابدأ الآن" : "Get Started Now"}</span>
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
+    {/* 3. ميزة صغيرة */}
+    <div className="md:col-span-2 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b0c10] flex flex-col justify-center hover:border-indigo-500/50 transition-all">
+       <h3 className="text-lg font-bold mb-1">{features[2].title}</h3>
+       <p className="text-xs text-slate-500">{features[2].desc}</p>
+    </div>
 
-      {/* ⭐ 5. قسم آراء الناس (Testimonials Section) */}
-      <section className="max-w-6xl mx-auto px-6 py-20 border-t border-slate-200 dark:border-slate-900">
-        <div className="text-center max-w-xl mx-auto mb-16">
-          <h2 className="text-2xl md:text-3xl font-extrabold">{lang === "ar" ? "ماذا يقول عملاؤنا؟" : "Trusted by Builders Worldwide"}</h2>
-          <p className="text-sm text-slate-400 mt-2">{lang === "ar" ? "آراء حقيقية من مطورين ورواد أعمال أطلقوا تطبيقاتهم باستخدام قوالبنا." : "Real feedback from developers and business owners who launched using our systems."}</p>
-        </div>
+    {/* 4. زر البدء (مدمج بشكل أصغر) */}
+    <div className="md:col-span-6 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-indigo-600 text-white flex items-center justify-between">
+      <p className="font-bold">{lang === "ar" ? "جاهز للبدء؟" : "Ready to scale?"}</p>
+      <button className="px-5 py-2 bg-white text-indigo-600 rounded-xl font-bold text-sm hover:scale-105 transition-transform">
+        {lang === "ar" ? "ابدأ التجربة" : "Start Now"}
+      </button>
+    </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          {reviews.map((rev, idx) => (
-            <div key={idx} className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col justify-between text-start shadow-sm">
-              <div className="flex gap-1 mb-4">
-                {[...Array(rev.stars)].map((_, i) => (
-                  <Star key={i} size={16} className="text-amber-500" fill="currentColor" />
-                ))}
-              </div>
-              <p className="text-sm text-slate-600 dark:text-slate-300 italic leading-relaxed">"{rev.comment}"</p>
-              <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col">
-                <span className="font-bold text-sm text-slate-800 dark:text-slate-200">{rev.name}</span>
-                <span className="text-xs text-slate-400 mt-0.5">{rev.role}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+  </div>
+</section>
 
-      {/* 📬 6. قسم تواصل معنا (Contact Section) */}
-      <section className="max-w-xl mx-auto px-6 py-20 border-t border-slate-200 dark:border-slate-900 text-center">
-        <div className="mb-10">
-          <h2 className="text-2xl md:text-3xl font-extrabold">{lang === "ar" ? "هل لديك أي استفسار؟" : "Have Questions? Get in Touch"}</h2>
-          <p className="text-sm text-slate-400 mt-2">{lang === "ar" ? "راسلنا مباشرة وسيقوم فريق الدعم بالرد عليك في أقرب وقت ممكن." : "Drop us a message and our support staff will reach back shortly."}</p>
-        </div>
+{/* Pricing Section */}
+<section id="pricing" className="max-w-6xl mx-auto px-6 py-24">
+  <div className="text-center mb-16">
+    <h2 className="text-4xl font-bold">Simple & Flexible Pricing</h2>
+  </div>
 
-        <form onSubmit={handleContactSubmit} className="space-y-4 text-start bg-white dark:bg-slate-900 p-6 md:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{lang === "ar" ? "البريد الإلكتروني" : "Email Address"}</label>
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50">
-              <Mail size={16} className="text-slate-400 shrink-0" />
-              <input 
-                type="email" 
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="bg-transparent outline-none text-sm w-full text-slate-800 dark:text-white"
-              />
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    {plans.map((plan, idx) => (
+      <div 
+        key={idx} 
+        className={`p-8 rounded-3xl border ${plan.popular ? "border-indigo-500 shadow-xl scale-105" : "border-slate-200 dark:border-slate-800"} bg-white dark:bg-slate-900 flex flex-col relative`}
+      >
+        {/* شريط Most Popular */}
+        {plan.popular && (
+          <div className="absolute top-0 right-0 w-32 h-32 overflow-hidden">
+            <div className="absolute top-6 -right-8 w-full bg-indigo-500 text-white text-[10px] font-bold text-center rotate-45 py-1 shadow-md">
+              MOST POPULAR
             </div>
           </div>
+        )}
+        
+        <h3 className="text-lg font-semibold text-center mb-4">{plan.name}</h3>
+        <div className="text-3xl font-bold text-center mb-6">{plan.price}</div>
+        
+        <ul className="space-y-4 flex-1 mb-8 text-sm text-center text-slate-500 dark:text-slate-400">
+          {plan.features.map((f, i) => <li key={i}>{f}</li>)}
+        </ul>
+        
+        {/* استخدام دالة handleCheckoutNavigation هنا */}
+        <button 
+          onClick={() => handleCheckoutNavigation(plan.name, plan.price)}
+          className="w-full py-3 rounded-lg font-medium text-white bg-gradient-to-r from-blue-500 to-indigo-500 hover:opacity-90 transition-all"
+        >
+          {plan.name === "Enterprise" || plan.name === "خطة الشركات" ? "Contact Sales" : plan.popular ? "Upgrade to Pro" : "Get Started"}
+        </button>
+      </div>
+    ))}
+  </div>
+</section>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{lang === "ar" ? "رسالتك" : "Your Message"}</label>
-            <div className="flex gap-2 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 items-start">
-              <MessageSquare size={16} className="text-slate-400 shrink-0 mt-1" />
-              <textarea 
-                rows="4"
-                required
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder={lang === "ar" ? "اكتب استفسارك هنا..." : "Type your query here..."}
-                className="bg-transparent outline-none text-sm w-full text-slate-800 dark:text-white resize-none"
-              ></textarea>
-            </div>
+{/* ⭐ قسم آراء العملاء (Testimonials - الحجم الكبير) */}
+<section id="testimonials" className="max-w-4xl mx-auto px-6 py-28 border-t border-slate-200 dark:border-slate-800 ">
+  <div className="text-center mb-20">
+    <h2 className="text-5xl font-black mb-6">
+      {lang === "ar" ? "ماذا يقول عملاؤنا؟" : "Trusted by Agencies & Freelancers"}
+    </h2>
+    <p className="text-slate-500 text-lg">
+      {lang === "ar" ? "نحن فخورون بكوننا جزءاً من نجاح شركائنا" : "We are proud to be part of our partners' success stories"}
+    </p>
+  </div>
+
+  <div className="relative min-h-[350px] flex items-center justify-center">
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={currentIndex}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.6 }}
+        // حجم أكبر (p-16) ومرونة في العرض
+        className="w-full bg-white dark:bg-slate-950 p-16 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col md:flex-row items-center gap-16"
+      >
+        {/* الجزء الأول: بيانات العميل */}
+{/* الجزء الأول: بيانات العميل */}
+<div className="flex flex-col items-center text-center min-w-[250px]">
+  {/* استبدلنا الـ div الذي يحتوي على الحرف بـ img tag */}
+  <img 
+    src={reviews[currentIndex].image} 
+    alt={reviews[currentIndex].name}
+    className="w-32 h-32 rounded-3xl object-cover mb-8 shadow-md border-4 border-slate-50 dark:border-slate-800"
+  />
+  <h4 className="font-bold text-2xl">{reviews[currentIndex].name}</h4>
+  <p className="text-md text-indigo-500 font-medium mt-2">{reviews[currentIndex].role}</p>
+</div>
+
+        {/* خط فاصل عمودي (يختفي في الشاشات الصغيرة ويظهر في الكبيرة) */}
+        <div className="hidden md:block w-px h-40 bg-slate-200 dark:bg-slate-800"></div>
+
+        {/* الجزء الثاني: النجوم والرأي */}
+        <div className="flex-1 text-center md:text-start">
+          <div className="flex justify-center md:justify-start gap-1.5 mb-8 text-amber-400">
+            {[...Array(reviews[currentIndex].stars)].map((_, i) => (
+              <Star key={i} size={28} fill="currentColor" />
+            ))}
           </div>
+          <p className="text-2xl md:text-3xl italic text-slate-800 dark:text-slate-100 leading-relaxed font-light">
+            "{reviews[currentIndex].comment}"
+          </p>
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  </div>
+  
+  {/* نقاط التنقل (Dots) */}
+  <div className="flex justify-center gap-3 mt-16">
+    {reviews.map((_, i) => (
+      <button 
+        key={i} 
+        onClick={() => setCurrentIndex(i)}
+        className={`h-3 rounded-full transition-all duration-500 ${i === currentIndex ? "w-16 bg-indigo-600" : "w-3 bg-slate-300 dark:bg-slate-700"}`} 
+      />
+    ))}
+  </div>
+</section>
+{/* 📬 قسم تواصل معنا (محدث بتصميم عصري) */}
+<section id="contact" className="max-w-6xl mx-auto px-6 py-28 border-t border-slate-200 dark:border-slate-800">
+  <div className="grid md:grid-cols-2 gap-16 items-center">
+    
+    {/* الجانب النصي */}
+    <div>
+      <h2 className="text-5xl font-black mb-6">
+        {lang === "ar" ? "هل لديك أي استفسار؟" : "Let's Build Something Great"}
+      </h2>
+      <p className="text-slate-500 text-lg mb-8 leading-relaxed">
+        {lang === "ar" 
+          ? "نحن هنا لمساعدتك في أي وقت. أرسل رسالتك وسنرد عليك في غضون دقائق." 
+          : "Have a project in mind or need technical support? Drop us a line, and let's get started."}
+      </p>
+      
+  <div className="space-y-6">
+        {/* الهاتف */}
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-600">
+            <span className="text-xl">📞</span>
+          </div>
+          <div>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{lang === "ar" ? "اتصل بنا" : "Phone"}</p>
+            <p className="font-semibold text-lg">+20 12 8709 4035</p>
+          </div>
+        </div>
 
-          <button type="submit" className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-600/15">
-            <span>{lang === "ar" ? "إرسال الرسالة" : "Send Message"}</span>
-            <Send size={14} />
-          </button>
-        </form>
-      </section>
+        {/* العنوان */}
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-600">
+            <span className="text-xl">📍</span>
+          </div>
+          <div>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{lang === "ar" ? "العنوان" : "Office Address"}</p>
+            <p className="font-semibold text-lg"> Cairo, Egypt</p>
+          </div>
+        </div>
+
+        {/* الخريطة (صورة ثابتة كتمثيل للخريطة) */}
+        <div className="mt-8 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 h-40">
+           <img 
+             src="https://maps.googleapis.com/maps/api/staticmap?center=Cairo,Egypt&zoom=13&size=600x300&maptype=roadmap&key=YOUR_API_KEY" 
+             alt="Location Map" 
+             className="w-full h-full object-cover opacity-70 hover:opacity-100 transition-opacity"
+           />
+        </div>
+      </div>
+    </div>
+
+    {/* كارد النموذج (Contact Form) */}
+    <form onSubmit={handleContactSubmit} className="bg-white dark:bg-slate-950 p-12 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-2xl">
+      <div className="space-y-8">
+        <div>
+          <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
+            {lang === "ar" ? "البريد الإلكتروني" : "Email Address"}
+          </label>
+          <input 
+            type="email" 
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            className="w-full px-5 py-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 outline-none focus:border-indigo-500 transition-all text-slate-800 dark:text-white"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
+            {lang === "ar" ? "رسالتك" : "Your Message"}
+          </label>
+          <textarea 
+            rows="4"
+            required
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder={lang === "ar" ? "اكتب تفاصيل استفسارك هنا..." : "Tell us about your project..."}
+            className="w-full px-5 py-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 outline-none focus:border-indigo-500 transition-all resize-none text-slate-800 dark:text-white"
+          ></textarea>
+        </div>
+
+        <button type="submit" className="w-full h-16 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-600/20 active:scale-[0.98]">
+          <span>{lang === "ar" ? "إرسال الرسالة" : "Send Message"}</span>
+          <Send size={18} />
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
 
       {/* 📋 الفوتر السفلي */}
       <footer className="py-8 border-t border-slate-200 dark:border-slate-900 text-center text-xs text-slate-400">
         <p>© 2026 SaaS-Core Template. Built by Nexora.</p>
       </footer>
-
+{/* 📱 زر الواتساب العائم */}
+<a
+  href="https://wa.me/201287094035" // ضع رقم هاتفك هنا مع كود الدولة بدون +
+  target="_blank"
+  rel="noopener noreferrer"
+  className="fixed bottom-8 right-8 md:bottom-12 md:right-12 z-[999] flex items-center justify-center w-16 h-16 rounded-full bg-green-500 text-white shadow-2xl shadow-green-500/30 hover:scale-110 transition-all duration-300 animate-bounce"
+>
+  <MessageCircle size={32} />
+</a>
     </div>
   );
 }

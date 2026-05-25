@@ -27,10 +27,15 @@ function Auth() {
   const [name, setName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    navigate("/dashboard");
-  };
+  
+const handleSubmit = (e) => {
+  e.preventDefault();
+
+  // حفظ حالة تسجيل الدخول
+  localStorage.setItem("isLoggedIn", "true");
+
+  navigate("/");
+};
 
   // حركة الـ Overlay
   const getSlidingX = () => {
