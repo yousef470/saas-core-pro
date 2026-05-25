@@ -1,20 +1,20 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import Sidebar from "./Sidebar"; // نقطة واحدة تعني نفس الفولدر
+import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 
 function DashboardLayout() {
-  const [isOpen, setIsOpen] = useState(false); // نفس الاسم الموحد
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 transition-colors duration-300 overflow-hidden">
+    <div className="flex h-screen w-full bg-slate-50 dark:bg-slate-950 transition-colors duration-300 overflow-hidden">
       
-      {/* السايدبار للشاشات الكبيرة يظهر عند lg ليطابق الـ Navbar */}
-      <div className="hidden lg:block w-64 shrink-0 h-screen sticky top-0 border-e border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+      {/* قسم السايدبار الثابت للشاشات الكبيرة */}
+      <div className="hidden lg:block w-64 shrink-0 h-full border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
         <Sidebar />
       </div>
 
-      {/* السايدبار الطائر للموايل والتابلت */}
+      {/* قسم السايدبار الطائر للموبايل والتابلت */}
       {isOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div 
@@ -27,16 +27,18 @@ function DashboardLayout() {
         </div>
       )}
 
-      {/* المحتوى الرئيسي */}
-      <div className="flex-1 flex flex-col min-w-0 w-full overflow-hidden">
-        {/* تمرير الدالة الصحيحة */}
+      {/* الحاوية الرئيسية للمحتوى */}
+      <div className="flex-1 flex flex-col min-w-0 w-full h-full overflow-hidden">
+        
+        {/* النافبار: الآن ثابت في الأعلى وبفضل كلاسات الشفافية سيبدو رائعاً */}
         <Navbar setIsOpen={setIsOpen} />
         
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 w-full max-w-[1500px] mx-auto min-w-0">
+        {/* المحتوى الديناميكي: هو الوحيد الذي يحتوي على سكرول */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 w-full max-w-[1500px] mx-auto hide-scrollbar">
           <Outlet />
         </main>
+        
       </div>
-
     </div>
   );
 }

@@ -4,10 +4,11 @@ import { DollarSign, Users, CreditCard, ArrowUpRight, ArrowDownRight, TrendingUp
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 // استيراد الـ Hook الموحد للثيم واللغة
 import useTheme from "../hooks/useTheme";
+import { useUser } from "../context/UserContext";
 
 
 function Dashboard() {
-  // استدعاء دالة الترجمة واللغة الحالية من الـ Context الموحد
+const { user } = useUser();
   const { t, lang } = useTheme();
   
 console.log("Dashboard Lang Is:", lang, "Dashboard Dictionary Is:", t);
@@ -74,9 +75,9 @@ console.log("Dashboard Lang Is:", lang, "Dashboard Dictionary Is:", t);
     >
       {/* الهيدر الترحيبي المترجم */}
       <div className="flex flex-col gap-1.5">
-        <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">
-          {t.welcome}
-        </h1>
+        <h1 className="text-2xl font-bold">
+        {lang === "ar" ? `مرحباً بك يا ${user.name} 👋` : `Welcome back, ${user.name} 👋`}
+      </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
           {t.subtitle}
         </p>
