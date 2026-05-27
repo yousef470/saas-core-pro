@@ -1,13 +1,14 @@
 import { useState } from "react";
+import { useContext } from "react";
 import { Bell, Menu, Moon, Sun, Languages, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import useTheme from "../../hooks/useTheme";
-import { useUser } from "../../context/UserContext";
+import { AuthContext } from "../../context/AuthContext";
 
 function Navbar({ setIsOpen }) {
   const { darkMode, toggleDarkMode, toggleLanguage, lang } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
-  const { user } = useUser();
+ const { user } = useContext(AuthContext);
 
   return (
     // النافبار شفاف وبخلفية Blur وبدون حدود سفلية (ليندمج مع السايدبار)
@@ -60,19 +61,19 @@ function Navbar({ setIsOpen }) {
           </AnimatePresence>
         </div>
 
-        {/* بروفايل المستخدم (يأخذ البيانات من UserContext) */}
-        <div className="flex items-center gap-3 pl-3 border-l ml-2" style={{ borderColor: "var(--border)" }}>
-          <div className="hidden sm:block text-right">
-            <p className="text-sm font-bold dark:text-white">{user.name}</p>
-            <p className="text-[10px] text-slate-500">Pro Plan</p>
-          </div>
-          <img
-            src={user.avatar || "/default-avatar.png"}
-            alt="User"
-            className="w-10 h-10 rounded-full border object-cover"
-            style={{ borderColor: "var(--border)" }}
-          />
-        </div>
+   {/* بروفايل المستخدم مع حماية ضد الـ Null */}
+<div className="flex items-center gap-3 pl-3 border-l ml-2" style={{ borderColor: "var(--border)" }}>
+  <div className="hidden sm:block text-right">
+    <p className="text-sm font-bold dark:text-white">{user?.name || "زائر"}</p>
+    <p className="text-[10px] text-slate-500">Pro Plan</p>
+  </div>
+  <img
+    src={user?.avatar || "/default-avatar.png"}
+    alt="User"
+    className="w-10 h-10 rounded-full border object-cover"
+    style={{ borderColor: "var(--border)" }}
+  />
+</div>
       </div>
     </header>
   );

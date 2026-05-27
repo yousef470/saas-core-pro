@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import useTheme from "../hooks/useTheme";
+
+import { AuthContext } from "../context/AuthContext";
 
 import {
   Mail,
@@ -10,41 +12,91 @@ import {
   LogIn,
   ShieldCheck,
   User,
-
 } from "lucide-react";
 
 import { motion } from "framer-motion";
 
 function Auth() {
   const { lang } = useTheme();
-  const navigate = useNavigate();
-
   const [isLogin, setIsLogin] = useState(true);
 
+  const navigate = useNavigate();
+  const { login, register } = useContext(AuthContext);
+  const [errors, setErrors] = useState({});
   // States
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
   const [name, setName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  false;
 
-  
-const handleSubmit = (e) => {
-  e.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-  // حفظ حالة تسجيل الدخول
-  localStorage.setItem("isLoggedIn", "true");
+    const success = login(email, loginPassword);
 
-  navigate("/");
-};
+    if (success) {
+      localStorage.setItem("isLoggedIn", "true");
+      navigate("/");
+    } else {
+      alert("Invalid email or password");
+    }
+  };
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+
+    let newErrors = {};
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (name.trim().length < 3) {
+      newErrors.name = "Name must be at least 3 characters";
+    }
+
+    if (!emailRegex.test(email)) {
+      newErrors.email = "Invalid email address";
+    }
+
+    if (registerPassword !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    register(email, registerPassword, name);
+    localStorage.setItem("isLoggedIn", "true");
+    navigate("/");
+  };
 
   // حركة الـ Overlay
   const getSlidingX = () => {
     if (lang === "ar") {
-      return isLogin ? "0%" : "100%";
+      // بالعربي: إذا كان Login (isLogin=true) يجب أن يكون على اليمين (0%)
+      // إذا كان Register (isLogin=false) يجب أن يتحرك لليسار (-100%)
+      return isLogin ? "0%" : "-100%";
     } else {
-      return isLogin ? "100%" : "0%";
+      // بالإنجليزي: إذا كان Login (isLogin=true) يجب أن يكون على اليسار (0%)
+      // إذا كان Register (isLogin=false) يجب أن يتحرك لليمين (100%)
+      return isLogin ? "0%" : "100%";
     }
   };
+
+  const passwordChecks = {
+    length: registerPassword.length >= 8,
+    uppercase: /[A-Z]/.test(registerPassword),
+    lowercase: /[a-z]/.test(registerPassword),
+    number: /\d/.test(registerPassword),
+    special: /[@$!%*?&]/.test(registerPassword),
+  };
+
+  const isPasswordValid = Object.values(passwordChecks).every(Boolean);
 
   return (
     <div
@@ -123,8 +175,8 @@ const handleSubmit = (e) => {
                   <input
                     type={showPassword ? "text" : "password"}
                     required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
                     placeholder="••••••••"
                     className="bg-transparent outline-none text-sm w-full text-white placeholder:text-gray-600"
                   />
@@ -201,7 +253,10 @@ const handleSubmit = (e) => {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleRegister} className="space-y-4">
+
+
+
               {/* Name */}
               <div>
                 <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
@@ -220,14 +275,23 @@ const handleSubmit = (e) => {
                     className="bg-transparent outline-none text-sm w-full text-white placeholder:text-gray-600"
                   />
                 </div>
+
+                {errors.name && (
+                  <p className="text-red-400 text-xs mt-2 ml-1">
+                    {errors.name}
+                  </p>
+                )}
               </div>
+
+
+
+
 
               {/* Email */}
               <div>
                 <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                   {lang === "ar" ? "البريد الإلكتروني" : "Email Address"}
                 </label>
-
                 <div className="flex items-center gap-2 px-3.5 py-3 rounded-2xl border border-white/10 bg-white/5 focus-within:border-purple-500 transition-all">
                   <Mail size={16} className="text-gray-500 shrink-0" />
 
@@ -240,22 +304,40 @@ const handleSubmit = (e) => {
                     className="bg-transparent outline-none text-sm w-full text-white placeholder:text-gray-600"
                   />
                 </div>
+
+                {errors.email && (
+                  <p className="text-red-400 text-xs mt-2 ml-1">
+                    {errors.email}
+                  </p>
+                )}
               </div>
 
-              {/* Password */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                  {lang === "ar" ? "كلمة المرور" : "Password"}
-                </label>
 
-                <div className="flex items-center gap-2 px-3.5 py-3 rounded-2xl border border-white/10 bg-white/5 focus-within:border-purple-500 transition-all relative">
+
+
+                {/* PASSWORD */}
+ 
+              <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                {lang === "ar" ? " كلمة المرور" : " Password"}
+              </label>
+              <div className="relative">
+                <div
+                  className={`flex items-center gap-2 px-3.5 py-3 rounded-2xl border bg-white/5 transition-all
+                  ${
+                   registerPassword.length > 0
+                  ? isPasswordValid
+                    ? "border-green-500"
+                         : "border-red-500"
+                        : "border-white/10 focus-within:border-purple-500"
+                  }`}
+                >
                   <Lock size={16} className="text-gray-500 shrink-0" />
 
                   <input
                     type={showPassword ? "text" : "password"}
                     required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={registerPassword}
+                    onChange={(e) => setRegisterPassword(e.target.value)}
                     placeholder="••••••••"
                     className="bg-transparent outline-none text-sm w-full text-white placeholder:text-gray-600"
                   />
@@ -271,6 +353,121 @@ const handleSubmit = (e) => {
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
+
+
+           
+                {registerPassword.length > 0 && !isPasswordValid && (
+                  <div
+                    className={`absolute top-[calc(100%+10px)] z-[100] w-full rounded-2xl border border-white/10 bg-[#161922]/95 backdrop-blur-xl p-4 shadow-2xl ${lang === "ar" ? "right-0" : "left-0"}`}
+                  >
+                    <div className="space-y-2 text-xs">
+                      <p
+                        className={
+                          passwordChecks.length
+                            ? "text-green-400"
+                            : "text-red-400"
+                        }
+                      >
+                        • At least 8 characters
+                      </p>
+                      <p
+                        className={
+                          passwordChecks.uppercase
+                            ? "text-green-400"
+                            : "text-red-400"
+                        }
+                      >
+                        • One uppercase letter
+                      </p>
+                      <p
+                        className={
+                          passwordChecks.lowercase
+                            ? "text-green-400"
+                            : "text-red-400"
+                        }
+                      >
+                        • One lowercase letter
+                      </p>
+                      <p
+                        className={
+                          passwordChecks.number
+                            ? "text-green-400"
+                            : "text-red-400"
+                        }
+                      >
+                        • One number
+                      </p>
+                      <p
+                        className={
+                          passwordChecks.special
+                            ? "text-green-400"
+                            : "text-red-400"
+                        }
+                      >
+                        • One special character
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="relative">
+                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                  {lang === "ar" ? "تأكيد كلمة المرور" : "Confirm Password"}
+                </label>
+
+                <div
+                  className={`flex items-center gap-2 px-3.5 py-3 rounded-2xl border bg-white/5 transition-all relative
+    ${
+      registerPassword.length > 0
+        ? confirmPassword === registerPassword
+          ? "border-green-500"
+          : "border-red-500"
+        : "border-white/10 focus-within:border-purple-500"
+    }`}
+                >
+                  <Lock size={16} className="text-gray-500 shrink-0" />
+
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="bg-transparent outline-none text-sm w-full text-white placeholder:text-gray-600 pr-10 pl-10"
+                  />
+
+                  {/* Eye Button (Fixed RTL/LTR) */}
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className={`absolute top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors
+        ${lang === "ar" ? "left-3" : "right-3"}`}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff size={16} />
+                    ) : (
+                      <Eye size={16} />
+                    )}
+                  </button>
+                </div>
+
+                {/* Match indicator */}
+                {confirmPassword.length > 0 && (
+                  <p
+                    className={`text-xs mt-2 ${
+                      confirmPassword === registerPassword
+                        ? "text-green-400"
+                        : "text-red-400"
+                    }`}
+                  >
+                    {confirmPassword === registerPassword
+                      ? lang === "ar"
+                        ? "✓ كلمة المرور متطابقة"
+                        : "✓ Passwords match"
+                      : lang === "ar"
+                        ? "✗ كلمة المرور غير متطابقة"
+                        : "✗ Passwords do not match"}
+                  </p>
+                )}
               </div>
 
               {/* Submit */}
@@ -346,7 +543,7 @@ const handleSubmit = (e) => {
         border border-white/10
       "
             >
-          <div className="absolute inset-0 rounded-[32px]  from-white/10 to-transparent" />
+              <div className="absolute inset-0 rounded-[32px]  from-white/10 to-transparent" />
               <ShieldCheck size={48} className="relative z-10" />
             </motion.div>
 
@@ -374,20 +571,18 @@ const handleSubmit = (e) => {
           {/* Footer Switch - ثابت في الأسفل */}
           <div className="text-xs text-gray-400 pb-8 border-t border-white/5 w-full pt-6 relative z-10">
             <span>
-              {isLogin ? "Don't have an account?" : "Already have an account?"}
+              {isLogin ? "Already have an account?" : "Don't have an account?"}
             </span>
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
               className="text-indigo-400 font-bold hover:text-indigo-300 transition-colors mx-1 underline cursor-pointer"
             >
-              {isLogin ? "Sign Up" : "Sign In"}
+              {isLogin ? "Sign In" : "Sign Up"}
             </button>
           </div>
         </motion.div>
       </div>
-
-      
     </div>
   );
 }

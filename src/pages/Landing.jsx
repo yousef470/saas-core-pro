@@ -13,9 +13,23 @@ const { lang, darkMode, toggleDarkMode, toggleLanguage } = useTheme();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
-const [isLoggedIn, setIsLoggedIn] = useState(
-  localStorage.getItem("isLoggedIn") === "true"
-);
+
+  
+const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+useEffect(() => {
+  const checkLogin = () => {
+    setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
+  };
+
+  checkLogin();
+
+  window.addEventListener("storage", checkLogin);
+
+  return () => {
+    window.removeEventListener("storage", checkLogin);
+  };
+}, []);
 
   const navLinks = [
   { en: "Features", ar: "المميزات" },
@@ -134,9 +148,9 @@ const plans = [
 const handleLogout = () => {
   localStorage.removeItem("isLoggedIn");
 
-  setIsLoggedIn(false);
+  navigate("/login");
 
-  window.location.href = "/login";
+  window.location.reload();
 };
 
   return (
@@ -270,51 +284,92 @@ const handleLogout = () => {
   </motion.div>
 </header>
 
+{/* ✨ Premium Features Section */}
+<section
+  id="features"
+  className="max-w-7xl mx-auto px-6 py-24"
+>
+  {/* Heading */}
+  <div className="text-center mb-16">
+    <span className="inline-block px-4 py-1.5 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-bold border border-indigo-500/20 mb-5">
+      {lang === "ar" ? "المميزات" : "FEATURES"}
+    </span>
 
-
-{/* ✨ 3. قسم المميزات (Compact Bento Grid) */}
-<section id="features" className="max-w-6xl mx-auto px-6 py-12"> {/* قللنا py من 24 لـ 12 */}
-  <div className="text-center mb-12"> {/* قللنا mb من 20 لـ 12 */}
-    <h2 className="text-3xl font-black">
-      {lang === "ar" ? "كل ما تحتاجه في مكان واحد" : "Everything You Need in One Place"}
+    <h2 className="text-4xl md:text-5xl font-black mb-5 leading-tight">
+      {lang === "ar"
+        ? "كل الأدوات التي تحتاجها للنمو"
+        : "Everything You Need To Scale"}
     </h2>
+
+    <p className="text-slate-500 max-w-2xl mx-auto text-lg">
+      {lang === "ar"
+        ? "واجهة احترافية، تحليلات قوية، وتجربة استخدام مصممة للشركات الحديثة."
+        : "Professional UI, powerful analytics, and a modern experience built for SaaS startups."}
+    </p>
   </div>
 
-  {/* قللنا الـ auto-rows من 200px لـ 160px ليكون السكشن أصغر */}
-  <div className="grid grid-cols-1 md:grid-cols-6 gap-3 auto-rows-[160px]">
-    
-    {/* 1. الميزة الرئيسية (مساحة أقل) */}
-    <div className="md:col-span-4 row-span-2 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b0c10] relative overflow-hidden group hover:border-indigo-500/50 transition-all">
-      <div className="relative z-10">
-        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 mb-4">{features[0].icon}</div>
-        <h3 className="text-2xl font-bold mb-2">{features[0].title}</h3>
-        <p className="text-sm text-slate-500 max-w-sm">{features[0].desc}</p>
-      </div>
-    </div>
+  {/* Grid */}
+  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+    {features.map((feature, index) => (
+      <motion.div
+        key={index}
+        whileHover={{ y: -8 }}
+        transition={{ duration: 0.25 }}
+        className="
+          group
+          relative
+          overflow-hidden
+          rounded-3xl
+          border
+          border-slate-200
+          dark:border-slate-800
+          bg-white
+          dark:bg-[#0f1117]
+          p-7
+          transition-all
+          hover:border-indigo-500/40
+          hover:shadow-[0_0_40px_rgba(99,102,241,0.15)]
+        "
+      >
+        {/* Glow */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl" />
+        </div>
 
-    {/* 2. ميزة صغيرة */}
-    <div className="md:col-span-2 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b0c10] flex flex-col justify-center hover:border-indigo-500/50 transition-all">
-      <h3 className="text-lg font-bold mb-1">{features[1].title}</h3>
-      <p className="text-xs text-slate-500">{features[1].desc}</p>
-    </div>
+        {/* Icon */}
+        <div
+          className="
+            relative z-10
+            w-14 h-14
+            rounded-2xl
+            bg-indigo-500/10
+            flex items-center justify-center
+            mb-6
+            text-indigo-500
+            group-hover:scale-110
+            transition-transform
+          "
+        >
+          {feature.icon}
+        </div>
 
-    {/* 3. ميزة صغيرة */}
-    <div className="md:col-span-2 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b0c10] flex flex-col justify-center hover:border-indigo-500/50 transition-all">
-       <h3 className="text-lg font-bold mb-1">{features[2].title}</h3>
-       <p className="text-xs text-slate-500">{features[2].desc}</p>
-    </div>
+        {/* Content */}
+        <div className="relative z-10">
+          <h3 className="text-xl font-bold mb-3">
+            {feature.title}
+          </h3>
 
-    {/* 4. زر البدء (مدمج بشكل أصغر) */}
-    <div className="md:col-span-6 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-indigo-600 text-white flex items-center justify-between">
-      <p className="font-bold">{lang === "ar" ? "جاهز للبدء؟" : "Ready to scale?"}</p>
-      <button className="px-5 py-2 bg-white text-indigo-600 rounded-xl font-bold text-sm hover:scale-105 transition-transform">
-        {lang === "ar" ? "ابدأ التجربة" : "Start Now"}
-      </button>
-    </div>
+          <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+            {feature.desc}
+          </p>
+        </div>
 
+        {/* Bottom line */}
+        <div className="absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r from-indigo-500 to-violet-500 group-hover:w-full transition-all duration-500" />
+      </motion.div>
+    ))}
   </div>
 </section>
-
 {/* Pricing Section */}
 <section id="pricing" className="max-w-6xl mx-auto px-6 py-24">
   <div className="text-center mb-16">
@@ -354,71 +409,85 @@ const handleLogout = () => {
     ))}
   </div>
 </section>
-
-{/* ⭐ قسم آراء العملاء (Testimonials - الحجم الكبير) */}
-<section id="testimonials" className="max-w-4xl mx-auto px-6 py-28 border-t border-slate-200 dark:border-slate-800 ">
+<section
+  id="testimonials"
+  className="max-w-6xl mx-auto px-6 py-28"
+>
   <div className="text-center mb-20">
-    <h2 className="text-5xl font-black mb-6">
-      {lang === "ar" ? "ماذا يقول عملاؤنا؟" : "Trusted by Agencies & Freelancers"}
+    <span className="text-indigo-500 font-semibold uppercase tracking-[0.2em] text-sm">
+      Testimonials
+    </span>
+
+    <h2 className="text-5xl font-black mt-4">
+      {lang === "ar"
+        ? "ماذا يقول عملاؤنا؟"
+        : "Loved by Developers"}
     </h2>
-    <p className="text-slate-500 text-lg">
-      {lang === "ar" ? "نحن فخورون بكوننا جزءاً من نجاح شركائنا" : "We are proud to be part of our partners' success stories"}
-    </p>
   </div>
 
-  <div className="relative min-h-[350px] flex items-center justify-center">
+  <div className="relative overflow-hidden">
     <AnimatePresence mode="wait">
       <motion.div
         key={currentIndex}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ duration: 0.6 }}
-        // حجم أكبر (p-16) ومرونة في العرض
-        className="w-full bg-white dark:bg-slate-950 p-16 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col md:flex-row items-center gap-16"
+        initial={{ opacity: 0, x: 80 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -80 }}
+        transition={{ duration: 0.5 }}
+        className="rounded-[40px] border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-white/[0.03] backdrop-blur-xl p-8 md:p-14"
       >
-        {/* الجزء الأول: بيانات العميل */}
-{/* الجزء الأول: بيانات العميل */}
-<div className="flex flex-col items-center text-center min-w-[250px]">
-  {/* استبدلنا الـ div الذي يحتوي على الحرف بـ img tag */}
-  <img 
-    src={reviews[currentIndex].image} 
-    alt={reviews[currentIndex].name}
-    className="w-32 h-32 rounded-3xl object-cover mb-8 shadow-md border-4 border-slate-50 dark:border-slate-800"
-  />
-  <h4 className="font-bold text-2xl">{reviews[currentIndex].name}</h4>
-  <p className="text-md text-indigo-500 font-medium mt-2">{reviews[currentIndex].role}</p>
-</div>
+        <div className="flex flex-col md:flex-row items-center gap-10">
 
-        {/* خط فاصل عمودي (يختفي في الشاشات الصغيرة ويظهر في الكبيرة) */}
-        <div className="hidden md:block w-px h-40 bg-slate-200 dark:bg-slate-800"></div>
+          {/* Avatar */}
+          <div className="flex flex-col items-center text-center min-w-[220px]">
+            <img
+              src={reviews[currentIndex].image}
+              alt={reviews[currentIndex].name}
+              className="w-28 h-28 rounded-3xl object-cover border-4 border-white shadow-xl"
+            />
 
-        {/* الجزء الثاني: النجوم والرأي */}
-        <div className="flex-1 text-center md:text-start">
-          <div className="flex justify-center md:justify-start gap-1.5 mb-8 text-amber-400">
-            {[...Array(reviews[currentIndex].stars)].map((_, i) => (
-              <Star key={i} size={28} fill="currentColor" />
-            ))}
+            <h4 className="mt-6 text-2xl font-bold">
+              {reviews[currentIndex].name}
+            </h4>
+
+            <p className="text-indigo-500 mt-2">
+              {reviews[currentIndex].role}
+            </p>
+
+            <div className="flex gap-1 mt-5 text-yellow-400">
+              {[...Array(reviews[currentIndex].stars)].map((_, i) => (
+                <Star key={i} size={20} fill="currentColor" />
+              ))}
+            </div>
           </div>
-          <p className="text-2xl md:text-3xl italic text-slate-800 dark:text-slate-100 leading-relaxed font-light">
-            "{reviews[currentIndex].comment}"
-          </p>
+
+          {/* Content */}
+          <div className="flex-1">
+            <p className="text-2xl md:text-3xl leading-relaxed font-light text-slate-700 dark:text-slate-200">
+              “{reviews[currentIndex].comment}”
+            </p>
+          </div>
         </div>
       </motion.div>
     </AnimatePresence>
+
+    {/* Dots */}
+    <div className="flex justify-center gap-3 mt-10">
+      {reviews.map((_, i) => (
+        <button
+          key={i}
+          onClick={() => setCurrentIndex(i)}
+          className={`transition-all duration-300 rounded-full ${
+            i === currentIndex
+              ? "w-12 h-3 bg-indigo-600"
+              : "w-3 h-3 bg-slate-300 dark:bg-slate-700"
+          }`}
+        />
+      ))}
+    </div>
   </div>
-  
-  {/* نقاط التنقل (Dots) */}
-  <div className="flex justify-center gap-3 mt-16">
-    {reviews.map((_, i) => (
-      <button 
-        key={i} 
-        onClick={() => setCurrentIndex(i)}
-        className={`h-3 rounded-full transition-all duration-500 ${i === currentIndex ? "w-16 bg-indigo-600" : "w-3 bg-slate-300 dark:bg-slate-700"}`} 
-      />
-    ))}
-  </div>
-</section>
+</section>  
+
+
 {/* 📬 قسم تواصل معنا (محدث بتصميم عصري) */}
 <section id="contact" className="max-w-6xl mx-auto px-6 py-28 border-t border-slate-200 dark:border-slate-800">
   <div className="grid md:grid-cols-2 gap-16 items-center">
