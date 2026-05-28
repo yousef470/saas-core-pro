@@ -1,14 +1,13 @@
 import { useState } from "react";
-import { useContext } from "react";
 import { Bell, Menu, Moon, Sun, Languages, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import useTheme from "../../hooks/useTheme";
-import { AuthContext } from "../../context/AuthContext";
+import useAuth from "../../hooks/useAuth";
 
 function Navbar({ setIsOpen }) {
   const { darkMode, toggleDarkMode, toggleLanguage, lang } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
- const { user } = useContext(AuthContext);
+const { user } = useAuth();
 
   return (
     // النافبار شفاف وبخلفية Blur وبدون حدود سفلية (ليندمج مع السايدبار)

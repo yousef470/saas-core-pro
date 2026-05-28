@@ -27,10 +27,10 @@ import {
 
 import useTheme from "../hooks/useTheme";
 import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import useAuth from "../hooks/useAuth";
 
 function Dashboard() {
-  const { user } = useContext(AuthContext);
+ const { user } = useAuth();
   const { t, lang } = useTheme();
 
   const revenueData = [

@@ -1,8 +1,4 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { AnimatePresence } from "framer-motion";
 import DashboardLayout from "./components/layout/DashboardLayout";
@@ -20,21 +16,23 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
 // الصفحات الجديدة والـ Errors
-import Users from "./pages/Users";       
-import Billing from "./pages/Billing";     
-import NotFound from "./pages/NotFound";   
+import Users from "./pages/Users";
+import Billing from "./pages/Billing";
+import NotFound from "./pages/NotFound";
 
 // صفحة الدفع والـ Checkout
-import Checkout from "./pages/Checkout"; 
+import Checkout from "./pages/Checkout";
 
 import useTheme from "./hooks/useTheme";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import PublicRoute from "./routes/PublicRoute";
 
 function App() {
   useTheme();
 
   return (
     <BrowserRouter>
-      <div 
+      <div
         className="min-h-screen transition-colors duration-300 overflow-x-hidden w-full"
         style={{
           background: "var(--bg-main)",
@@ -42,7 +40,6 @@ function App() {
       >
         <AnimatePresence mode="wait">
           <Routes>
-            
             {/* 🚀 صفحة الهبوط المستقلة (الواجهة الرئيسية للموقع بره الـ Layout) */}
             <Route path="/" element={<Landing />} />
 
@@ -50,8 +47,16 @@ function App() {
             <Route path="/checkout" element={<Checkout />} />
 
             {/* 🛡️ نظام مسارات لوحة التحكم المتداخلة - كلها بتبدأ بـ dashboard/ وتفتح جوه الـ Layout */}
-            <Route path="/dashboard" element={<DashboardLayout />}>
-              <Route index element={<Dashboard />} /> {/* index يعني دي الصفحة الرئيسية للداشبورد */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Dashboard />} />{" "}
+              {/* index يعني دي الصفحة الرئيسية للداشبورد */}
               <Route path="crm" element={<CRM />} />
               <Route path="analytics" element={<Analytics />} />
               <Route path="settings" element={<Settings />} />
@@ -60,16 +65,30 @@ function App() {
             </Route>
 
             {/* 🔐 صفحات الـ Auth الموحدة (شاشة الكتاب المتحرك) */}
-            <Route path="/login" element={<Auth />} />
-            <Route path="/register" element={<Auth />} />
-            
+<Route
+  path="/login"
+  element={
+    <PublicRoute>
+      <Auth />
+    </PublicRoute>
+  }
+/>
+
+<Route
+  path="/register"
+  element={
+    <PublicRoute>
+      <Auth />
+    </PublicRoute>
+  }
+/>
+
             {/* 🔑 مسارات الـ Auth الإضافية لاستعادة وتعيين كلمة المرور */}
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* ⚠️ صفحة الـ 404 لأي مسار عشوائي غير مسجل */}
             <Route path="*" element={<NotFound />} />
-            
           </Routes>
         </AnimatePresence>
       </div>
