@@ -26,7 +26,7 @@ import {
 } from "recharts";
 
 import useTheme from "../hooks/useTheme";
-import { useContext } from "react";
+
 import useAuth from "../hooks/useAuth";
 
 function Dashboard() {

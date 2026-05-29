@@ -1,8 +1,8 @@
-import { useState, useContext } from "react";
+import { useState, } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import useTheme from "../hooks/useTheme";
 
-import { AuthContext } from "../context/AuthContext";
+import useAuth from "../hooks/useAuth";
 
 import {
   Mail,
@@ -21,7 +21,7 @@ function Auth() {
   const [isLogin, setIsLogin] = useState(true);
 
   const navigate = useNavigate();
-  const { login, register } = useContext(AuthContext);
+  const { login, register } = useAuth()
   const [errors, setErrors] = useState({});
   // States
   const [email, setEmail] = useState("");
@@ -31,49 +31,65 @@ function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  false;
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const success = login(email, loginPassword);
+const result = login(email, loginPassword);
 
-    if (success) {
-      localStorage.setItem("isLoggedIn", "true");
-      navigate("/");
-    } else {
-      alert("Invalid email or password");
-    }
-  };
+if (result.success) {
+  navigate("/dashboard");
+} else {
+  alert(result.message);
+}
+};
 
-  const handleRegister = (e) => {
-    e.preventDefault();
+const handleRegister = (e) => {
+  e.preventDefault();
 
-    let newErrors = {};
+  let newErrors = {};
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (name.trim().length < 3) {
-      newErrors.name = "Name must be at least 3 characters";
-    }
+  if (name.trim().length < 3) {
+    newErrors.name =
+      "Name must be at least 3 characters";
+  }
 
-    if (!emailRegex.test(email)) {
-      newErrors.email = "Invalid email address";
-    }
+  if (!emailRegex.test(email)) {
+    newErrors.email =
+      "Invalid email address";
+  }
 
-    if (registerPassword !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
+  if (
+    registerPassword !==
+    confirmPassword
+  ) {
+    newErrors.confirmPassword =
+      "Passwords do not match";
+  }
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
+  if (
+    Object.keys(newErrors).length > 0
+  ) {
+    setErrors(newErrors);
+    return;
+  }
 
-    register(email, registerPassword, name);
-    localStorage.setItem("isLoggedIn", "true");
-    navigate("/");
-  };
+  const result = register(
+    name,
+    email,
+    registerPassword
+  );
+
+  if (result.success) {
+    navigate("/dashboard");
+  } else {
+    alert(result.message);
+  }
+};
 
   // حركة الـ Overlay
   const getSlidingX = () => {

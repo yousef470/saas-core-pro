@@ -20,7 +20,7 @@ function AuthProvider({ children }) {
     return mockUsers;
   });
 
-  // USER SESSION
+  // CURRENT USER
   const [user, setUser] = useState(() => {
     const savedSession =
       localStorage.getItem("saas_session");
