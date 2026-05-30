@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
+
 import {
   DollarSign,
   Users,
-  CreditCard,
+
   ArrowUpRight,
   ArrowDownRight,
   TrendingUp,
@@ -25,106 +26,97 @@ import {
   Cell,
 } from "recharts";
 
-import useTheme from "../hooks/useTheme";
+import { useEffect, useState } from "react";
 
+import useTheme from "../hooks/useTheme";
 import useAuth from "../hooks/useAuth";
 
 function Dashboard() {
- const { user } = useAuth();
+
+  const { user } = useAuth();
+
   const { t, lang } = useTheme();
 
-  const revenueData = [
-    { name: t.jan, Revenue: 4000 },
-    { name: t.feb, Revenue: 5000 },
-    { name: t.mar, Revenue: 6800 },
-    { name: t.apr, Revenue: 5800 },
-    { name: t.may, Revenue: 7900 },
-    { name: t.jun, Revenue: 9200 },
-    { name: t.jul, Revenue: 11248 },
-  ];
+  const [dashboardData, setDashboardData] = useState({
+    stats: [],
+    revenueData: [],
+    tierData: [],
+    teamMembers: [],
+    transactions: [],
+    notifications: [],
+  });
 
-  const tierData = [
-    { name: t.starter, value: 400, color: "#6366f1" },
-    { name: t.pro, value: 300, color: "#a855f7" },
-    { name: t.enterprise, value: 200, color: "#0ea5e9" },
-  ];
+  const [loading, setLoading] = useState(true);
 
-  const stats = [
-    {
-      title: t.totalRevenue,
-      value: "$48,259",
-      change: "+12.5%",
-      isPositive: true,
-      icon: <DollarSign size={22} />,
-      iconColor: "text-emerald-500 bg-emerald-500/10",
-    },
-    {
-      title: t.activeUsers,
-      value: "10,482",
-      change: "+8.2%",
-      isPositive: true,
-      icon: <Users size={22} />,
-      iconColor: "text-indigo-500 bg-indigo-500/10",
-    },
-    {
-      title: t.newSubscriptions,
-      value: "1,248",
-      change: "-3.1%",
-      isPositive: false,
-      icon: <CreditCard size={22} />,
-      iconColor: "text-amber-500 bg-amber-500/10",
-    },
-    {
-      title: t.conversionRate,
-      value: "4.83%",
-      change: "+2.4%",
-      isPositive: true,
-      icon: <TrendingUp size={22} />,
-      iconColor: "text-sky-500 bg-sky-500/10",
-    },
-  ];
+  useEffect(() => {
 
-  const teamMembers = [
-    {
-      name: "Ahmed Hassan",
-      role: "UI Designer",
-      image: "https://i.pravatar.cc/100?u=1",
-    },
-    {
-      name: "Sarah Ali",
-      role: "Frontend Dev",
-      image: "https://i.pravatar.cc/100?u=2",
-    },
-    {
-      name: "Omar Khaled",
-      role: "Backend Dev",
-      image: "https://i.pravatar.cc/100?u=3",
-    },
-  ];
+    setTimeout(() => {
 
-  const transactions = [
-    {
-      user: "Ahmed",
-      amount: "$120",
-      status: "Completed",
-    },
-    {
-      user: "Mona",
-      amount: "$320",
-      status: "Pending",
-    },
-    {
-      user: "Kareem",
-      amount: "$89",
-      status: "Completed",
-    },
-  ];
+      setDashboardData({
+        stats: [
+          {
+            title: t.totalRevenue,
+            value: "$48,259",
+            change: "+12.5%",
+            isPositive: true,
+            icon: <DollarSign size={22} />,
+            iconColor: "text-emerald-500 bg-emerald-500/10",
+          },
+          {
+            title: t.activeUsers,
+            value: "10,482",
+            change: "+8.2%",
+            isPositive: true,
+            icon: <Users size={22} />,
+            iconColor: "text-indigo-500 bg-indigo-500/10",
+          },
+        ],
 
-  const notifications = [
-    "New user registered",
-    "Server updated successfully",
-    "New payment received",
-  ];
+        revenueData: [
+          { name: t.jan, Revenue: 4000 },
+          { name: t.feb, Revenue: 5000 },
+          { name: t.mar, Revenue: 6800 },
+        ],
+
+        tierData: [
+          { name: t.starter, value: 400, color: "#6366f1" },
+          { name: t.pro, value: 300, color: "#a855f7" },
+        ],
+
+        teamMembers: [
+          {
+            name: "Ahmed Hassan",
+            role: "UI Designer",
+            image: "https://i.pravatar.cc/100?u=1",
+          },
+        ],
+
+        transactions: [
+          {
+            user: "Ahmed",
+            amount: "$120",
+            status: "Completed",
+          },
+        ],
+
+        notifications: [
+          "New payment received",
+        ],
+      });
+
+      setLoading(false);
+
+    }, 1000);
+
+  }, [t]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-14 h-14 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -176,7 +168,7 @@ function Dashboard() {
 
         {/* STATS */}
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-          {stats.map((stat, index) => (
+          {dashboardData.stats.map((stat, index) => (
             <div
               key={index}
               className="
@@ -255,7 +247,7 @@ function Dashboard() {
 
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={revenueData}>
+                <AreaChart data={dashboardData.revenueData}>
                   
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -324,7 +316,7 @@ function Dashboard() {
                 <PieChart>
 
                   <Pie
-                    data={tierData}
+                    data={dashboardData.tierData}
                     cx="50%"
                     cy="50%"
                     innerRadius={70}
@@ -332,7 +324,7 @@ function Dashboard() {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {tierData.map((entry, index) => (
+                    {dashboardData.tierData.map((entry, index) => (
                       <Cell key={index} fill={entry.color} />
                     ))}
                   </Pie>
@@ -364,7 +356,7 @@ function Dashboard() {
             </div>
 
             <div className="grid grid-cols-3 gap-4 mt-4">
-              {tierData.map((tier, index) => (
+              {dashboardData.tierData.map((tier, index) => (
                 <div key={index} className="text-center">
                   <div className="flex items-center justify-center gap-2 text-sm text-slate-400">
                     <span
@@ -393,7 +385,7 @@ function Dashboard() {
             </h2>
 
             <div className="space-y-5">
-              {teamMembers.map((member, index) => (
+              {dashboardData.teamMembers.map((member, index) => (
                 <div key={index} className="flex items-center gap-4">
                   
                   <img
@@ -425,7 +417,7 @@ function Dashboard() {
             </h2>
 
             <div className="space-y-4">
-              {transactions.map((item, index) => (
+              {dashboardData.transactions.map((item, index) => (
                 <div
                   key={index}
                   className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.03]"
@@ -465,7 +457,7 @@ function Dashboard() {
             </div>
 
             <div className="space-y-4">
-              {notifications.map((item, index) => (
+              {dashboardData.notifications.map((item, index) => (
                 <div
                   key={index}
                   className="flex gap-3 p-4 rounded-2xl bg-white/[0.03]"

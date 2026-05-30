@@ -9,9 +9,15 @@ import {
   UserCog,
   CreditCard,
   Settings,
- 
-  Sparkles,
+
   ChevronRight,
+
+  KanbanSquare,
+  MessageCircle,
+  CalendarDays,
+  Boxes,
+  ShoppingBag,
+  ClipboardList,
 } from "lucide-react";
 
 import { motion } from "framer-motion";
@@ -27,6 +33,7 @@ const menuItems = [
       lang === "ar"
         ? "الرئيسية"
         : "MAIN",
+
     items: [
       {
         path: "/dashboard",
@@ -58,6 +65,7 @@ const menuItems = [
       lang === "ar"
         ? "الإدارة"
         : "MANAGEMENT",
+
     items: [
       {
         path: "/dashboard/users",
@@ -80,6 +88,51 @@ const menuItems = [
           t.settings ||
           "Settings",
         icon: <Settings size={20} />,
+      },
+    ],
+  },
+
+  {
+    section:
+      lang === "ar"
+        ? "التطبيقات"
+        : "APPS",
+
+    items: [
+      {
+        path: "/dashboard/kanban",
+        name: "Kanban",
+        icon: <KanbanSquare size={20} />,
+      },
+
+      {
+        path: "/dashboard/chat",
+        name: "Chat",
+        icon: <MessageCircle size={20} />,
+      },
+
+      {
+        path: "/dashboard/calendar",
+        name: "Calendar",
+        icon: <CalendarDays size={20} />,
+      },
+
+      {
+        path: "/dashboard/components",
+        name: "Components",
+        icon: <Boxes size={20} />,
+      },
+
+      {
+        path: "/dashboard/products",
+        name: "Products",
+        icon: <ShoppingBag size={20} />,
+      },
+
+      {
+        path: "/dashboard/orders",
+        name: "Orders",
+        icon: <ClipboardList size={20} />,
       },
     ],
   },
@@ -186,40 +239,6 @@ const menuItems = [
   ))}
 </nav>
 
-<div
-  className="relative overflow-hidden rounded-3xl p-5 mb-4 border"
-  style={{
-    background:
-      "linear-gradient(135deg, rgba(99,102,241,0.15), rgba(168,85,247,0.15))",
-    borderColor: "rgba(255,255,255,0.08)",
-  }}
->
-  <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-3xl"></div>
-
-  <div className="relative z-10">
-    <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 mb-4">
-      <Sparkles size={20} />
-    </div>
-
-    <h3 className="text-sm font-bold dark:text-white mb-2">
-      {lang === "ar"
-        ? "قم بالترقية إلى Pro"
-        : "Upgrade to Pro"}
-    </h3>
-
-    <p className="text-xs leading-relaxed text-slate-400 mb-4">
-      {lang === "ar"
-        ? "احصل على مزايا متقدمة وتحليلات احترافية وتجربة SaaS كاملة."
-        : "Unlock premium analytics, advanced features and full SaaS experience."}
-    </p>
-
-    <button className="w-full h-11 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-sm font-semibold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-indigo-600/20">
-      {lang === "ar"
-        ? "الترقية الآن"
-        : "Upgrade Now"}
-    </button>
-  </div>
-</div>
 
 
       {/* الـ Footer للسايدبار */}

@@ -26,7 +26,12 @@ import Checkout from "./pages/Checkout";
 import useTheme from "./hooks/useTheme";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
-
+import Kanban from "./pages/Kanban";
+import Chat from "./pages/Chat";
+import Calendar from "./pages/Calendar";
+import Components from "./pages/Components";
+import Products from "./pages/Products";
+import Orders from "./pages/Orders";
 function App() {
   useTheme();
 
@@ -47,22 +52,29 @@ function App() {
             <Route path="/checkout" element={<Checkout />} />
 
             {/* 🛡️ نظام مسارات لوحة التحكم المتداخلة - كلها بتبدأ بـ dashboard/ وتفتح جوه الـ Layout */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Dashboard />} />{" "}
-              {/* index يعني دي الصفحة الرئيسية للداشبورد */}
-              <Route path="crm" element={<CRM />} />
-              <Route path="analytics" element={<Analytics />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="users" element={<Users />} />
-              <Route path="billing" element={<Billing />} />
-            </Route>
+           <Route
+  path="/dashboard"
+  element={
+    <ProtectedRoute>
+      <DashboardLayout />
+    </ProtectedRoute>
+  }
+>
+  <Route index element={<Dashboard />} />
+
+  <Route path="crm" element={<CRM />} />
+  <Route path="analytics" element={<Analytics />} />
+  <Route path="settings" element={<Settings />} />
+  <Route path="users" element={<Users />} />
+  <Route path="billing" element={<Billing />} />
+
+  <Route path="kanban" element={<Kanban />} />
+  <Route path="chat" element={<Chat />} />
+  <Route path="calendar" element={<Calendar />} />
+  <Route path="components" element={<Components />} />
+  <Route path="products" element={<Products />} />
+  <Route path="orders" element={<Orders />} />
+</Route>
 
             {/* 🔐 صفحات الـ Auth الموحدة (شاشة الكتاب المتحرك) */}
 <Route

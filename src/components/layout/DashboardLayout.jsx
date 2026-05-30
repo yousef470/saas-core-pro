@@ -7,10 +7,38 @@ function DashboardLayout() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="flex h-screen w-full bg-slate-50 dark:bg-slate-950 transition-colors duration-300 overflow-hidden">
+   <div
+  className="
+    relative
+    flex
+    h-screen
+    w-full
+    overflow-hidden
+    transition-colors
+    duration-300
+    bg-[var(--bg-main)]
+  "
+>
+  {/* GLOBAL BACKGROUND GLOW */}
+<div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 blur-[140px] pointer-events-none" />
+
+<div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-violet-600/10 blur-[140px] pointer-events-none" />
       
       {/* قسم السايدبار الثابت للشاشات الكبيرة */}
-      <div className="hidden lg:block w-64 shrink-0 h-full border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+<div
+  className="
+    hidden
+    lg:block
+    w-72
+    shrink-0
+    h-full
+    border-r
+    border-white/10
+    backdrop-blur-2xl
+    bg-white/70
+    dark:bg-[#0f1117]/80
+  "
+>
         <Sidebar />
       </div>
 
@@ -21,7 +49,23 @@ function DashboardLayout() {
             className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
             onClick={() => setIsOpen(false)}
           />
-          <div className="relative w-64 max-w-xs h-full bg-white dark:bg-slate-900 flex flex-col z-50 shadow-xl">
+<div
+  className="
+    relative
+    w-72
+    max-w-xs
+    h-full
+    flex
+    flex-col
+    z-50
+    shadow-2xl
+    border-r
+    border-white/10
+    backdrop-blur-2xl
+    bg-white/80
+    dark:bg-[#0f1117]/95
+  "
+>
             <Sidebar closeMenu={() => setIsOpen(false)} />
           </div>
         </div>
@@ -34,7 +78,21 @@ function DashboardLayout() {
         <Navbar setIsOpen={setIsOpen} />
         
         {/* المحتوى الديناميكي: هو الوحيد الذي يحتوي على سكرول */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 w-full max-w-[1500px] mx-auto hide-scrollbar">
+<main
+  className="
+    relative
+    z-10
+    flex-1
+    overflow-y-auto
+    w-full
+    max-w-[1600px]
+    mx-auto
+    p-4
+    sm:p-6
+    lg:p-8
+    hide-scrollbar
+  "
+>
           <Outlet />
         </main>
         
