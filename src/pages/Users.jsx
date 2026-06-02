@@ -1,53 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import useTheme from "../hooks/useTheme";
 import { Plus, Search, Shield, Trash2, Edit2 } from "lucide-react";
+import {
+  getUsers,
+  addUser,
+  updateUser,
+  deleteUser,
+} from "../services/userService";
 
 function Users() {
   const { lang } = useTheme();
   const [searchTerm, setSearchTerm] = useState("");
 
-  // بيانات وهمية ممتازة ومناسبة للوحة تحكم SaaS
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: "يوسف أحمد",
-      email: "yousef@nexora.com",
-      role: "Owner",
-      status: "Active",
-      avatar: "Y",
-    },
-    {
-      id: 2,
-      name: "أحمد محمد",
-      email: "ahmed@example.com",
-      role: "Admin",
-      status: "Active",
-      avatar: "A",
-    },
-    {
-      id: 3,
-      name: "سارة كريم",
-      email: "sara@example.com",
-      role: "Editor",
-      status: "Suspended",
-      avatar: "S",
-    },
-    {
-      id: 4,
-      name: "عمر خالد",
-      email: "omar@example.com",
-      role: "User",
-      status: "Active",
-      avatar: "O",
-    },
-]);
+
+
+const [users, setUsers] = useState(getUsers());
+
+
+useEffect(() => {
+  localStorage.setItem(
+    "users",
+    JSON.stringify(users)
+  );
+}, [users]);
 
   const [showAddModal, setShowAddModal] = useState(false);
 
   const [editingUser, setEditingUser] = useState(null);
 
-  const [deleteUser, setDeleteUser] = useState(null);
+  const [userToDelete, setUserToDelete] = useState(null);
   // فلترة المستخدمين بناءً على البحث
   const filteredUsers = users.filter(
     (user) =>
@@ -73,7 +55,7 @@ const handleAddUser = () => {
     avatar: newUser.name.charAt(0).toUpperCase(),
   };
 
-  setUsers([...users, user]);
+setUsers(addUser(user));
 
   setNewUser({
     name: "",
@@ -86,21 +68,16 @@ const handleAddUser = () => {
 };
 
 const handleDeleteUser = () => {
-  setUsers(
-    users.filter(
-      (user) => user.id !== deleteUser.id
-    )
-  );
+setUsers(
+  deleteUser(userToDelete.id)
+);
 
-  setDeleteUser(null);
+setUserToDelete(null);
 };
 
 const handleEditUser = () => {
-  setUsers(
-    users.map((u) =>
-      u.id === editingUser.id ? editingUser : u
-    )
-  );
+ setUsers(updateUser(editingUser));
+  
 
   setEditingUser(null);
 };
@@ -283,143 +260,119 @@ duration-300
       
 
      <div className="md:hidden space-y-4">
-  {filteredUsers.length === 0 ? (
-    <div className="text-center py-10 rounded-2xl border bg-white dark:bg-slate-900">
-      <h3 className="font-semibold">No Users Found</h3>
-      <p className="text-slate-400 mt-2">Try another search.</p>
-    </div>
-  ) : (
-    filteredUsers.map((user) => (
-      <motion.div
-        key={user.id}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="
-          p-5
-          rounded-3xl
-          border
-          border-slate-200
-          dark:border-slate-800
-          bg-white
-          dark:bg-slate-900
-          shadow-sm
-        "
-      >
-        {/* Header */}
-        <div className="flex items-center gap-4">
+<div className="md:hidden space-y-3">
+  {filteredUsers.map((user) => (
+    <motion.div
+      key={user.id}
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="
+      rounded-3xl
+      border
+      border-slate-200
+      dark:border-slate-800
+      bg-white
+      dark:bg-slate-900
+      p-5
+      shadow-sm
+      "
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex gap-3">
           <div
             className="
-              w-14
-              h-14
-              rounded-2xl
-              bg-indigo-100
-              dark:bg-indigo-950/40
-              text-indigo-600
-              dark:text-indigo-400
-              flex
-              items-center
-              justify-center
-              font-bold
-              text-lg
-              shrink-0
+            w-14
+            h-14
+            rounded-2xl
+            bg-indigo-100
+            dark:bg-indigo-950/40
+            flex
+            items-center
+            justify-center
+            font-bold
+            text-indigo-600
             "
           >
             {user.avatar}
           </div>
 
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-slate-900 dark:text-white truncate">
+          <div>
+            <h3 className="font-semibold">
               {user.name}
             </h3>
 
-            <p className="text-xs text-slate-500 truncate">
+            <p className="text-xs text-slate-400">
               {user.email}
             </p>
           </div>
         </div>
 
-        {/* Info */}
-        <div className="grid grid-cols-2 gap-3 mt-5">
-          <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800">
-            <p className="text-xs text-slate-400 mb-1">Role</p>
+        <span
+          className={`px-3 py-1 rounded-xl text-xs font-semibold ${
+            user.status === "Active"
+              ? "bg-emerald-50 text-emerald-600"
+              : "bg-red-50 text-red-600"
+          }`}
+        >
+          {user.status}
+        </span>
+      </div>
 
-            <div className="flex items-center gap-1 text-sm font-medium">
-              <Shield size={14} />
-              {user.role}
-            </div>
-          </div>
-
-          <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800">
-            <p className="text-xs text-slate-400 mb-1">Status</p>
-
-            <div
-              className={`flex items-center gap-2 text-sm font-medium ${
-                user.status === "Active"
-                  ? "text-green-500"
-                  : "text-red-500"
-              }`}
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  user.status === "Active"
-                    ? "bg-green-500"
-                    : "bg-red-500"
-                }`}
-              />
-
-              {user.status}
-            </div>
-          </div>
+      <div className="mt-4 flex items-center justify-between">
+        <div
+          className="
+          flex
+          items-center
+          gap-2
+          px-3
+          py-2
+          rounded-xl
+          bg-slate-100
+          dark:bg-slate-800
+          text-sm
+          "
+        >
+          <Shield size={14} />
+          {user.role}
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-3 mt-5">
+        <div className="flex gap-2">
           <button
             onClick={() => setEditingUser(user)}
             className="
-              flex-1
-              h-11
-              rounded-xl
-              border
-              border-slate-200
-              dark:border-slate-700
-              flex
-              items-center
-              justify-center
-              gap-2
-              hover:bg-slate-50
-              dark:hover:bg-slate-800
+            h-10
+            w-10
+            rounded-xl
+            border
+            flex
+            items-center
+            justify-center
             "
           >
             <Edit2 size={15} />
-            Edit
           </button>
 
           <button
-            onClick={() => setDeleteUser(user)}
+            onClick={() => setUserToDelete(user)}
             className="
-              flex-1
-              h-11
-              rounded-xl
-              bg-red-600
-              hover:bg-red-700
-              text-white
-              flex
-              items-center
-              justify-center
-              gap-2
+            h-10
+            w-10
+            rounded-xl
+            bg-red-600
+            text-white
+            flex
+            items-center
+            justify-center
             "
           >
             <Trash2 size={15} />
-            Delete
           </button>
         </div>
-      </motion.div>
-    ))
-  )}
+      </div>
+    </motion.div>
+  ))}
 </div>
-
+</div>
       {/* حاوية الجدول المتجاوبة بالكامل تمنع الـ Overflow الأفقي */}
       <div className="hidden md:block w-full rounded-2xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm mt-6">
         <div className="overflow-x-auto w-full min-w-0">
@@ -513,7 +466,7 @@ duration-300
                         </button>
 
                         <button
-                          onClick={() => setDeleteUser(user)}
+                          onClick={() => setUserToDelete(user)}
                           className="p-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 text-slate-400 hover:text-rose-500 transition-colors"
                         >
                           <Trash2 size={15} />
@@ -632,6 +585,36 @@ duration-300
   className="w-full h-11 px-4 rounded-xl border mb-3"
 />
 
+<select
+  value={editingUser.role}
+  onChange={(e) =>
+    setEditingUser({
+      ...editingUser,
+      role: e.target.value,
+    })
+  }
+  className="w-full h-11 px-4 rounded-xl border mb-3"
+>
+  <option>Owner</option>
+  <option>Admin</option>
+  <option>Editor</option>
+  <option>User</option>
+</select>
+
+<select
+  value={editingUser.status}
+  onChange={(e) =>
+    setEditingUser({
+      ...editingUser,
+      status: e.target.value,
+    })
+  }
+  className="w-full h-11 px-4 rounded-xl border mb-4"
+>
+  <option>Active</option>
+  <option>Suspended</option>
+</select>
+
             <div className="flex gap-2">
               <button
                 onClick={() => setEditingUser(null)}
@@ -651,19 +634,19 @@ duration-300
         </div>
       )}
 
-      {deleteUser && (
+      {userToDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="w-full max-w-sm p-6 rounded-3xl bg-white dark:bg-slate-900">
             <h2 className=" font-bold text-lg">Delete User</h2>
 
             <p className="text-slate-500 mt-3">
               Are you sure you want to delete
-              {deleteUser.name} ?
+              {userToDelete.name} ?
             </p>
 
             <div className="flex gap-2 mt-6">
               <button
-                onClick={() => setDeleteUser(null)}
+                onClick={() => setUserToDelete(null)}
                 className="flex-1 h-11 rounded-xl border"
               >
                 Cancel

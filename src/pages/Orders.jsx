@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ShoppingCart,
   CheckCircle,
@@ -9,6 +9,16 @@ import {
   Calendar,
   FileDown,
 } from "lucide-react";
+import useTheme from "../hooks/useTheme";
+
+import {
+  getOrders,
+  addOrder,
+  updateOrder,
+  deleteOrder,
+} from "../services/orderService";
+
+import * as XLSX from "xlsx";
 
 // دالة لتحديد ألوان الـ Status
 const getStatusBadge = (status) => {
@@ -26,139 +36,216 @@ const getStatusBadge = (status) => {
   );
 };
 
+const isArabic = localStorage.getItem("language") === "ar";
+
 function Orders() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [activeMenu, setActiveMenu] = useState(null);
-  const [showAddModal, setShowAddModal] =
-  useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedOrders, setSelectedOrders] = useState([]);
+  const [deleteModal, setDeleteModal] = useState(null);
+  const { t } = useTheme();
+  const [editModal, setEditModal] = useState(null);
 
-const [newOrder, setNewOrder] =
-  useState({
+  const [newOrder, setNewOrder] = useState({
     customer: "",
     email: "",
     total: "",
     status: "Pending",
   });
 
-  const [orders, setOrders] = useState([
-    {
-      id: "#1001",
-      customer: "John Doe",
-      email: "john@example.com",
-      total: "$120",
-      status: "Pending",
-      date: "2026-05-28",
-    },
-    {
-      id: "#1002",
-      customer: "Ahmed Ali",
-      email: "ahmed@example.com",
-      total: "$250",
-      status: "Completed",
-      date: "2026-05-29",
-    },
-    {
-      id: "#1003",
-      customer: "Sarah Smith",
-      email: "sarah@example.com",
-      total: "$75",
-      status: "Cancelled",
-      date: "2026-05-30",
-    },
-  ]);
-const [currentPage, setCurrentPage] =
-  useState(1);
+  const [orders, setOrders] = useState(getOrders());
+  const [currentPage, setCurrentPage] = useState(1);
 
-const ordersPerPage = 5;
+  useEffect(() => {
+    localStorage.setItem("orders", JSON.stringify(orders));
+  }, [orders]);
 
-  const filteredOrders = orders.filter(
-    (o) =>
-      (statusFilter === "All" || o.status === statusFilter) &&
-      o.customer.toLowerCase().includes(search.toLowerCase()),
+  useEffect(() => {
+  if (
+    showAddModal ||
+    editModal ||
+    deleteModal ||
+    selectedOrder
+  ) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "";
+  }
+
+  return () => {
+    document.body.style.overflow = "";
+  };
+}, [
+  showAddModal,
+  editModal,
+  deleteModal,
+  selectedOrder,
+]);
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleStatusChangeFilter = (e) => {
+    setStatusFilter(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const exportData = (
+    selectedOrders.length > 0
+      ? orders.filter((o) => selectedOrders.includes(o.id))
+      : orders
+  ).map((order) => ({
+    "Order ID": order.id,
+    Customer: order.customer,
+    Email: order.email,
+    Status: order.status,
+    Total: order.total,
+    Date: order.date,
+  }));
+
+  const handleExport = () => {
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    worksheet["!cols"] = [
+      { wch: 15 },
+      { wch: 25 },
+      { wch: 30 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 20 },
+    ];
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
+
+    XLSX.writeFile(workbook, "orders.xlsx");
+  };
+
+  const ordersPerPage = 5;
+  const filteredOrders = orders.filter((o) => {
+    const matchesStatus = statusFilter === "All" || o.status === statusFilter;
+
+    const matchesSearch =
+      o.customer.toLowerCase().includes(search.toLowerCase()) ||
+      o.email.toLowerCase().includes(search.toLowerCase()) ||
+      o.id.toLowerCase().includes(search.toLowerCase());
+
+    return matchesStatus && matchesSearch;
+  });
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredOrders.length / ordersPerPage),
   );
-  const totalPages = Math.ceil(
-  filteredOrders.length /
-    ordersPerPage
-);
 
-const startIndex =
-  (currentPage - 1) *
-  ordersPerPage;
+  const startIndex = (currentPage - 1) * ordersPerPage;
 
-const currentOrders =
-  filteredOrders.slice(
+  const currentOrders = filteredOrders.slice(
     startIndex,
-    startIndex +
-      ordersPerPage
+    startIndex + ordersPerPage,
   );
+
+
   const handleDeleteOrder = (id) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this order?",
-    );
+    setDeleteModal(orders.find((o) => o.id === id));
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedOrders.length === 0) return;
+
+    const confirmed = window.confirm(`Delete ${selectedOrders.length} orders?`);
 
     if (!confirmed) return;
 
-    setOrders(orders.filter((order) => order.id !== id));
-  };
+    const updatedOrders = orders.filter((o) => !selectedOrders.includes(o.id));
 
+    setOrders(updatedOrders);
+
+    localStorage.setItem("orders", JSON.stringify(updatedOrders));
+
+    setSelectedOrders([]);
+  };
 
   const handleStatusChange = (id, newStatus) => {
     setOrders(
-      orders.map((order) =>
-        order.id === id
-          ? {
-              ...order,
-              status: newStatus,
-            }
-          : order,
-      ),
+      updateOrder(id, {
+        status: newStatus,
+      }),
     );
   };
 
   const handleAddOrder = () => {
-  if (
-    !newOrder.customer ||
-    !newOrder.email
-  )
-    return;
+    if (!newOrder.customer || !newOrder.email) return;
 
-  const order = {
-    id: `#${Math.floor(
-      Math.random() * 10000
-    )}`,
-    customer: newOrder.customer,
-    email: newOrder.email,
-    total: `$${newOrder.total}`,
-    status: newOrder.status,
-    date:
-      new Date()
-        .toISOString()
-        .split("T")[0],
+    const order = {
+      id: `#${Math.floor(Math.random() * 10000)}`,
+      customer: newOrder.customer,
+      email: newOrder.email,
+      total: `$${newOrder.total}`,
+      status: newOrder.status,
+      date: new Date().toISOString().split("T")[0],
+    };
+
+    setOrders(addOrder(order));
+    setCurrentPage(1);
+
+    setNewOrder({
+      customer: "",
+      email: "",
+      total: "",
+      status: "Pending",
+    });
+
+    setShowAddModal(false);
+  };
+  const handleUpdateOrder = () => {
+    setOrders(
+      updateOrder(editModal.id, {
+        customer: editModal.customer,
+        email: editModal.email,
+        total: editModal.total,
+        status: editModal.status,
+      }),
+    );
+
+    setEditModal(null);
   };
 
-  setOrders([
-    order,
-    ...orders,
-  ]);
-  setCurrentPage(1);
-
-  setNewOrder({
-    customer: "",
-    email: "",
-    total: "",
-    status: "Pending",
-  });
-
-  setShowAddModal(false);
-};
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Orders</h1>
+    <div
+      className="
+  p-4
+  sm:p-6
+  space-y-6
+"
+    >
+    <div>
+    <h1 className="text-3xl font-bold">
+       {t.orders}
+    </h1>
+
+    <p className="text-slate-500 mt-1">
+      Manage customer orders and track their status.
+    </p>
+  </div>
+
+
 
       {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div
+        className="
+  grid
+  grid-cols-1
+  sm:grid-cols-2
+  xl:grid-cols-4
+  gap-5
+"
+      >
         {[
           {
             label: "Total",
@@ -187,15 +274,43 @@ const currentOrders =
         ].map((stat, i) => (
           <div
             key={i}
-            className="p-5 rounded-3xl border shadow-sm hover:shadow-lg hover:-translate-y-1
-hover:border-indigo-500/30
-cursor-pointer transition-all bg-gradient-to-br
-from-white
-to-slate-50
-dark:from-slate-900
-dark:to-slate-800"
+            className="
+group
+relative
+overflow-hidden
+rounded-3xl
+border
+border-slate-200/60
+dark:border-slate-700
+
+bg-white/90
+dark:bg-slate-900/80
+
+backdrop-blur-xl
+
+p-6
+
+hover:shadow-2xl
+hover:-translate-y-1
+
+transition-all
+duration-300
+"
           >
-            <stat.icon className={`${stat.color} mb-2`} />
+            <div
+              className="
+  w-12
+  h-12
+  rounded-2xl
+  bg-indigo-500/10
+  flex
+  items-center
+  justify-center
+  mb-4
+"
+            >
+              <stat.icon size={24} className={stat.color} />
+            </div>
             <h3 className="text-slate-400">{stat.label}</h3>
             <p className="text-3xl font-bold">{stat.val}</p>
           </div>
@@ -203,242 +318,431 @@ dark:to-slate-800"
       </div>
 
       {/* Search & Filters */}
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-3 text-slate-400" size={20} />
-          <input
-            className="w-full h-12 pl-11 pr-4 rounded-2xl border       bg-white
-      dark:bg-slate-900
-      focus:ring-2
-      focus:ring-indigo-500
-      outline-none"
-            placeholder="Search..."
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+
+      <div className="space-y-4">
+        {/* Row 1 */}
+        <div
           className="
+    flex
+    flex-col
+    md:flex-row
+    gap-3
+  "
+        >
+          <div className="relative flex-1">
+            <Search
+              size={18}
+              className="
+          absolute
+          left-4
+          top-1/2
+          -translate-y-1/2
+          text-slate-400
+        "
+            />
+
+            <input
+              value={search}
+              onChange={handleSearchChange}
+              placeholder="Search orders..."
+              className="
+          w-full
+          h-12
+          pl-11
+          pr-4
+          rounded-2xl
+          border
+          border-slate-200
+          dark:border-slate-700
+          bg-white
+          dark:bg-slate-900
+          focus:ring-2
+          focus:ring-indigo-500
+          outline-none
+        "
+            />
+          </div>
+
+          <select
+            value={statusFilter}
+            onChange={handleStatusChangeFilter}
+            className="
     h-12
+    min-w-[180px]
+
     px-4
+
     rounded-2xl
+
     border
-    bg-white
-    dark:bg-slate-900
-    text-slate-700
-    dark:text-slate-200
     border-slate-200
     dark:border-slate-700
+
+    bg-white
+    dark:bg-slate-900
+
+    text-slate-700
+    dark:text-slate-200
+
+    shadow-sm
+
+    hover:border-indigo-400
+
     focus:outline-none
     focus:ring-2
     focus:ring-indigo-500
-    focus:border-indigo-500
+
     transition-all
     cursor-pointer
   "
+          >
+            <option value="All">All Orders</option>
+            <option value="Pending">Pending</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+
+          <button
+            className="
+        px-4
+        h-12
+        rounded-2xl
+        border
+        flex
+        items-center
+        gap-2
+      "
+          >
+            <Calendar size={18} />
+            Date
+          </button>
+        </div>
+
+        {/* Row 2 */}
+        <div
+          className="
+    flex
+    flex-wrap
+    gap-3
+  "
         >
-          <option value="All">All Orders</option>
-          <option value="Pending">Pending</option>
-          <option value="Completed">Completed</option>
-          <option value="Cancelled">Cancelled</option>
-        </select>
-        <button className="px-4 h-11 rounded-xl border flex items-center gap-2">
-          <Calendar size={18} /> Date
-        </button>
-        <button
-          onClick={() => alert("Export Coming Soon")}
-          className="px-4 h-11 rounded-xl bg-slate-900 text-white flex items-center gap-2"
-        >
-          <FileDown size={18} /> Export
-        </button>
-        <button
-  onClick={() =>
-    setShowAddModal(true)
-  }
-  className="
-  px-4
-  h-11
-  rounded-xl
-  bg-indigo-600
-  text-white
-  flex
-  items-center
-  gap-2
-"
->
-  Add Order
-</button>
+          <button
+            onClick={handleExport}
+            disabled={!selectedOrders.length}
+            className="
+        px-4
+        h-11
+        rounded-xl
+        bg-green-600
+        text-white
+      "
+          >
+            Export Selected
+          </button>
+
+          <button
+            onClick={handleBulkDelete}
+            disabled={!selectedOrders.length}
+            className="
+        px-4
+        h-11
+        rounded-xl
+        bg-red-600
+        text-white
+      "
+          >
+            Delete Selected
+          </button>
+
+          <button
+            onClick={handleExport}
+            className="
+        px-4
+        h-11
+        rounded-xl
+        bg-slate-900
+        text-white
+        flex
+        items-center
+        gap-2
+      "
+          >
+            <FileDown size={18} />
+            Export All
+          </button>
+
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="
+       px-4
+        h-11
+        rounded-xl
+        bg-slate-900
+        text-white
+        flex
+        items-center
+        gap-2
+      "
+          >
+            <FileDown size={18} />
+            Add Order
+          </button>
+        </div>
       </div>
-
-      {/* Table */}
-      <div className="rounded-3xl border overflow-hidden">
-        <table className="overflow-x-auto text-left">
-          <thead className="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900">
-            <tr>
-              {[
-                "Customer",
-                "Email",
-                "Order",
-                "Date",
-                "Status",
-                "Total",
-                "Action",
-              ].map((h) => (
-                <th key={h} className="p-4 font-semibold text-slate-600">
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {filteredOrders.length > 0 ? (
-              currentOrders.map((order) => (
-                <tr
-                  key={order.id}
-                  className="hover:bg-indigo-50
-dark:hover:bg-slate-800
-transition-all
-duration-200"
-                >
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={`https://i.pravatar.cc/40?u=${order.id}`}
-                        alt=""
-                        className="w-10 h-10 rounded-full"
-                      />
-
-                      <div>
-                        <p className="font-semibold">{order.customer}</p>
-
-                        <p className="text-xs text-slate-400">Customer</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-4 text-slate-500">{order.email}</td>
-                  <td className="p-4">{order.id}</td>
-                  <td className="p-4">{order.date}</td>
-                  <td className="p-4">
-                    <select
-                      value={order.status}
-                      onChange={(e) =>
-                        handleStatusChange(order.id, e.target.value)
-                      }
-                      className="
-      px-3
-      py-2
-      rounded-xl
-      border
-      bg-white
-      dark:bg-slate-900
-      text-sm
-    "
-                    >
-                      <option value="Pending">Pending</option>
-
-                      <option value="Completed">Completed</option>
-
-                      <option value="Cancelled">Cancelled</option>
-                    </select>
-                  </td>
-                  <td className="p-4 font-bold">{order.total}</td>
-<td className="p-4 relative">
-  <button
-    onClick={() =>
-      setActiveMenu(
-        activeMenu === order.id
-          ? null
-          : order.id
-      )
-    }
-  >
-    <MoreVertical size={20} />
-  </button>
-
-  {activeMenu === order.id && (
-    <div
-      className="
-      absolute
-      right-0
-      mt-2
-      w-40
-      rounded-2xl
-      border
-      bg-white
-      dark:bg-slate-900
-      shadow-xl
-      z-50
-    "
-    >
       <button
         onClick={() => {
-          setSelectedOrder(order);
-          setActiveMenu(null);
+          if (
+            currentOrders.length > 0 &&
+            currentOrders.every((o) => selectedOrders.includes(o.id))
+          ) {
+            setSelectedOrders([]);
+          } else {
+            setSelectedOrders(currentOrders.map((o) => o.id));
+          }
         }}
         className="
-          w-full
-          text-left
-          px-4
-          py-3
-          hover:bg-slate-100
-          dark:hover:bg-slate-800
-        "
+    px-4
+    py-2
+
+    rounded-xl
+
+    border
+    border-slate-200
+    dark:border-slate-700
+
+    bg-white
+    dark:bg-slate-900
+
+    hover:border-indigo-500
+
+    transition-all
+  "
       >
-        View Details
+        {selectedOrders.length === currentOrders.length
+          ? "Unselect All"
+          : "Select All"}
       </button>
 
-      <button
-        onClick={() =>
-          handleDeleteOrder(
-            order.id
-          )
-        }
+      {/* Table */}
+      <div
         className="
-          w-full
-          text-left
-          px-4
-          py-3
-          text-red-500
-          hover:bg-red-500/10
-        "
+  grid
+  grid-cols-1
+  md:grid-cols-2
+  xl:grid-cols-3
+  gap-5
+"
       >
-        Delete Order
-      </button>
-    </div>
-  )}
-</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="7">
-                  <div className="py-20 text-center">
-                    <ShoppingCart
-                      size={60}
-                      className="mx-auto text-slate-300"
-                    />
+        {filteredOrders.length > 0 ? (
+          currentOrders.map((order) => (
+            <div
+              key={order.id}
+              className="
+    w-full
+    h-[270px]
 
-                    <h3 className="mt-4 text-lg font-semibold">
-                      No Orders Found Create your first order or change your
-                      filters.
-                    </h3>
+    p-5
+    rounded-3xl
+    border
 
-                    <p className="text-slate-400">
-                      Create your first order or change your filters..
-                    </p>
+    bg-white
+    dark:bg-slate-900
+
+    shadow-sm
+    hover:shadow-lg
+
+    transition-all
+  "
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={`https://i.pravatar.cc/50?u=${order.id}`}
+                    alt=""
+                    className="w-12 h-12 rounded-full"
+                  />
+                  <input
+                    type="checkbox"
+                    checked={selectedOrders.includes(order.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedOrders([...selectedOrders, order.id]);
+                      } else {
+                        setSelectedOrders(
+                          selectedOrders.filter((id) => id !== order.id),
+                        );
+                      }
+                    }}
+                    className="
+w-5
+h-5
+
+rounded-md
+
+border-slate-300
+dark:border-slate-600
+
+text-indigo-600
+
+focus:ring-2
+focus:ring-indigo-500
+
+cursor-pointer
+"
+                  />
+                  <div>
+                    <h3 className="font-semibold">{order.customer}</h3>
+
+                    <p className="text-sm text-slate-400">{order.email}</p>
                   </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                </div>
+
+                <button
+                  onClick={() =>
+                    setActiveMenu(activeMenu === order.id ? null : order.id)
+                  }
+                  className="relative"
+                >
+                  <MoreVertical size={20} />
+
+                  {activeMenu === order.id && (
+                    <div
+                      className="
+                absolute
+                right-0
+                top-8
+                w-40
+                rounded-2xl
+                border
+                bg-white
+                dark:bg-slate-900
+                shadow-xl
+               z-[9999]
+              "
+                    >
+                      <button
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setActiveMenu(null);
+                        }}
+                        className="
+                    w-full
+                    text-left
+                    px-4
+                    py-3
+                    hover:bg-slate-100
+                    dark:hover:bg-slate-800
+                  "
+                      >
+                        View Details
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditModal(order);
+                          setActiveMenu(null);
+                        }}
+                        className="
+    w-full
+    text-left
+    px-4
+    py-3
+    hover:bg-slate-100
+    dark:hover:bg-slate-800
+  "
+                      >
+                        Edit Order
+                      </button>
+
+                      <button
+                        onClick={() => handleDeleteOrder(order.id)}
+                        className="
+                    w-full
+                    text-left
+                    px-4
+                    py-3
+                    text-red-500
+                    hover:bg-red-500/10
+                  "
+                      >
+                        Delete Order
+                      </button>
+                    </div>
+                  )}
+                </button>
+              </div>
+
+              <div className="mt-5 space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Order ID</span>
+
+                  <span>{order.id}</span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Date</span>
+
+                  <span>{order.date}</span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Status</span>
+
+                  <select
+                    value={order.status}
+                    onChange={(e) =>
+                      handleStatusChange(order.id, e.target.value)
+                    }
+                    className="
+                px-3
+                py-2
+                rounded-xl
+                border
+                bg-white
+                dark:bg-slate-900
+                text-sm
+              "
+                  >
+                    <option value="Pending">Pending</option>
+
+                    <option value="Completed">Completed</option>
+
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Total</span>
+
+                  <span className="font-bold text-indigo-600">
+                    {order.total}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="col-span-full py-20 text-center">
+            <ShoppingCart size={60} className="mx-auto text-slate-300" />
+
+            <h3 className="mt-4 text-lg font-semibold">No Orders Found</h3>
+
+            <p className="text-slate-400">
+              Create your first order or change your filters.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Modal */}
       {selectedOrder && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-lg p-8 rounded-3xl bg-white dark:bg-slate-900 shadow-2xl space-y-4">
+        <div
+          onClick={() => setSelectedOrder(null)}
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg p-8 rounded-3xl bg-white dark:bg-slate-900 shadow-2xl space-y-4"
+          >
             <div className="flex items-center gap-3 mb-4">
               <img
                 src={`https://i.pravatar.cc/60?u=${selectedOrder.id}`}
@@ -494,221 +798,495 @@ duration-200"
           </div>
         </div>
       )}
-{showAddModal && (
-  <div
-    className="
+      {showAddModal && (
+        <div
+          className="
     fixed
     inset-0
-    bg-black/40
+
+    bg-black/50
+
+    backdrop-blur-sm
+
     flex
     items-center
     justify-center
-    z-50
+
+   z-[9999]
   "
-  >
-    <div
-      className="
-      w-full
-      max-w-md
-      rounded-3xl
-      bg-white
-      dark:bg-slate-900
-      p-6
-      shadow-2xl
-    "
-    >
-      <h2 className="text-2xl font-bold mb-6">
-        Add Order
-      </h2>
-
-      <div className="space-y-4">
-        <input
-          placeholder="Customer"
-          value={newOrder.customer}
-          onChange={(e) =>
-            setNewOrder({
-              ...newOrder,
-              customer:
-                e.target.value,
-            })
-          }
-          className="
-            w-full
-            h-11
-            px-4
-            rounded-xl
-            border
-          "
-        />
-
-        <input
-          placeholder="Email"
-          value={newOrder.email}
-          onChange={(e) =>
-            setNewOrder({
-              ...newOrder,
-              email:
-                e.target.value,
-            })
-          }
-          className="
-            w-full
-            h-11
-            px-4
-            rounded-xl
-            border
-          "
-        />
-
-        <input
-          placeholder="Total"
-          value={newOrder.total}
-          onChange={(e) =>
-            setNewOrder({
-              ...newOrder,
-              total:
-                e.target.value,
-            })
-          }
-          className="
-            w-full
-            h-11
-            px-4
-            rounded-xl
-            border
-          "
-        />
-
-        <select
-          value={newOrder.status}
-          onChange={(e) =>
-            setNewOrder({
-              ...newOrder,
-              status:
-                e.target.value,
-            })
-          }
-          className="
-            w-full
-            h-11
-            px-4
-            rounded-xl
-            border
-          "
         >
-          <option>
-            Pending
-          </option>
+          <div
+            className="
+    w-full
+    max-w-md
 
-          <option>
-            Completed
-          </option>
+    rounded-3xl
 
-          <option>
-            Cancelled
-          </option>
-        </select>
-      </div>
+    bg-white/95
+    dark:bg-slate-900/95
 
-      <div
-        className="
+    backdrop-blur-xl
+
+    border
+    border-slate-200
+    dark:border-slate-700
+
+    p-6
+
+    shadow-2xl
+  "
+          >
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold">Add New Order</h2>
+
+              <p className="text-sm text-slate-400 mt-1">
+                Create a new customer order.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <input
+                placeholder="Customer"
+                value={newOrder.customer}
+                onChange={(e) =>
+                  setNewOrder({
+                    ...newOrder,
+                    customer: e.target.value,
+                  })
+                }
+                className="
+w-full
+h-12
+
+px-4
+
+rounded-2xl
+
+border
+border-slate-200
+dark:border-slate-700
+
+bg-slate-50
+dark:bg-slate-800
+
+focus:ring-2
+focus:ring-indigo-500
+
+outline-none
+transition-all
+"
+              />
+
+              <input
+                placeholder="Email"
+                value={newOrder.email}
+                onChange={(e) =>
+                  setNewOrder({
+                    ...newOrder,
+                    email: e.target.value,
+                  })
+                }
+                className="
+w-full
+h-12
+
+px-4
+
+rounded-2xl
+
+border
+border-slate-200
+dark:border-slate-700
+
+bg-slate-50
+dark:bg-slate-800
+
+focus:ring-2
+focus:ring-indigo-500
+
+outline-none
+transition-all
+"
+              />
+
+              <input
+                placeholder="Total"
+                value={newOrder.total}
+                onChange={(e) =>
+                  setNewOrder({
+                    ...newOrder,
+                    total: e.target.value,
+                  })
+                }
+                className="
+w-full
+h-12
+
+px-4
+
+rounded-2xl
+
+border
+border-slate-200
+dark:border-slate-700
+
+bg-slate-50
+dark:bg-slate-800
+
+focus:ring-2
+focus:ring-indigo-500
+
+outline-none
+transition-all
+"
+              />
+
+              <select
+                value={newOrder.status}
+                onChange={(e) =>
+                  setNewOrder({
+                    ...newOrder,
+                    status: e.target.value,
+                  })
+                }
+                className="
+w-full
+h-12
+
+px-4
+
+rounded-2xl
+
+border
+border-slate-200
+dark:border-slate-700
+
+bg-slate-50
+dark:bg-slate-800
+
+focus:ring-2
+focus:ring-indigo-500
+
+outline-none
+transition-all
+"
+              >
+                <option>Pending</option>
+
+                <option>Completed</option>
+
+                <option>Cancelled</option>
+              </select>
+            </div>
+
+            <div
+              className="
         flex
         justify-end
         gap-3
         mt-6
       "
-      >
-        <button
-          onClick={() =>
-            setShowAddModal(false)
-          }
+            >
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="
+px-5
+h-11
+rounded-xl
+border
+border-slate-300
+dark:border-slate-700
+"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleAddOrder}
+                className="
+px-5
+h-11
+rounded-xl
+bg-indigo-600
+text-white
+hover:bg-indigo-700
+transition
+"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteModal && (
+        <div
           className="
+      fixed
+      inset-0
+      bg-black/40
+      flex
+      items-center
+      justify-center
+     z-[9999]
+    "
+        >
+          <div
+            className="
+        w-full
+        max-w-md
+
+        rounded-3xl
+
+        bg-white
+        dark:bg-slate-900
+
+        p-6
+
+        shadow-2xl
+      "
+          >
+            <h2 className="text-xl font-bold">Delete Order</h2>
+
+            <p className="mt-3 text-slate-400">
+              Are you sure you want to delete order {deleteModal.id} ?
+            </p>
+
+            <div
+              className="
+          flex
+          justify-end
+          gap-3
+          mt-6
+        "
+            >
+              <button
+                onClick={() => setDeleteModal(null)}
+                className="
+              px-4
+              h-10
+              rounded-xl
+              border
+            "
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  setOrders(deleteOrder(deleteModal.id));
+
+                  setDeleteModal(null);
+                }}
+                className="
+              px-4
+              h-10
+              rounded-xl
+
+              bg-red-600
+              text-white
+            "
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {editModal && (
+        <div
+          className="
+      fixed
+      inset-0
+      bg-black/50
+      backdrop-blur-sm
+      flex
+      items-center
+      justify-center
+     z-[9999]
+    "
+        >
+          <div
+            className="
+        w-full
+        max-w-md
+
+        rounded-3xl
+
+        bg-white
+        dark:bg-slate-900
+
+        border
+        border-slate-200
+        dark:border-slate-700
+
+        p-6
+
+        shadow-2xl
+      "
+          >
+            <h2 className="text-2xl font-bold mb-5">Edit Order</h2>
+
+            <div className="space-y-4">
+              <input
+                value={editModal.customer}
+                onChange={(e) =>
+                  setEditModal({
+                    ...editModal,
+                    customer: e.target.value,
+                  })
+                }
+                className="
+            w-full
+            h-12
             px-4
-            h-10
+            rounded-xl
+            border
+            border-slate-200
+            dark:border-slate-700
+            bg-slate-50
+            dark:bg-slate-800
+          "
+              />
+
+              <input
+                value={editModal.email}
+                onChange={(e) =>
+                  setEditModal({
+                    ...editModal,
+                    email: e.target.value,
+                  })
+                }
+                className="
+            w-full
+            h-12
+            px-4
+            rounded-xl
+            border
+            border-slate-200
+            dark:border-slate-700
+            bg-slate-50
+            dark:bg-slate-800
+          "
+              />
+
+              <input
+                value={editModal.total}
+                onChange={(e) =>
+                  setEditModal({
+                    ...editModal,
+                    total: e.target.value,
+                  })
+                }
+                className="
+            w-full
+            h-12
+            px-4
+            rounded-xl
+            border
+            border-slate-200
+            dark:border-slate-700
+            bg-slate-50
+            dark:bg-slate-800
+          "
+              />
+
+              <select
+                value={editModal.status}
+                onChange={(e) =>
+                  setEditModal({
+                    ...editModal,
+                    status: e.target.value,
+                  })
+                }
+                className="
+            w-full
+            h-12
+            px-4
+            rounded-xl
+            border
+            border-slate-200
+            dark:border-slate-700
+            bg-slate-50
+            dark:bg-slate-800
+          "
+              >
+                <option value="Pending">Pending</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setEditModal(null)}
+                className="
+            px-5
+            h-11
             rounded-xl
             border
           "
-        >
-          Cancel
-        </button>
+              >
+                Cancel
+              </button>
 
-        <button
-          onClick={
-            handleAddOrder
-          }
-          className="
-            px-4
-            h-10
+              <button
+                onClick={handleUpdateOrder}
+                className="
+            px-5
+            h-11
             rounded-xl
             bg-indigo-600
             text-white
           "
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Pagination */}
+      <div className="mt-8 border-t border-slate-700 pt-6 flex justify-center gap-2">
+        <button
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage(currentPage - 1)}
+          className="
+      px-4 py-2
+      rounded-lg
+      border
+      disabled:opacity-50
+    "
         >
-          Save
+          Previous
+        </button>
+
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          <button
+            key={page}
+            onClick={() => setCurrentPage(page)}
+            className={`w-10 h-10 rounded-lg transition-all ${
+              currentPage === page ? "bg-indigo-600 text-white" : "border"
+            }`}
+          >
+            {page}
+          </button>
+        ))}
+
+        <button
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage(currentPage + 1)}
+          className="
+      px-4 py-2
+      rounded-lg
+      border
+      disabled:opacity-50
+    "
+        >
+          Next
         </button>
       </div>
-    </div>
-  </div>
-)}
-      {/* Pagination */}
-     <div className="flex justify-center items-center gap-2 mt-6">
-
-  <button
-    disabled={currentPage === 1}
-    onClick={() =>
-      setCurrentPage(
-        currentPage - 1
-      )
-    }
-    className="
-      px-4 py-2
-      rounded-lg
-      border
-      disabled:opacity-50
-    "
-  >
-    Previous
-  </button>
-
-  {Array.from(
-    { length: totalPages },
-    (_, i) => i + 1
-  ).map((page) => (
-    <button
-      key={page}
-      onClick={() =>
-        setCurrentPage(page)
-      }
-      className={`w-10 h-10 rounded-lg transition-all ${
-        currentPage === page
-          ? "bg-indigo-600 text-white"
-          : "border"
-      }`}
-    >
-      {page}
-    </button>
-  ))}
-
-  <button
-    disabled={
-      currentPage === totalPages
-    }
-    onClick={() =>
-      setCurrentPage(
-        currentPage + 1
-      )
-    }
-    className="
-      px-4 py-2
-      rounded-lg
-      border
-      disabled:opacity-50
-    "
-  >
-    Next
-  </button>
-
-</div>
     </div>
   );
 }

@@ -80,8 +80,6 @@ function DashboardLayout() {
         {/* المحتوى الديناميكي: هو الوحيد الذي يحتوي على سكرول */}
 <main
   className="
-    relative
-    z-10
     flex-1
     overflow-y-auto
     w-full

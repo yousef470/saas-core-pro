@@ -1,16 +1,19 @@
 const mockUsers = [
   {
     id: 1,
+    name: "Yousef Ahmed",
+    email: "yousef@nexora.com",
+    role: "Owner",
+    status: "Active",
+    avatar: "Y",
+  },
+  {
+    id: 2,
     name: "Admin User",
     email: "admin@saascore.com",
-    password: "123456",
-    role: "admin",
-    plan: "Pro",
-    avatar:
-      "https://i.pravatar.cc/150?img=12",
-    status: "active",
-    notifications: 5,
-    createdAt: "2026-01-12",
+    role: "Admin",
+    status: "Active",
+    avatar: "A",
   },
 ];
 

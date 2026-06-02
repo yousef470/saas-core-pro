@@ -35,7 +35,10 @@ const [editingProduct, setEditingProduct] =
       category: "Subscription",
       price: "$49",
       stock: 120,
-      status: "Active",
+      status:
+  Number(newProduct.stock) > 0
+    ? "Active"
+    : "Out of Stock",
     },
     {
       id: 2,
@@ -44,7 +47,10 @@ const [editingProduct, setEditingProduct] =
       category: "Software",
       price: "$99",
       stock: 45,
-      status: "Active",
+      status:
+  Number(newProduct.stock) > 0
+    ? "Active"
+    : "Out of Stock",
     },
     {
       id: 3,
@@ -74,7 +80,10 @@ const [editingProduct, setEditingProduct] =
     category: newProduct.category,
     price: `$${newProduct.price}`,
     stock: Number(newProduct.stock),
-    status: "Active",
+    status:
+  Number(newProduct.stock) > 0
+    ? "Active"
+    : "Out of Stock",
   };
 
   setProducts([...products, product]);
@@ -88,6 +97,9 @@ const [editingProduct, setEditingProduct] =
 
   setShowAddModal(false);
 };
+const [productToDelete, setProductToDelete] =
+  useState(null);
+
 const handleDeleteProduct = (id) => {
   const confirmed = window.confirm(
     "Delete this product?"
@@ -117,6 +129,14 @@ const handleSaveEdit = () => {
 
   setEditingProduct(null);
 };
+
+const revenue = products.reduce(
+  (total, product) =>
+    total +
+    Number(product.price.replace("$", "")) *
+      product.stock,
+  0
+);
 
   return (
     <div className="space-y-6">
@@ -203,7 +223,7 @@ const handleSaveEdit = () => {
     <div className="flex items-center justify-between">
       <DollarSign />
       <span className="text-2xl font-bold">
-        $12.4K
+        ${revenue.toLocaleString()}
       </span>
     </div>
 
@@ -239,82 +259,91 @@ const handleSaveEdit = () => {
             </tr>
           </thead>
 
-          <tbody>
-          {filteredProducts.map((product) => (
-              <tr
-                key={product.id}
-                className="border-t"
-              >
-<td className="p-4">
-  <div className="flex items-center gap-3">
+<tbody>
+  {filteredProducts.length === 0 ? (
+    <tr>
+      <td
+        colSpan="6"
+        className="text-center py-10 text-slate-400"
+      >
+        No Products Found
+      </td>
+    </tr>
+  ) : (
+    filteredProducts.map((product) => (
+      <tr
+        key={product.id}
+        className="border-t"
+      >
+        <td className="p-4">
+          <div className="flex items-center gap-3">
+            <img
+              src={product.image}
+              alt=""
+              className="w-12 h-12 rounded-xl object-cover"
+            />
 
-    <img
-      src={product.image}
-      alt=""
-      className="w-12 h-12 rounded-xl object-cover"
-    />
+            <div>
+              <p className="font-semibold">
+                {product.name}
+              </p>
 
-    <div>
-      <p className="font-semibold">
-        {product.name}
-      </p>
+              <p className="text-xs text-slate-400">
+                Product #{product.id}
+              </p>
+            </div>
+          </div>
+        </td>
 
-      <p className="text-xs text-slate-400">
-        Product #{product.id}
-      </p>
-    </div>
+        <td className="p-4">
+          {product.category}
+        </td>
 
-  </div>
-</td>
+        <td className="p-4">
+          {product.price}
+        </td>
 
-                <td className="p-4">
-                  {product.category}
-                </td>
+        <td className="p-4">
+          {product.stock}
+        </td>
 
-                <td className="p-4">
-                  {product.price}
-                </td>
+        <td className="p-4">
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+              product.status === "Active"
+                ? "bg-green-500/10 text-green-500"
+                : "bg-red-500/10 text-red-500"
+            }`}
+          >
+            {product.status}
+          </span>
+        </td>
 
-                <td className="p-4">
-                  {product.stock}
-                </td>
+        <td className="p-4">
+          <div className="flex gap-2">
+            <button
+              onClick={() =>
+                handleEditProduct(product)
+              }
+              className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800"
+            >
+              <Edit size={16} />
+            </button>
 
-                <td className="p-4">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      product.status === "Active"
-                        ? "bg-green-500/10 text-green-500"
-                        : "bg-red-500/10 text-red-500"
-                    }`}
-                  >
-                    {product.status}
-                  </span>
-                </td>
-
-                <td className="p-4">
-                  <div className="flex gap-2">
-<button
-  onClick={() =>
-    handleEditProduct(product)
-  }
-  className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800"
->
-                      <Edit size={16} />
-                    </button>
-
-<button
-  onClick={() =>
-    handleDeleteProduct(product.id)
-  }
-  className="p-2 rounded-lg hover:bg-red-500/10 text-red-500"
->
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
+            <button
+              onClick={() =>
+                handleDeleteProduct(product.id)
+              }
+              className="p-2 rounded-lg hover:bg-red-500/10 text-red-500"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        </td>
+      </tr>
+    ))
+  )}
+</tbody>
         </table>
       </div>
       {showAddModal && (
@@ -410,7 +439,9 @@ const handleSaveEdit = () => {
 <button
   onClick={handleAddProduct}
   className="px-4 h-10 rounded-xl bg-indigo-600 text-white"
+  
 >
+  
           Save Product
         </button>
 
@@ -474,6 +505,32 @@ const handleSaveEdit = () => {
           className="w-full h-11 px-4 rounded-xl border bg-transparent"
         />
 
+        <input
+  value={editingProduct.stock}
+  onChange={(e) =>
+    setEditingProduct({
+      ...editingProduct,
+      stock: Number(e.target.value),
+    })
+  }
+  className="w-full h-11 px-4 rounded-xl border bg-transparent"
+/>
+<select
+  value={editingProduct.status}
+  onChange={(e) =>
+    setEditingProduct({
+      ...editingProduct,
+      status: e.target.value,
+    })
+  }
+  className="w-full h-11 px-4 rounded-xl border bg-transparent"
+>
+  <option>Active</option>
+  <option>Out of Stock</option>
+</select>
+
+
+
       </div>
 
       <div className="flex justify-end gap-3 mt-6">
@@ -492,6 +549,50 @@ const handleSaveEdit = () => {
           className="px-4 h-10 rounded-xl bg-indigo-600 text-white"
         >
           Save Changes
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
+{productToDelete && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+    <div className="w-full max-w-sm p-6 rounded-3xl bg-white dark:bg-slate-900">
+
+      <h2 className="font-bold text-lg">
+        Delete Product
+      </h2>
+
+      <p className="mt-3 text-slate-500">
+        Are you sure you want to delete
+        {" "}
+        {productToDelete.name} ?
+      </p>
+
+      <div className="flex gap-2 mt-6">
+
+        <button
+          onClick={() =>
+            setProductToDelete(null)
+          }
+          className="flex-1 h-11 rounded-xl border"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={() => {
+            handleDeleteProduct(
+              productToDelete.id
+            );
+            setProductToDelete(null);
+          }}
+          className="flex-1 h-11 rounded-xl bg-red-600 text-white"
+        >
+          Delete
         </button>
 
       </div>
