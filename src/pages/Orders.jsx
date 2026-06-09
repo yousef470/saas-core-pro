@@ -36,7 +36,7 @@ const getStatusBadge = (status) => {
   );
 };
 
-const isArabic = localStorage.getItem("language") === "ar";
+
 
 function Orders() {
   const [search, setSearch] = useState("");
@@ -46,7 +46,8 @@ function Orders() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [deleteModal, setDeleteModal] = useState(null);
-  const { t } = useTheme();
+const { t } = useTheme();
+
   const [editModal, setEditModal] = useState(null);
 
   const [newOrder, setNewOrder] = useState({
@@ -617,7 +618,7 @@ cursor-pointer
                 bg-white
                 dark:bg-slate-900
                 shadow-xl
-               z-[9999]
+               z-[99999]
               "
                     >
                       <button
@@ -737,7 +738,7 @@ cursor-pointer
       {selectedOrder && (
         <div
           onClick={() => setSelectedOrder(null)}
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-[99999]"
         >
           <div
             onClick={(e) => e.stopPropagation()}
@@ -799,23 +800,8 @@ cursor-pointer
         </div>
       )}
       {showAddModal && (
-        <div
-          className="
-    fixed
-    inset-0
-
-    bg-black/50
-
-    backdrop-blur-sm
-
-    flex
-    items-center
-    justify-center
-
-   z-[9999]
-  "
-        >
-          <div
+<div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">      
+   <div
             className="
     w-full
     max-w-md
@@ -1021,17 +1007,7 @@ transition
       )}
 
       {deleteModal && (
-        <div
-          className="
-      fixed
-      inset-0
-      bg-black/40
-      flex
-      items-center
-      justify-center
-     z-[9999]
-    "
-        >
+<div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
           <div
             className="
         w-full
@@ -1095,18 +1071,7 @@ transition
         </div>
       )}
       {editModal && (
-        <div
-          className="
-      fixed
-      inset-0
-      bg-black/50
-      backdrop-blur-sm
-      flex
-      items-center
-      justify-center
-     z-[9999]
-    "
-        >
+<div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
           <div
             className="
         w-full

@@ -238,7 +238,7 @@ const handleRegister = (e) => {
                   transition-all
                   shadow-lg
                   shadow-indigo-600/20
-                  active:scale-[0.98]
+                  Active:scale-[0.98]
                   flex
                   items-center
                   justify-center
@@ -504,7 +504,7 @@ const handleRegister = (e) => {
                   transition-all
                   shadow-lg
                   shadow-purple-600/20
-                  active:scale-[0.98]
+                  Active:scale-[0.98]
                   flex
                   items-center
                   justify-center

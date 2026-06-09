@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import useTheme from "../hooks/useTheme";
-import { Plus, Search, Shield, Trash2, Edit2 } from "lucide-react";
+import { Plus, Search } from "lucide-react";
+import { Users as UsersIcon, UserCheck, Shield, UserX } from "lucide-react";
 import {
   getUsers,
   addUser,
@@ -9,663 +10,1181 @@ import {
   deleteUser,
 } from "../services/userService";
 
+import { MoreVertical } from "lucide-react";
+
+import toast from "react-hot-toast";
+
 function Users() {
-  const { lang } = useTheme();
+  const { t } = useTheme();
+  const [roleFilter, setRoleFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
-
-
-
-const [users, setUsers] = useState(getUsers());
-
-
-useEffect(() => {
-  localStorage.setItem(
-    "users",
-    JSON.stringify(users)
-  );
-}, [users]);
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [users, setUsers] = useState(getUsers());
   const [showAddModal, setShowAddModal] = useState(false);
-
   const [editingUser, setEditingUser] = useState(null);
-
   const [userToDelete, setUserToDelete] = useState(null);
-  // فلترة المستخدمين بناءً على البحث
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const [selectedUser, setSelectedUser] = useState(null);
+
   const [newUser, setNewUser] = useState({
-  name: "",
-  email: "",
-  role: "User",
-  status: "Active",
-});
-
-const handleAddUser = () => {
-  if (!newUser.name || !newUser.email) return;
-
-  const user = {
-    id: Date.now(),
-    name: newUser.name,
-    email: newUser.email,
-    role: newUser.role,
-    status: newUser.status,
-    avatar: newUser.name.charAt(0).toUpperCase(),
-  };
-
-setUsers(addUser(user));
-
-  setNewUser({
     name: "",
     email: "",
     role: "User",
     status: "Active",
   });
+  const roleLabel = {
+    Owner: t.usersPage.owner,
+    Admin: t.usersPage.admin,
+    Editor: t.usersPage.editor,
+    User: t.usersPage.user,
+  };
+  const [openMenu, setOpenMenu] = useState(null);
 
-  setShowAddModal(false);
-};
+  const statusLabel = {
+    Active: t.usersPage.active,
+    Suspended: t.usersPage.suspended,
+  };
 
-const handleDeleteUser = () => {
-setUsers(
-  deleteUser(userToDelete.id)
-);
+  const isRTL = document.documentElement.dir === "rtl";
 
-setUserToDelete(null);
-};
+  useEffect(() => {
+    localStorage.setItem("users", JSON.stringify(users));
+  }, [users]);
 
-const handleEditUser = () => {
- setUsers(updateUser(editingUser));
-  
+  const filteredUsers = users.filter((user) => {
+    const searchMatch =
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
 
-  setEditingUser(null);
-};
+    const roleMatch = roleFilter === "All" || user.role === roleFilter;
+
+    const statusMatch = statusFilter === "All" || user.status === statusFilter;
+
+    return searchMatch && roleMatch && statusMatch;
+  });
+  const usersPerPage = 8;
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+  const currentUsers = filteredUsers.slice(
+    (currentPage - 1) * usersPerPage,
+    currentPage * usersPerPage,
+  );
+
+  const isValidEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const handleAddUser = () => {
+    if (!newUser.name.trim()) {
+      toast.error("Name is required");
+      return;
+    }
+
+    if (!isValidEmail(newUser.email)) {
+      toast.error("Please enter a valid email");
+      return;
+    }
+    const user = {
+      id: Date.now(),
+      ...newUser,
+      avatar: newUser.name.charAt(0).toUpperCase(),
+    };
+    setUsers(addUser(user));
+    toast.success("User added successfully");
+    setShowAddModal(false);
+    setNewUser({ name: "", email: "", role: "User", status: "Active" });
+  };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className=" p-4"
     >
-      {/* هيدر الصفحة والـ Action الرئيسي */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="space-y-6">
+        {/* =========================================
+    HEADER
+========================================= */}
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-            {lang === "ar" ? "إدارة المستخدمين" : "User Management"}
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            {lang === "ar"
-              ? "إدارة أعضاء الفريق، الصلاحيات وحالات الحسابات ديناميكياً."
-              : "Manage team members, roles, and account statuses dynamically."}
+          <h1 className="text-2xl font-bold">{t.usersPage.title}</h1>
+
+          <p className="text-slate-500 text-sm">
+            Manage team members and roles.
+          </p>
+        </div>
+        {/* =========================================
+    SEARCH & FILTERS
+========================================= */}
+
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search
+              className="absolute left-3 top-3.5 text-slate-400"
+              size={18}
+            />
+            <input
+              placeholder={t.usersPage.search}
+              className="
+  w-full
+  pl-10
+  pr-4
+  py-3
+  rounded-2xl
+  border
+  border-slate-200
+  dark:border-slate-800
+  bg-white
+  dark:bg-slate-900
+  outline-none
+  "
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-3 flex-wrap lg:flex-nowrap">
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="
+    px-4
+    py-3
+    rounded-xl
+    border
+     border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900
+    "
+            >
+              <option value="All">{t.usersPage.filterRole}</option>
+
+              <option value="Owner">{t.usersPage.owner}</option>
+              <option value="Admin">{t.usersPage.admin}</option>
+
+              <option value="Editor">{t.usersPage.editor}</option>
+
+              <option value="User">{t.usersPage.user}</option>
+            </select>
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="
+    px-4
+    py-3
+    rounded-xl
+    border
+     border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900
+    "
+            >
+              <option value="All">{t.usersPage.filterStatus}</option>
+
+              <option value="Active">{t.usersPage.active}</option>
+
+              <option value="Suspended">{t.usersPage.suspended}</option>
+            </select>
+          </div>
+        </div>
+
+        {/* =========================================
+    STATS CARDS
+========================================= */}
+
+        <div className="mb-2">
+          <h2 className="text-2xl font-bold">Statistics</h2>
+
+          <p className="text-sm text-slate-500">
+            Overview of users and activity
           </p>
         </div>
 
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="
-w-full
-sm:w-auto
-h-11
-px-4
-rounded-xl
-bg-indigo-600
-hover:bg-indigo-700
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+          <div
+            className="
+relative
+overflow-hidden
+rounded-3xl
+border
+border-slate-200
+dark:border-slate-800
+bg-white
+dark:bg-slate-900
+p-5
+shadow-sm
+hover:shadow-xl
+hover:-translate-y-1
+transition-all
+"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm text-slate-500">Total Users</p>
+
+                <h3 className="text-3xl font-bold mt-2">{users.length}</h3>
+              </div>
+
+              <div
+                className="
+      w-12
+      h-12
+      rounded-2xl
+      bg-indigo-500/10
+      text-indigo-600
+      flex
+      items-center
+      justify-center
+      "
+              >
+                <UsersIcon size={22} />
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <span
+                className="
+      px-2
+      py-1
+      rounded-full
+      text-xs
+      bg-emerald-500/10
+      text-emerald-600
+      "
+              >
+                +12%
+              </span>
+
+              <span className="ml-2 text-xs text-slate-500">this month</span>
+            </div>
+          </div>
+
+          {/* Active Users */}
+
+          <div
+            className="
+relative
+overflow-hidden
+rounded-3xl
+border
+border-slate-200
+dark:border-slate-800
+bg-white
+dark:bg-slate-900
+p-5
+shadow-sm
+hover:shadow-xl
+hover:-translate-y-1
+transition-all
+"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm text-slate-500">Active Users</p>
+
+                <h3 className="text-3xl font-bold mt-2">
+                  {users.filter((u) => u.status === "Active").length}
+                </h3>
+              </div>
+
+              <div
+                className="
+      w-12
+      h-12
+      rounded-2xl
+      bg-emerald-500/10
+      text-emerald-600
+      flex
+      items-center
+      justify-center
+      "
+              >
+                <UserCheck size={22} />
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <span
+                className="
+      px-2
+      py-1
+      rounded-full
+      text-xs
+      bg-emerald-500/10
+      text-emerald-600
+      "
+              >
+                +10%
+              </span>
+
+              <span className="ml-2 text-xs text-slate-500">this month</span>
+            </div>
+          </div>
+
+          {/* Admins */}
+
+          <div
+            className="
+relative
+overflow-hidden
+rounded-3xl
+border
+border-slate-200
+dark:border-slate-800
+bg-white
+dark:bg-slate-900
+p-5
+shadow-sm
+hover:shadow-xl
+hover:-translate-y-1
+transition-all
+"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm text-slate-500">Admins</p>
+
+                <h3 className="text-3xl font-bold mt-2">
+                  {users.filter((u) => u.role === "Admin").length}
+                </h3>
+              </div>
+
+              <div
+                className="
+      w-12
+      h-12
+      rounded-2xl
+      bg-violet-500/10
+      text-violet-600
+      flex
+      items-center
+      justify-center
+      "
+              >
+                <Shield size={22} />
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <span
+                className="
+      px-2
+      py-1
+      rounded-full
+      text-xs
+      bg-violet-500/10
+      text-violet-600
+      "
+              >
+                +8%
+              </span>
+
+              <span className="ml-2 text-xs text-slate-500">this month</span>
+            </div>
+          </div>
+
+          {/* Suspended Users */}
+
+          <div
+            className="
+relative
+overflow-hidden
+rounded-3xl
+border
+border-slate-200
+dark:border-slate-800
+bg-white
+dark:bg-slate-900
+p-5
+shadow-sm
+hover:shadow-xl
+hover:-translate-y-1
+transition-all
+"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm text-slate-500">Suspended Users</p>
+
+                <h3 className="text-3xl font-bold mt-2">
+                  {users.filter((u) => u.status === "Suspended").length}
+                </h3>
+              </div>
+
+              <div
+                className="
+      w-12
+      h-12
+      rounded-2xl
+      bg-red-500/10
+      text-red-600
+      flex
+      items-center
+      justify-center
+      "
+              >
+                <UserX size={22} />
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <span
+                className="
+      px-2
+      py-1
+      rounded-full
+      text-xs
+      bg-red-500/10
+      text-red-600
+      "
+              >
+                +12%
+              </span>
+
+              <span className="ml-2 text-xs text-slate-500">this month</span>
+            </div>
+          </div>
+        </div>
+
+        {/* =========================================
+    USERS GRID
+========================================= */}
+
+        <div className="flex items-center justify-between mt-8">
+          <h1 className="text-3xl font-bold tracking-tight">Users</h1>
+
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="
+    flex
+    items-center
+    gap-2
+    bg-indigo-600
+    text-white
+    px-5
+    py-2.5
+    rounded-xl
+    hover:bg-indigo-700
+    "
+          >
+            <Plus size={18} />
+            Add User
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {currentUsers.length === 0 ? (
+            <div
+              className="
+    col-span-full
+    p-10
+    rounded-3xl
+    border
+    border-dashed
+    border-slate-300
+    dark:border-slate-700
+    text-center
+    "
+            >
+              <h3 className="text-lg font-semibold">No users found</h3>
+
+              <p className="text-slate-500 mt-2">
+                Try changing search or filters
+              </p>
+            </div>
+          ) : (
+            currentUsers.map((user) => (
+              <div
+                key={user.id}
+                className="
+group
+relative
+overflow-visible
+p-6
+rounded-3xl
+border
+border-slate-200
+dark:border-slate-800
+bg-white
+dark:bg-slate-900
+shadow-sm
+hover:shadow-2xl
+hover:-translate-y-1
+transition-all
+duration-300
+"
+              >
+                <div
+                  className="
+absolute
+top-0
+right-0
+w-24
+h-24
+bg-indigo-500/10
+rounded-full
+blur-2xl
+"
+                />
+                <div className="flex items-center justify-between">
+                  <div
+                    className="
+w-14
+h-14
+rounded-2xl
+bg-gradient-to-br
+from-indigo-500
+to-violet-600
 text-white
-font-medium
-text-sm
 flex
 items-center
 justify-center
-gap-2
-transition-all
+font-bold
 shadow-lg
-shadow-indigo-600/15
 "
-        >
-          <Plus size={18} />
-          <span>{lang === "ar" ? "إضافة مستخدم جديد" : "Add New User"}</span>
-        </button>
-      </div>
-      
+                  >
+                    {user.avatar}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">{user.name}</h3>
+                    <p className="text-sm text-slate-500 mt-1">{user.email}</p>
+                  </div>
+                </div>
 
-      {/* شريط أدوات البحث والفلترة بتصميم زجاجي ناعم */}
-      <div className="p-4 rounded-2xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 flex items-center gap-3">
-        <div
-          className="
-w-full
-max-w-md mx-4
-flex
-items-center
-gap-2
+                <div className="mt-4 flex items-center justify-between">
+                  <span
+                    className="
 px-3
-py-2
-rounded-xl
+py-1
+rounded-full
+bg-indigo-500/10
+text-indigo-600
+dark:text-indigo-400
+text-xs
+font-medium
+"
+                  >
+                    {roleLabel[user.role]}
+                  </span>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between">
+                  <span
+                    className={`
+
+px-3
+py-1
+rounded-full
+text-xs
+font-semibold
+
+${
+  user.status === "Active"
+    ? "bg-emerald-500/10 text-emerald-600"
+    : "bg-red-500/10 text-red-600"
+}
+
+`}
+                  >
+                    {statusLabel[user.status]}
+                  </span>
+
+                  <div className="relative ">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+
+                        setOpenMenu(openMenu === user.id ? null : user.id);
+                      }}
+                      className="
+    p-2
+    rounded-xl
+    hover:bg-slate-100
+    dark:hover:bg-slate-800
+    "
+                    >
+                      <MoreVertical size={18} />
+                    </button>
+
+                    {openMenu === user.id && (
+                      <div
+                        className={`
+absolute
+${isRTL ? "left-0" : "right-0"}
+bottom-full mt-2
+z-50
+w-44
+rounded-2xl
 border
 border-slate-200
-dark:border-slate-800
-bg-slate-50
-dark:bg-slate-950/50
-"
-        >
-          <Search size={18} className="text-slate-400 shrink-0" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder={
-              lang === "ar"
-                ? "البحث عن اسم أو بريد إلكتروني..."
-                : "Search name or email..."
-            }
-            className="bg-transparent outline-none text-sm w-full text-slate-800 dark:text-white placeholder-slate-400"
-          />
+dark:border-slate-700
+bg-white
+dark:bg-slate-900
+shadow-xl
+overflow-hidden
+`}
+                      >
+                        <button
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setOpenMenu(null);
+                          }}
+                          className="
+        w-full
+        text-left
+        px-4
+        py-3
+        hover:bg-slate-100
+        dark:hover:bg-slate-800
+        "
+                        >
+                          Details
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setEditingUser(user);
+                            setOpenMenu(null);
+                          }}
+                          className="
+        w-full
+        text-left
+        px-4
+        py-3
+        hover:bg-slate-100
+        dark:hover:bg-slate-800
+        "
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setUserToDelete(user);
+                            setOpenMenu(null);
+                          }}
+                          className="
+        w-full
+        text-left
+        px-4
+        py-3
+        text-red-600
+        hover:bg-red-50
+        "
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
+
+        {/* =========================================
+    PAGINATION
+========================================= */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4 mt-6">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => p - 1)}
+              className="px-4 py-3 border rounded-xl disabled:opacity-30"
+            >
+              Prev
+            </button>
+            <span className="text-sm font-bold">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => p + 1)}
+              className="px-4 py-2 border rounded-xl disabled:opacity-30"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
-      <div
-        className="grid grid-cols-1
-sm:grid-cols-2
-xl:grid-cols-4 gap-4"
-      >
-        <div
-          className="
-p-5
-rounded-3xl
-border
-border-slate-200
-dark:border-slate-800
-bg-white
-dark:bg-slate-900
-shadow-sm
-hover:shadow-xl
-hover:-translate-y-1
-transition-all
-duration-300
-"
-        >
-          <h3 className="text-slate-400">Total Users</h3>
-          <p className=" font-bold text-lg mt-2">{users.length}</p>
-        </div>
 
-        <div
-          className="
-p-5
-rounded-3xl
-border
-border-slate-200
-dark:border-slate-800
-bg-white
-dark:bg-slate-900
-shadow-sm
-hover:shadow-xl
-hover:-translate-y-1
-transition-all
-duration-300
-"
-        >
-          <h3 className="text-slate-400">Active</h3>
-          <p className=" font-bold text-lg mt-2 text-green-500">
-            {users.filter((u) => u.status === "Active").length}
-          </p>
-        </div>
+      {/* =========================================
+    MODALS
+========================================= */}
 
-        <div
-          className="
-p-5
-rounded-3xl
-border
-border-slate-200
-dark:border-slate-800
-bg-white
-dark:bg-slate-900
-shadow-sm
-hover:shadow-xl
-hover:-translate-y-1
-transition-all
-duration-300
-"
-        >
-          <h3 className="text-slate-400">Suspended</h3>
-          <p className=" font-bold text-lg mt-2 text-red-500">
-            {users.filter((u) => u.status === "Suspended").length}
-          </p>
-        </div>
+      {/* =========================================
+    USER ADD MODAL 
+========================================= */}
 
-        <div
-          className="
-p-5
-rounded-3xl
-border
-border-slate-200
-dark:border-slate-800
-bg-white
-dark:bg-slate-900
-shadow-sm
-hover:shadow-xl
-hover:-translate-y-1
-transition-all
-duration-300
-"
-        >
-          <h3 className="text-slate-400">Admins</h3>
-          <p className="text-3xl font-bold mt-2 text-indigo-500">
-            {
-              users.filter((u) => u.role === "Admin" || u.role === "Owner")
-                .length
-            }
-          </p>
-        </div>
-      </div>
-      
-
-     <div className="md:hidden space-y-4">
-<div className="md:hidden space-y-3">
-  {filteredUsers.map((user) => (
-    <motion.div
-      key={user.id}
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="
-      rounded-3xl
-      border
-      border-slate-200
-      dark:border-slate-800
-      bg-white
-      dark:bg-slate-900
-      p-5
-      shadow-sm
-      "
-    >
-      <div className="flex items-start justify-between">
-        <div className="flex gap-3">
+      {(showAddModal || editingUser || userToDelete) && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50">
           <div
             className="
-            w-14
-            h-14
-            rounded-2xl
-            bg-indigo-100
-            dark:bg-indigo-950/40
-            flex
-            items-center
-            justify-center
-            font-bold
-            text-indigo-600
-            "
+ w-full
+ max-w-md
+ rounded-3xl
+ border
+ border-slate-200
+ dark:border-slate-800
+ bg-white
+ dark:bg-slate-900
+ p-6
+ shadow-xl
+ "
+            onClick={(e) => e.stopPropagation()}
           >
-            {user.avatar}
-          </div>
+            {showAddModal && (
+              <>
+                <h2 className="text-lg font-bold mb-4">Add User</h2>
+                <input
+                  placeholder="Name"
+                  className="
+w-full
+h-12
+px-4
+mb-3
+rounded-2xl
+border
+border-slate-200
+dark:border-slate-700
+bg-slate-50
+dark:bg-slate-800/80
+text-slate-900
+dark:text-white
+placeholder:text-slate-400
+focus:outline-none
+focus:border-indigo-500
+focus:ring-4
+focus:ring-indigo-500/20
+transition-all
+"
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, name: e.target.value })
+                  }
+                />
+                <input
+                  placeholder="Email"
+                  className="
+w-full
+h-12
+px-4
+mb-3
+rounded-2xl
+border
+border-slate-200
+dark:border-slate-700
+bg-slate-50
+dark:bg-slate-800/80
+text-slate-900
+dark:text-white
+placeholder:text-slate-400
+focus:outline-none
+focus:border-indigo-500
+focus:ring-4
+focus:ring-indigo-500/20
+transition-all
+"
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, email: e.target.value })
+                  }
+                />
+                <select
+                  value={newUser.role}
+                  onChange={(e) =>
+                    setNewUser({
+                      ...newUser,
+                      role: e.target.value,
+                    })
+                  }
+                  className="
+w-full
+h-12
+px-4
+mb-3
+rounded-2xl
+border
+border-slate-200
+dark:border-slate-700
+bg-slate-50
+dark:bg-slate-800/80
+text-slate-900
+dark:text-white
+placeholder:text-slate-400
+focus:outline-none
+focus:border-indigo-500
+focus:ring-4
+focus:ring-indigo-500/20
+transition-all
 
-          <div>
-            <h3 className="font-semibold">
-              {user.name}
-            </h3>
+  "
+                >
+                  <option>Owner</option>
+                  <option>Admin</option>
+                  <option>Editor</option>
+                  <option>User</option>
+                </select>
 
-            <p className="text-xs text-slate-400">
-              {user.email}
-            </p>
+                <select
+                  value={newUser.status}
+                  onChange={(e) =>
+                    setNewUser({
+                      ...newUser,
+                      status: e.target.value,
+                    })
+                  }
+                  className="
+w-full
+h-12
+px-4
+mb-3
+rounded-2xl
+border
+border-slate-200
+dark:border-slate-700
+bg-slate-50
+dark:bg-slate-800/80
+text-slate-900
+dark:text-white
+placeholder:text-slate-400
+focus:outline-none
+focus:border-indigo-500
+focus:ring-4
+focus:ring-indigo-500/20
+transition-all
+"
+                >
+                  <option>Active</option>
+                  <option>Suspended</option>
+                </select>
+
+                <div className="flex gap-3 mt-5">
+                  <button
+                    onClick={() => setShowAddModal(false)}
+                    className="
+    flex-1
+    h-12
+    rounded-xl
+    border
+    border-slate-200
+    dark:border-slate-700
+    hover:bg-slate-100
+    dark:hover:bg-slate-800
+    transition
+    "
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    onClick={handleAddUser}
+                    className="
+    flex-1
+    h-12
+    rounded-xl
+    bg-indigo-600
+    hover:bg-indigo-700
+    text-white
+    font-medium
+    transition
+    "
+                  >
+                    Save User
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* ======================================
+    USER EDIT MODAL
+========================================= */}
+
+            {editingUser && (
+              <>
+                <h2 className="text-lg font-bold mb-4">Edit User</h2>
+                <input
+                  placeholder="Name"
+                  className="
+w-full
+h-12
+px-4
+mb-3
+rounded-2xl
+border
+border-slate-200
+dark:border-slate-700
+bg-slate-50
+dark:bg-slate-800/80
+text-slate-900
+dark:text-white
+placeholder:text-slate-400
+focus:outline-none
+focus:border-indigo-500
+focus:ring-4
+focus:ring-indigo-500/20
+transition-all
+"
+                  value={editingUser.name}
+                  onChange={(e) =>
+                    setEditingUser({
+                      ...editingUser,
+                      name: e.target.value,
+                    })
+                  }
+                />
+                <input
+                  placeholder="Email"
+                  className="
+w-full
+h-12
+px-4
+mb-3
+rounded-2xl
+border
+border-slate-200
+dark:border-slate-700
+bg-slate-50
+dark:bg-slate-800/80
+text-slate-900
+dark:text-white
+placeholder:text-slate-400
+focus:outline-none
+focus:border-indigo-500
+focus:ring-4
+focus:ring-indigo-500/20
+transition-all
+"
+                  value={editingUser.email}
+                  onChange={(e) =>
+                    setEditingUser({
+                      ...editingUser,
+                      email: e.target.value,
+                    })
+                  }
+                />
+                <select
+                  value={editingUser.role}
+                  onChange={(e) =>
+                    setEditingUser({
+                      ...editingUser,
+                      role: e.target.value,
+                    })
+                  }
+                  className="
+w-full
+h-12
+px-4
+mb-3
+rounded-2xl
+border
+border-slate-200
+dark:border-slate-700
+bg-slate-50
+dark:bg-slate-800/80
+text-slate-900
+dark:text-white
+placeholder:text-slate-400
+focus:outline-none
+focus:border-indigo-500
+focus:ring-4
+focus:ring-indigo-500/20
+transition-all
+
+  "
+                >
+                  <option>Owner</option>
+                  <option>Admin</option>
+                  <option>Editor</option>
+                  <option>User</option>
+                </select>
+
+                <select
+                  value={editingUser.status}
+                  onChange={(e) =>
+                    setEditingUser({
+                      ...editingUser,
+                      status: e.target.value,
+                    })
+                  }
+                  className="
+w-full
+h-12
+px-4
+mb-3
+rounded-2xl
+border
+border-slate-200
+dark:border-slate-700
+bg-slate-50
+dark:bg-slate-800/80
+text-slate-900
+dark:text-white
+placeholder:text-slate-400
+focus:outline-none
+focus:border-indigo-500
+focus:ring-4
+focus:ring-indigo-500/20
+transition-all
+"
+                >
+                  <option>Active</option>
+                  <option>Suspended</option>
+                </select>
+
+                <div className="flex gap-3 mt-5">
+                  <button
+                    onClick={() => setEditingUser(null)}
+                    className="
+    flex-1
+    h-12
+    rounded-xl
+    border
+    border-slate-200
+    dark:border-slate-700
+    "
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      if (!editingUser.name.trim()) {
+                        toast.error("Name is required");
+                        return;
+                      }
+
+                      if (!isValidEmail(editingUser.email)) {
+                        toast.error("Please enter a valid email");
+                        return;
+                      }
+
+                      setUsers(updateUser(editingUser));
+                      toast.success("User updated successfully");
+                      setEditingUser(null);
+                    }}
+                    className="
+    flex-1
+    h-12
+    rounded-xl
+    bg-indigo-600
+    text-white
+    "
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* ====================================
+    USER DELETE MODAL
+========================================= */}
+
+            {userToDelete && (
+              <>
+                <h2 className="text-lg font-bold text-red-600">Delete User</h2>
+                <p className="my-4 text-slate-600 dark:text-slate-400">
+                  Are you sure you want to delete
+                  <span className="font-bold text-red-500 mx-1">
+                    {userToDelete.name}
+                  </span>
+                  ?
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setUserToDelete(null)}
+                    className="flex-1 py-2 border rounded-xl"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      setUsers(deleteUser(userToDelete.id));
+                      toast.success("User deleted successfully");
+                      setUserToDelete(null);
+                    }}
+                    className="flex-1 py-2 bg-red-600 text-white rounded-xl"
+                  >
+                    Confirm
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
+      )}
 
-        <span
-          className={`px-3 py-1 rounded-xl text-xs font-semibold ${
-            user.status === "Active"
-              ? "bg-emerald-50 text-emerald-600"
-              : "bg-red-50 text-red-600"
-          }`}
-        >
-          {user.status}
-        </span>
-      </div>
-
-      <div className="mt-4 flex items-center justify-between">
+      {/* =========================================
+    USER DETAILS MODAL
+========================================= */}
+      {selectedUser && (
         <div
           className="
-          flex
-          items-center
-          gap-2
-          px-3
-          py-2
-          rounded-xl
-          bg-slate-100
-          dark:bg-slate-800
-          text-sm
-          "
+  fixed
+  top-0
+  left-0
+  w-screen
+  h-screen
+  z-[99999]
+  bg-black/50
+  backdrop-blur-sm
+  flex
+  items-center
+  justify-center
+  "
         >
-          <Shield size={14} />
-          {user.role}
-        </div>
-
-        <div className="flex gap-2">
-          <button
-            onClick={() => setEditingUser(user)}
+          <div
             className="
-            h-10
-            w-10
-            rounded-xl
-            border
-            flex
-            items-center
-            justify-center
-            "
+bg-white
+dark:bg-slate-900
+p-6
+rounded-3xl
+w-full
+max-w-md
+"
           >
-            <Edit2 size={15} />
-          </button>
+            <h2 className="text-xl font-bold mb-5">User Details</h2>
 
-          <button
-            onClick={() => setUserToDelete(user)}
-            className="
-            h-10
-            w-10
-            rounded-xl
-            bg-red-600
-            text-white
-            flex
-            items-center
-            justify-center
-            "
-          >
-            <Trash2 size={15} />
-          </button>
-        </div>
-      </div>
-    </motion.div>
-  ))}
-</div>
-</div>
-      {/* حاوية الجدول المتجاوبة بالكامل تمنع الـ Overflow الأفقي */}
-      <div className="hidden md:block w-full rounded-2xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm mt-6">
-        <div className="overflow-x-auto w-full min-w-0">
-          <table className="w-full text-left border-collapse table-fixed">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 text-slate-500 dark:text-slate-400 font-semibold text-xs md:text-sm">
-                <th className="p-4 text-start">
-                  {lang === "ar" ? "المستخدم" : "User"}
-                </th>
-                <th className="p-4 text-start">
-                  {lang === "ar" ? "الصلاحية" : "Role"}
-                </th>
-                <th className="p-4 text-start">
-                  {lang === "ar" ? "الحالة" : "Status"}
-                </th>
-                <th className="p-4 text-center">
-                  {lang === "ar" ? "الإجراءات" : "Actions"}
-                </th>
-              </tr>
-            </thead>
+            <div className="space-y-4 mt-5">
+              <div>
+                <p className="text-xs text-slate-500">Name</p>
 
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
-              {filteredUsers.length === 0 ? (
-                <tr>
-                  <td colSpan="4" className="text-center py-20">
-                    <h3 className="font-semibold">No Users Found</h3>
+                <p className="font-medium">{selectedUser.name}</p>
+              </div>
 
-                    <p className="text-slate-400 mt-2">Try another search.</p>
-                  </td>
-                </tr>
-              ) : (
-                filteredUsers.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
-                  >
-                    {/* عمود المستخدم (الاسم والإيميل والـ Avatar) */}
-                    <td className="p-4 text-start">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-bold text-lg flex items-center justify-center shadow-sm shrink-0">
-                          {user.avatar}
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <span className="font-semibold text-slate-800 dark:text-slate-200 truncate">
-                            {user.name}
-                          </span>
-                          <span className="text-xs text-slate-400 dark:text-slate-500 break-all">
-                            {user.email}
-                          </span>
-                        </div>
-                      
-                      </div>
-                    </td>
+              <div>
+                <p className="text-xs text-slate-500">Email</p>
 
-                    {/* عمود الصلاحية بتصميم شارات ملونة شيك */}
-                    <td className="hidden md:table-cell p-4 text-start">
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                        <Shield size={12} className="text-indigo-500" />
-                        {user.role}
-                      </div>
-                    </td>
+                <p className="font-medium">{selectedUser.email}</p>
+              </div>
 
-                    {/* عمود الحالة مع نقط تتبع مضيئة */}
-                    <td className="p-4 text-start">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${
-                          user.status === "Active"
-                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
-                            : "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400"
-                        }`}
-                      >
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full ${user.status === "Active" ? "bg-emerald-500" : "bg-rose-500"}`}
-                        />
-                        {lang === "ar"
-                          ? user.status === "Active"
-                            ? "نشط"
-                            : "معطل"
-                          : user.status}
-                      </span>
-                    </td>
+              <div>
+                <p className="text-xs text-slate-500">Role</p>
 
-                    {/* عمود أزرار التحكم الفورية */}
-                    <td className="p-2 sm:p-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => setEditingUser(user)}
-                          className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-                        >
-                          <Edit2 size={15} />
-                        </button>
+                <p className="font-medium">{roleLabel[selectedUser.role]}</p>
+              </div>
 
-                        <button
-                          onClick={() => setUserToDelete(user)}
-                          className="p-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 text-slate-400 hover:text-rose-500 transition-colors"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+              <div>
+                <p className="text-xs text-slate-500">Status</p>
 
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="w-full max-w-md mx-4 p-6 rounded-3xl bg-white dark:bg-slate-900">
-            <h2 className="text-xl  mb-4">Add User</h2>
-
-<input
-  placeholder="Full Name"
-  value={newUser.name}
-  onChange={(e) =>
-    setNewUser({
-      ...newUser,
-      name: e.target.value,
-    })
-  }
-  className="w-full h-11 px-4 rounded-xl border mb-3"
-/>
-
-<input
-  placeholder="Email"
-  value={newUser.email}
-  onChange={(e) =>
-    setNewUser({
-      ...newUser,
-      email: e.target.value,
-    })
-  }
-  className="w-full h-11 px-4 rounded-xl border mb-3"
-/>
-
-<select
-  value={newUser.role}
-  onChange={(e) =>
-    setNewUser({
-      ...newUser,
-      role: e.target.value,
-    })
-  }
-  className="w-full h-11 px-4 rounded-xl border mb-3"
->
-  <option>Owner</option>
-  <option>Admin</option>
-  <option>Editor</option>
-  <option>User</option>
-</select>
-
-<select
-  value={newUser.status}
-  onChange={(e) =>
-    setNewUser({
-      ...newUser,
-      status: e.target.value,
-    })
-  }
-  className="w-full h-11 px-4 rounded-xl border mb-4"
->
-  <option>Active</option>
-  <option>Suspended</option>
-</select>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="flex-1 h-11 rounded-xl border"
-              >
-                Cancel
-              </button>
-
-<button
-  onClick={handleAddUser}
-  className="flex-1 h-11 rounded-xl bg-indigo-600 text-white"
->
-  Save User
-</button>
+                <p className="font-medium">
+                  {statusLabel[selectedUser.status]}
+                </p>
+              </div>
             </div>
+
+            <button
+              onClick={() => setSelectedUser(null)}
+              className="
+    w-full
+    mt-5
+    h-11
+    rounded-xl
+    bg-indigo-600
+    text-white
+    "
+            >
+              Close
+            </button>
           </div>
         </div>
-      )}
-
-      {editingUser && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="w-full max-w-md mx-4 p-6 rounded-3xl bg-white dark:bg-slate-900">
-            <h2 className=" font-bold text-lg mb-4">Edit User</h2>
-
-<input
-  value={editingUser.name}
-  onChange={(e) =>
-    setEditingUser({
-      ...editingUser,
-      name: e.target.value,
-    })
-  }
-  className="w-full h-11 px-4 rounded-xl border mb-3"
-/>     
-
-<input
-  value={editingUser.email}
-  onChange={(e) =>
-    setEditingUser({
-      ...editingUser,
-      email: e.target.value,
-    })
-  }
-  className="w-full h-11 px-4 rounded-xl border mb-3"
-/>
-
-<select
-  value={editingUser.role}
-  onChange={(e) =>
-    setEditingUser({
-      ...editingUser,
-      role: e.target.value,
-    })
-  }
-  className="w-full h-11 px-4 rounded-xl border mb-3"
->
-  <option>Owner</option>
-  <option>Admin</option>
-  <option>Editor</option>
-  <option>User</option>
-</select>
-
-<select
-  value={editingUser.status}
-  onChange={(e) =>
-    setEditingUser({
-      ...editingUser,
-      status: e.target.value,
-    })
-  }
-  className="w-full h-11 px-4 rounded-xl border mb-4"
->
-  <option>Active</option>
-  <option>Suspended</option>
-</select>
-
-            <div className="flex gap-2">
-              <button
-                onClick={() => setEditingUser(null)}
-                className="flex-1 h-11 rounded-xl border"
-              >
-                Cancel
-              </button>
-
-<button
-  onClick={handleEditUser}
-  className="flex-1 h-11 rounded-xl bg-indigo-600 text-white"
->
-  Save Changes
-</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {userToDelete && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="w-full max-w-sm p-6 rounded-3xl bg-white dark:bg-slate-900">
-            <h2 className=" font-bold text-lg">Delete User</h2>
-
-            <p className="text-slate-500 mt-3">
-              Are you sure you want to delete
-              {userToDelete.name} ?
-            </p>
-
-            <div className="flex gap-2 mt-6">
-              <button
-                onClick={() => setUserToDelete(null)}
-                className="flex-1 h-11 rounded-xl border"
-              >
-                Cancel
-              </button>
-
-<button
-  onClick={handleDeleteUser}
-  className="flex-1 h-11 rounded-xl bg-red-600 text-white"
->
-  Delete
-</button>
-            </div>
-          </div>
-        </div>
-        
       )}
     </motion.div>
   );
-  
 }
 
 export default Users;

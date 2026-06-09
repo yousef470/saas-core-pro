@@ -6,8 +6,8 @@ import Navbar from "./Navbar";
 function DashboardLayout() {
   const [isOpen, setIsOpen] = useState(false);
 
-  return (
-   <div
+return (
+<div
   className="
     relative
     flex
@@ -19,11 +19,7 @@ function DashboardLayout() {
     bg-[var(--bg-main)]
   "
 >
-  {/* GLOBAL BACKGROUND GLOW */}
-<div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 blur-[140px] pointer-events-none" />
 
-<div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-violet-600/10 blur-[140px] pointer-events-none" />
-      
       {/* قسم السايدبار الثابت للشاشات الكبيرة */}
 <div
   className="
@@ -34,9 +30,9 @@ function DashboardLayout() {
     h-full
     border-r
     border-white/10
-    backdrop-blur-2xl
-    bg-white/70
-    dark:bg-[#0f1117]/80
+    
+    bg-white
+   dark:bg-[#0f1117]
   "
 >
         <Sidebar />
@@ -46,7 +42,7 @@ function DashboardLayout() {
       {isOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div 
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
+            className="fixed inset-0 bg-slate-900/40 "
             onClick={() => setIsOpen(false)}
           />
 <div
@@ -61,9 +57,8 @@ function DashboardLayout() {
     shadow-2xl
     border-r
     border-white/10
-    backdrop-blur-2xl
-    bg-white/80
-    dark:bg-[#0f1117]/95
+bg-white
+dark:bg-[#0f1117]
   "
 >
             <Sidebar closeMenu={() => setIsOpen(false)} />

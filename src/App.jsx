@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import CRM from "./pages/CRM";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
+import Profile from "./pages/Profile";
 
 // 🆕 استبدال الـ Login والـ Register بالـ Auth الموحد، وإضافة الـ Reset
 import Auth from "./pages/Auth";
@@ -74,7 +75,9 @@ function App() {
   <Route path="components" element={<Components />} />
   <Route path="products" element={<Products />} />
   <Route path="orders" element={<Orders />} />
+<Route path="profile" element={<Profile />} />
 </Route>
+
 
             {/* 🔐 صفحات الـ Auth الموحدة (شاشة الكتاب المتحرك) */}
 <Route

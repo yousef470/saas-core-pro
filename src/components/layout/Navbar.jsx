@@ -5,15 +5,19 @@ import {
   Moon,
   Sun,
   Languages,
-  X,
+
   LogOut,
   ChevronDown,
   User,
   Settings,
 } from "lucide-react";
+
 import { motion, AnimatePresence } from "framer-motion";
 import useTheme from "../../hooks/useTheme";
 import useAuth from "../../hooks/useAuth";
+import { BellRing } from "lucide-react";
+import { X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 function Navbar({ setIsOpen }) {
   const { darkMode, toggleDarkMode, toggleLanguage, lang } = useTheme();
@@ -24,24 +28,20 @@ function Navbar({ setIsOpen }) {
 const notificationRef = useRef(null);
 const userMenuRef = useRef(null);
 
-const notifications = [
-  {
-    id: 1,
-    title: "New payment received",
-    time: "2 min ago",
-  },
-  {
-    id: 2,
-    title: "New user registered",
-    time: "10 min ago",
-  },
-  {
-    id: 3,
-    title: "Server updated successfully",
-    time: "1 hour ago",
-  },
-];
-const { user, logout } = useAuth();
+
+
+const {
+  user,
+  logout,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  deleteNotification,
+  clearAllNotifications,
+} = useAuth();
+
+const notifications =
+  user?.notifications || [];
+
 useEffect(() => {
   const handleClickOutside = (e) => {
     if (
@@ -72,9 +72,65 @@ useEffect(() => {
   };
 }, []);
 
+const unreadCount =
+  notifications.filter(
+    
+    (n) => !n.read
+  ).length;
+console.log("Unread:", unreadCount);
+
+const formatTime = (date) => {
+  
+const now = new Date();
+  const diff =
+    now.getTime() -
+    new Date(date).getTime();
+
+  const minutes = Math.floor(
+    diff / 60000
+  );
+
+  if (minutes < 1)
+    return "Just now";
+
+  if (minutes < 60)
+    return `${minutes} min ago`;
+
+  const hours = Math.floor(
+    minutes / 60
+  );
+
+  if (hours < 24)
+    return `${hours} h ago`;
+
+  const days = Math.floor(
+    hours / 24
+  );
+
+  return `${days} d ago`;
+};
+const navigate = useNavigate();
+
   return (
-    // النافبار شفاف وبخلفية Blur وبدون حدود سفلية (ليندمج مع السايدبار)
-    <header className="h-20 px-4 lg:px-8 flex items-center justify-between bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shrink-0 w-full transition-colors duration-300">
+ 
+<header
+className="
+relative
+z-50
+h-20
+px-4
+lg:px-8
+flex
+items-center
+justify-between
+bg-white
+dark:bg-slate-900
+shrink-0
+w-full
+transition-colors
+duration-300
+"
+>
       
       {/* الجانب الأيسر: زر القائمة للموبايل */}
       <div className="flex items-center">
@@ -105,7 +161,7 @@ useEffect(() => {
         !showNotifications
       )
     }
-    className="w-11 h-11 rounded-xl flex items-center justify-center border dark:text-white relative transition-all hover:scale-105"
+    className="w-11 h-11 rounded-xl flex items-center justify-center border dark:text-white relative transition-all hover:scale-105 "
     style={{
       background: "var(--bg-main)",
       borderColor: "var(--border)",
@@ -113,11 +169,29 @@ useEffect(() => {
   >
     <Bell size={18} />
 
-    {notifications.length > 0 && (
-      <span className="absolute top-2 right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-[10px] flex items-center justify-center text-white font-bold">
-        {notifications.length}
-      </span>
-    )}
+{unreadCount > 0 && (
+  <span
+    className="
+      absolute
+      -top-1
+      -right-1
+      min-w-[18px]
+      h-[18px]
+      px-1
+      rounded-full
+      bg-rose-500
+      text-[10px]
+      flex
+      items-center
+      justify-center
+      text-white
+      font-bold
+    "
+  >
+    {unreadCount}
+  </span>
+)}
+
   </button>
 
   <AnimatePresence>
@@ -141,7 +215,7 @@ useEffect(() => {
         transition={{
           duration: 0.2,
         }}
-        className={`absolute top-16 w-[340px] rounded-3xl border shadow-2xl overflow-hidden z-50 ${
+className={`absolute top-16 z-[9999] w-[380px] rounded-3xl border shadow-2xl overflow-hidden ${
           lang === "ar"
             ? "left-0"
             : "right-0"
@@ -149,54 +223,136 @@ useEffect(() => {
         style={{
           background: "var(--bg-card)",
           borderColor: "var(--border)",
+             zIndex: 9999,
         }}
       >
-        <div className="p-5 border-b flex items-center justify-between">
-          <div>
-            <h3 className="font-bold text-sm dark:text-white">
-              {lang === "ar"
-                ? "التنبيهات"
-                : "Notifications"}
-            </h3>
+        
+         <div
+  className="p-5 border-b"
+  style={{
+    borderColor: "var(--border)",
+  }}
+>
+  <div className="flex items-center justify-between">
+    <div>
+      <h3 className="font-bold text-base">
+        Notifications
+      </h3>
 
-            <p className="text-xs text-slate-500 mt-1">
-              {notifications.length} new
-              notifications
-            </p>
-          </div>
+<p className="text-xs text-slate-500 mt-1">
+  {unreadCount} unread notifications
+</p>
+    </div>
 
-          <button
-            onClick={() =>
-              setShowNotifications(false)
-            }
-            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors"
-          >
-            <X size={15} />
-          </button>
-        </div>
-
+<button
+  onClick={markAllNotificationsAsRead}
+  className="px-3 py-1 rounded-xl text-xs bg-indigo-500/10 text-indigo-500 font-semibold hover:bg-indigo-500/20"
+>
+  Mark all read
+</button>
+  </div>
+</div>
         <div className="max-h-[320px] overflow-y-auto">
+
+
+
+              {notifications.length === 0 && (
+  <div className="p-8 text-center text-slate-500">
+    No notifications
+  </div>
+)}
           {notifications.map((item) => (
-            <div
-              key={item.id}
-              className="p-4 border-b last:border-none hover:bg-white/[0.03] transition-colors cursor-pointer"
-            >
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 rounded-full bg-indigo-500 mt-2"></div>
+       <div
+  key={item.id}
+  onClick={() =>
+    markNotificationAsRead(item.id)
+  }
+  style={{
+    borderColor: "var(--border)",
+  }}
+  className={`
+    mx-3
+    my-2
+    p-4
+    rounded-2xl
+    transition-all
+    cursor-pointer
+    border
+    hover:bg-indigo-500/5
+    ${
+      item.read
+        ? "opacity-60"
+        : "bg-indigo-500/5"
+    }
+  `}
+>
+             <div className="flex items-start gap-3">
+   <div className="p-2 rounded-xl bg-indigo-500/10">
+  <BellRing
+    size={14}
+    className="text-indigo-500"
+  />
+</div>
 
                 <div className="flex-1">
-                  <p className="text-sm font-medium dark:text-white">
-                    {item.title}
-                  </p>
+<p className="text-sm font-medium dark:text-white">
+  {item.title}
+</p>
 
-                  <p className="text-xs text-slate-500 mt-1">
-                    {item.time}
-                  </p>
+<p className="text-xs text-slate-500 mt-1">
+  {item.message}
+</p>
+
+<p className="text-[11px] text-slate-400 mt-2">
+  {formatTime(item.createdAt)}
+</p>
                 </div>
+
+                <button
+
+  onClick={(e) => {
+
+    e.stopPropagation();
+
+    deleteNotification(item.id);
+
+  }}
+
+  className="text-slate-400 hover:text-red-500"
+
+>
+
+  <X size={14} />
+
+</button>
               </div>
             </div>
           ))}
         </div>
+
+
+<div
+  className="p-4 border-t"
+  style={{
+    borderColor: "var(--border)",
+  }}
+>
+<button
+  onClick={clearAllNotifications}
+  className="
+      w-full
+      h-11
+      rounded-xl
+      bg-red-500
+      text-white
+      font-semibold
+      hover:bg-red-600
+      transition-all
+    "
+>
+  Clear All Notifications
+</button>
+</div>
       </motion.div>
     )}
   </AnimatePresence>
@@ -226,17 +382,19 @@ useEffect(() => {
       </p>
     </div>
 
-    <img
-      src={
-        user?.avatar ||
-        "/default-avatar.png"
-      }
-      alt="User"
-      className="w-10 h-10 rounded-full border object-cover"
-      style={{
-        borderColor: "var(--border)",
-      }}
-    />
+<img
+  src={
+    user?.avatar ||
+    "/default-avatar.png"
+  }
+  alt="avatar"
+  className="
+    w-9
+    h-9
+    rounded-full
+    object-cover
+  "
+/>
 
     <ChevronDown
       size={16}
@@ -269,7 +427,7 @@ useEffect(() => {
         transition={{
           duration: 0.2,
         }}
-        className={`absolute top-16 w-64 rounded-3xl border shadow-2xl overflow-hidden z-50 ${
+        className={`absolute top-16 w-64 rounded-3xl border shadow-2xl overflow-hidden  ${
           lang === "ar"
             ? "left-0"
             : "right-0"
@@ -304,19 +462,27 @@ useEffect(() => {
         </div>
 
         <div className="p-2">
-          <button
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/[0.04] transition-all text-sm dark:text-white"
-          >
-            <User size={16} />
-            Profile
-          </button>
+<button
+  onClick={() => {
+    navigate("/dashboard/profile")
+    setShowUserMenu(false);
+  }}
+  className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/[0.04] transition-all text-sm dark:text-white"
+>
+  <User size={16} />
+  Profile
+</button>
 
-          <button
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/[0.04] transition-all text-sm dark:text-white"
-          >
-            <Settings size={16} />
-            Settings
-          </button>
+<button
+  onClick={() => {
+    navigate("/settings");
+    setShowUserMenu(false);
+  }}
+  className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/[0.04] transition-all text-sm dark:text-white"
+>
+  <Settings size={16} />
+  Settings
+</button>
 
           <button
             onClick={() => {
@@ -332,6 +498,7 @@ useEffect(() => {
     )}
   </AnimatePresence>
 </div>
+
       </div>
     </header>
   );

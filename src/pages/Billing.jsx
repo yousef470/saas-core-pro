@@ -1,72 +1,173 @@
 import { motion } from "framer-motion";
 import useTheme from "../hooks/useTheme";
-import { Check } from "lucide-react";
 
 function Billing() {
   const { lang } = useTheme();
+return (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.4 }}
+    className="space-y-8"
+  >
+    <div>
+      <h1 className="text-2xl font-bold tracking-tight">
+        {lang === "ar"
+          ? "الاشتراكات والفواتير"
+          : "Billing & Subscription"}
+      </h1>
 
-  const plans = [
-    { name: "Starter", price: "$19", desc: "Best for small business", features: ["3 Projects", "Basic Analytics", "24/7 Support"] },
-    { name: "Pro", price: "$49", desc: "Best for growing companies", features: ["Unlimited Projects", "Advanced Analytics", "Custom Domain", "Priority Support"], popular: true }
-  ];
+      <p
+        className="text-sm mt-1"
+        style={{ color: "var(--text-muted)" }}
+      >
+        {lang === "ar"
+          ? "إدارة اشتراكك الحالي وطرق الدفع وسجل الفواتير."
+          : "Manage your subscription, payment methods and billing history."}
+      </p>
+    </div>
 
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-8"
-    >
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-          {lang === "ar" ? "الاشتراكات والفواتير" : "Billing & Subscription"}
-        </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          {lang === "ar" ? "متابعة خطة اشتراكك الحالي وتاريخ معاملاتك المالية." : "Monitor your active subscription plan and track payment history."}
-        </p>
+    <div className="grid gap-6 lg:grid-cols-2">
+      {/* Current Plan */}
+      <div
+        className="p-6 rounded-3xl border backdrop-blur-xl"
+        style={{
+          background: "var(--bg-card)",
+          borderColor: "var(--border)",
+        }}
+      >
+        <h2 className="text-xl font-bold mb-6">
+          Current Plan
+        </h2>
+
+        <div className="space-y-5">
+          <div>
+            <p className="text-sm text-slate-500">
+              Plan
+            </p>
+
+            <h3 className="text-3xl font-black text-indigo-500">
+              Pro Plan
+            </h3>
+          </div>
+
+          <div>
+            <p className="text-sm text-slate-500">
+              Billing Cycle
+            </p>
+
+            <p className="font-semibold">
+              Monthly
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm text-slate-500">
+              Renewal Date
+            </p>
+
+            <p className="font-semibold">
+              June 15, 2026
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm text-slate-500">
+              Status
+            </p>
+
+            <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-sm">
+              Active
+            </span>
+          </div>
+
+          <button className="w-full h-11 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition">
+            Upgrade Plan
+          </button>
+        </div>
       </div>
 
-      {/* شبكة الخطط: متجاوبة من كرت واحد في الموبايل لكرتين في الشاشات الكبيرة */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
-        {plans.map((plan, idx) => (
-          <div 
-            key={idx} 
-            className={`p-6 rounded-2xl border bg-white dark:bg-slate-900 transition-all flex flex-col relative overflow-hidden ${
-              plan.popular ? "border-indigo-600 dark:border-indigo-500 shadow-md ring-1 ring-indigo-600/20" : "border-slate-200 dark:border-slate-800"
-            }`}
+      {/* Payment Method */}
+      <div
+        className="p-6 rounded-3xl border backdrop-blur-xl"
+        style={{
+          background: "var(--bg-card)",
+          borderColor: "var(--border)",
+        }}
+      >
+        <h2 className="text-xl font-bold mb-6">
+          Payment Method
+        </h2>
+
+        <div
+          className="p-5 rounded-2xl"
+          style={{
+            background: "var(--bg-main)",
+          }}
+        >
+          <p className="text-sm text-slate-500">
+            Primary Card
+          </p>
+
+          <h3 className="text-lg font-bold mt-2">
+            Visa •••• 4242
+          </h3>
+
+          <p className="text-sm text-slate-500 mt-1">
+            Expires 12/28
+          </p>
+
+          <button className="mt-5 text-indigo-500 font-medium">
+            Change Card
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {/* Billing History */}
+    <div
+      className="p-6 rounded-3xl border backdrop-blur-xl"
+      style={{
+        background: "var(--bg-card)",
+        borderColor: "var(--border)",
+      }}
+    >
+      <h2 className="text-xl font-bold mb-6">
+        Billing History
+      </h2>
+
+      <div className="space-y-3">
+        {[1, 2, 3, 4].map((item) => (
+          <div
+            key={item}
+            className="flex items-center justify-between p-4 rounded-2xl"
+            style={{
+              background: "var(--bg-main)",
+            }}
           >
-            {plan.popular && (
-              <span className="absolute top-4 right-4 bg-indigo-600 text-white font-bold text-[10px] uppercase px-2.5 py-0.5 rounded-full tracking-wider">
-                Popular
-              </span>
-            )}
-            <h3 className="font-bold text-lg dark:text-white">{plan.name}</h3>
-            <p className="text-xs text-slate-400 mt-1">{plan.desc}</p>
-            
-            <div className="my-5 flex items-baseline gap-1">
-              <span className="text-4xl font-extrabold text-slate-900 dark:text-white">{plan.price}</span>
-              <span className="text-xs text-slate-400">/{lang === "ar" ? "شهرياً" : "mo"}</span>
+            <div>
+              <p className="font-medium">
+                May {item}, 2026
+              </p>
+
+              <p className="text-sm text-slate-500">
+                Pro Subscription
+              </p>
             </div>
 
-            <ul className="space-y-2.5 flex-1 mb-6">
-              {plan.features.map((f, i) => (
-                <li key={i} className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
-                  <Check size={14} className="text-emerald-500 shrink-0" />
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="text-right">
+              <p className="font-bold">$49</p>
 
-            <button className={`w-full h-11 rounded-xl text-xs font-semibold transition-all flex items-center justify-center ${
-              plan.popular ? "bg-indigo-600 text-white hover:bg-indigo-700" : "border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-white"
-            }`}>
-              {lang === "ar" ? "ترقية الاشتراك" : "Upgrade Plan"}
-            </button>
+              <span className="text-emerald-500 text-sm">
+                Paid
+              </span>
+            </div>
           </div>
         ))}
       </div>
-    </motion.div>
-  );
+    </div>
+  </motion.div>
+);
 }
 
 export default Billing;

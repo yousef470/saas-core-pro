@@ -579,7 +579,7 @@ const handleLogout = () => {
 
       {/* 📋 الفوتر السفلي */}
       <footer className="py-8 border-t border-slate-200 dark:border-slate-900 text-center text-xs text-slate-400">
-        <p>© 2026 SaaS-Core Template. Built by Nexora.</p>
+        <p>© 2026 SaaS-Core Template. Built by Saas core.</p>
       </footer>
 {/* 📱 زر الواتساب العائم */}
 <a

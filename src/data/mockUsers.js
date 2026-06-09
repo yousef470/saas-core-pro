@@ -2,7 +2,7 @@ const mockUsers = [
   {
     id: 1,
     name: "Yousef Ahmed",
-    email: "yousef@nexora.com",
+    email: "yousef@saas core.com",
     role: "Owner",
     status: "Active",
     avatar: "Y",

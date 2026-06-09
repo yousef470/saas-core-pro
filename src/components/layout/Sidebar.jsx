@@ -113,7 +113,7 @@ const menuItems = [
 
       {
         path: "/dashboard/calendar",
-        name: "Calendar",
+        name: t.calendar,
         icon: <CalendarDays size={20} />,
       },
 
@@ -125,13 +125,13 @@ const menuItems = [
 
       {
         path: "/dashboard/products",
-        name: "Products",
+        name: t.products,
         icon: <ShoppingBag size={20} />,
       },
 
       {
         path: "/dashboard/orders",
-        name: "Orders",
+        name: t.orders,
         icon: <ClipboardList size={20} />,
       },
     ],
@@ -201,7 +201,7 @@ const menuItems = [
               >
                 {isActive && (
                   <motion.div
-                    layoutId="activeSidebar"
+                    layoutId="ActiveSidebar"
                     className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl shadow-lg shadow-indigo-600/20"
                   />
                 )}
