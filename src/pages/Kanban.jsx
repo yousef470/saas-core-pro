@@ -113,20 +113,13 @@ const onDragEnd = (result) => {
       taskIds: newTaskIds,
     };
 
-setData({
-  ...data,
-
-  tasks: {
-    ...data.tasks,
-    [draggableId]: updatedTask,
-  },
-
-  columns: {
-    ...data.columns,
-    [newStart.id]: newStart,
-    [newFinish.id]: newFinish,
-  },
-});
+ setData({
+    ...data,
+    columns: {
+      ...data.columns,
+      [newColumn.id]: newColumn,
+    },
+  });
 
     return;
   }
@@ -166,20 +159,23 @@ setData({
       statusMap[destination.droppableId],
   };
 
-  setData({
-    ...data,
 
-    tasks: {
-      ...data.tasks,
-      [draggableId]: updatedTask,
-    },
+setData({
+  ...data,
 
-    columns: {
-      ...data.columns,
-      [newStart.id]: newStart,
-      [newFinish.id]: newFinish,
-    },
-  });
+  tasks: {
+    ...data.tasks,
+    [draggableId]: updatedTask,
+  },
+
+  columns: {
+    ...data.columns,
+    [newStart.id]: newStart,
+    [newFinish.id]: newFinish,
+  },
+});
+
+
 };
 
   const handleAddTask = () => {
@@ -234,21 +230,60 @@ const task = {
     status:"todo"
   });
 
+const columnStatusMap = {
+  "col-1": "todo",
+  "col-2": "progress",
+  "col-3": "done",
+};
 
+status:
+columnStatusMap[newTask.columnId]
 
 };
 
 
 const handleSaveTaskEdit = () => {
 
-  setData({
-    ...data,
-    tasks: {
-      ...data.tasks,
-      [editingTask.id]: editingTask,
-    },
-  });
+const statusToColumn = {
+  todo: "col-1",
+  progress: "col-2",
+  done: "col-3",
+};
 
+const targetColumnId =
+  statusToColumn[editingTask.status];
+
+// إزالة التاسك من كل الأعمدة
+const newColumns = {};
+
+Object.values(data.columns).forEach(
+  (column) => {
+
+    newColumns[column.id] = {
+      ...column,
+      taskIds: column.taskIds.filter(
+        id => id !== editingTask.id
+      ),
+    };
+
+  }
+);
+
+// إضافته للعمود الجديد
+newColumns[targetColumnId].taskIds.push(
+  editingTask.id
+);
+
+setData({
+  ...data,
+
+  tasks: {
+    ...data.tasks,
+    [editingTask.id]: editingTask,
+  },
+
+  columns: newColumns,
+});
   setEditingTask(null);
 };
 
