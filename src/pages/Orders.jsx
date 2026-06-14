@@ -10,6 +10,7 @@ import {
   FileDown,
 } from "lucide-react";
 import useTheme from "../hooks/useTheme";
+import { motion } from "framer-motion";
 
 import {
   getOrders,
@@ -217,7 +218,19 @@ const { t } = useTheme();
     setEditModal(null);
   };
 
+
+
+
   return (
+
+
+     <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className=" p-4"
+    >
+
+      <div className="space-y-6"> 
     <div
       className="
   p-4
@@ -483,6 +496,7 @@ duration-300
         flex
         items-center
         gap-2
+        
       "
           >
             <FileDown size={18} />
@@ -490,6 +504,9 @@ duration-300
           </button>
         </div>
       </div>
+
+
+
       <button
         onClick={() => {
           if (
@@ -733,12 +750,14 @@ cursor-pointer
           </div>
         )}
       </div>
+             </div>
+              </div>
 
       {/* Modal */}
       {selectedOrder && (
         <div
           onClick={() => setSelectedOrder(null)}
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-[99999]"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-[99999] "
         >
           <div
             onClick={(e) => e.stopPropagation()}
@@ -800,7 +819,7 @@ cursor-pointer
         </div>
       )}
       {showAddModal && (
-<div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">      
+<div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm">      
    <div
             className="
     w-full
@@ -1007,7 +1026,7 @@ transition
       )}
 
       {deleteModal && (
-<div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+<div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm">
           <div
             className="
         w-full
@@ -1071,7 +1090,7 @@ transition
         </div>
       )}
       {editModal && (
-<div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+<div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm">
           <div
             className="
         w-full
@@ -1156,6 +1175,7 @@ transition
             dark:bg-slate-800
           "
               />
+
 
               <select
                 value={editModal.status}
@@ -1252,7 +1272,13 @@ transition
           Next
         </button>
       </div>
-    </div>
+  
+    </motion.div>
   );
 }
 export default Orders;
+
+
+
+
+

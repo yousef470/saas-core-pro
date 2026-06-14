@@ -6,9 +6,6 @@ import {
   FiActivity,
   FiBriefcase,
   FiSearch,
-  FiEdit,
-  FiTrash2,
-  FiEye,
   FiMoreVertical,
 } from "react-icons/fi";
 
@@ -20,6 +17,9 @@ function CRM() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [openMenu, setOpenMenu] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+const customersPerPage = 6;
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // بيانات الـ State مع تحميلها من الـ LocalStorage
@@ -160,8 +160,8 @@ function CRM() {
   const filteredCustomers = customers.filter((customer) => {
     const matchesSearch =
       customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.company.toLowerCase().includes(searchTerm.toLowerCase());
+      customer.email.toLowerCase().includes(searchTerm.toLowerCase()) 
+     ;
     const matchesStatus =
       statusFilter === "all" || customer.status === statusFilter;
 
@@ -169,6 +169,23 @@ function CRM() {
 
     return matchesSearch && matchesStatus && matchesPlan;
   });
+
+  const indexOfLastCustomer =
+  currentPage * customersPerPage;
+
+const indexOfFirstCustomer =
+  indexOfLastCustomer - customersPerPage;
+
+const currentCustomers =
+  filteredCustomers.slice(
+    indexOfFirstCustomer,
+    indexOfLastCustomer
+  );
+
+const totalPages = Math.ceil(
+  filteredCustomers.length /
+    customersPerPage
+);
   const deleteCustomer = (id) => {
     if (window.confirm("Delete customer?")) {
       setCustomers((prev) => prev.filter((customer) => customer.id !== id));
@@ -188,53 +205,48 @@ function CRM() {
   };
 
   const exportCSV = () => {
+    const headers = ["Name", "Email", "Company", "Plan", "Revenue"];
 
-  const headers = [
-    "Name",
-    "Email",
-    "Company",
-    "Plan",
-    "Revenue",
-  ];
+    const rows = customers.map((c) => [
+      c.name,
+      c.email,
+      c.company,
+      c.plan,
+      c.revenue,
+    ]);
 
-  const rows = customers.map((c) => [
-    c.name,
-    c.email,
-    c.company,
-    c.plan,
-    c.revenue,
-  ]);
+    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
 
-  const csv =
-    [
-      headers.join(","),
-      ...rows.map((r) =>
-        r.join(",")
-      ),
-    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
 
-  const blob = new Blob(
-    [csv],
-    { type: "text/csv" }
-  );
+    const url = window.URL.createObjectURL(blob);
 
-  const url =
-    window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
 
-  const a =
-    document.createElement("a");
+    a.href = url;
 
-  a.href = url;
+    a.download = "customers.csv";
 
-  a.download =
-    "customers.csv";
+    a.click();
+  };
 
-  a.click();
-};
+  useEffect(() => {
+    const closeMenu = () => setOpenMenu(null);
+
+    window.addEventListener("click", closeMenu);
+
+    return () => window.removeEventListener("click", closeMenu);
+  }, []);
 
   return (
-    <div className="space-y-7 animate-fade-in pb-10">
-      {/* الهيدر العلوي */}
+    <div className=" animate-fade-in pb-10">
+        <div className="space-y-6">
+
+          
+            {/* ====================================
+                     Header
+========================================= */}
+    
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
@@ -246,387 +258,715 @@ function CRM() {
               : "Full control over subscriptions and revenue metrics."}
           </p>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="h-11 px-5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-medium text-sm shadow-xl shadow-indigo-600/20 hover:opacity-95 transition-all flex items-center gap-2"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2.5}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          {lang === "ar" ? "إضافة مستخدم جديد" : "Add New User"}
-        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-        <div
-          className="
-    p-6
-    rounded-3xl
-    border
-    bg-white
-    dark:bg-slate-900
-    border-slate-200
-    dark:border-slate-800
-    shadow-sm
-    hover:shadow-lg
-    transition-all
-  "
-        >
-          <p className="text-xs uppercase tracking-wider text-slate-500">
-            Total Customers
-          </p>
-          <FiUsers className="text-indigo-500 text-lg" />
-          <h3 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
-            {totalCustomers}
-          </h3>
-          <p className="text-emerald-500 text-sm mt-1">+12% this month</p>
-        </div>
 
-        <div
-          className="
-    p-6
-    rounded-3xl
-    border
-    bg-white
-    dark:bg-slate-900
-    border-slate-200
-    dark:border-slate-800
-    shadow-sm
-    hover:shadow-lg
-    transition-all
-  "
-        >
-          <p className="text-xs uppercase tracking-wider text-slate-500">
-            Active
-          </p>
-          <FiDollarSign className="text-indigo-500 text-lg" />
-          <h3 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
-            {activeCustomers}
-          </h3>
-        </div>
+            {/* ====================================
+      STATES CARD
+========================================= */}
 
-        <div
-          className="
-    p-6
-    rounded-3xl
-    border
-    bg-white
-    dark:bg-slate-900
-    border-slate-200
-    dark:border-slate-800
-    shadow-sm
-    hover:shadow-lg
-    transition-all
-  "
-        >
-          <p className="text-xs uppercase tracking-wider text-slate-500">
-            Enterprise
-          </p>
-          <FiActivity className="text-indigo-500 text-lg" />
+   <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
 
-          <h3 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
-            {enterpriseCustomers}
-          </h3>
-        </div>
+  {/* Total Customers */}
+  <div
+    className="
+      h-full
+      p-6
+      rounded-3xl
+      border
+      bg-white
+      dark:bg-slate-900
+      border-slate-200
+      dark:border-slate-800
+      shadow-sm
+      hover:shadow-xl
+      hover:-translate-y-1
+      transition-all
+    "
+  >
+    <div className="flex items-center justify-between">
+      <p className="text-xs uppercase tracking-wider text-slate-500">
+        Total Customers
+      </p>
 
-        <div
-          className="
-    p-6
-    rounded-3xl
-    border
-    bg-white
-    dark:bg-slate-900
-    border-slate-200
-    dark:border-slate-800
-    shadow-sm
-    hover:shadow-lg
-    transition-all
-  "
-        >
-          <p className="text-xs uppercase tracking-wider text-slate-500">
-            Revenue
-          </p>
-          <FiBriefcase className="text-indigo-500 text-lg" />
-          <h3 className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
-            ${totalRevenue}
-          </h3>
-
-          <p className="text-emerald-500 text-sm mt-1">+8.5% growth</p>
-        </div>
+      <div className="p-2 rounded-xl bg-indigo-500/10">
+        <FiUsers className="text-indigo-500 text-lg" />
       </div>
+    </div>
 
-      {/* بار البحث والفلترة */}
-      <div className="p-3.5 rounded-2xl border flex flex-col md:flex-row gap-4 justify-between items-center backdrop-blur-md shadow-sm bg-white/50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800">
-        <div className="relative w-full md:w-80">
-          <input
-            type="text"
-            placeholder={lang === "ar" ? "ابحث عن عميل..." : "Search..."}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-11 ps-11 pe-4 rounded-xl border border-slate-200 dark:border-slate-700 text-sm bg-slate-50 dark:bg-slate-900/30 focus:outline-none focus:border-indigo-500 transition-all"
-          />
-          <FiSearch
-            className="
-    absolute
-    left-4
-    top-1/2
-    -translate-y-1/2
-    text-slate-400
-  "
-          />
-        </div>
-        <div className="flex gap-1.5 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-          {["all", "active", "pending", "canceled"].map((status) => (
-            <button
-              key={status}
-              onClick={() => setStatusFilter(status)}
-              className={`px-4 h-10 rounded-xl text-xs font-semibold transition-all shrink-0 ${statusFilter === status ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
-            >
-              {status.toUpperCase()}
-            </button>
-          ))}
-          <select
-            value={planFilter}
-            onChange={(e) => setPlanFilter(e.target.value)}
-            className="
-    h-10
-    px-4
-    rounded-xl
-    border
-    border-slate-200
-    dark:border-slate-700
-    bg-transparent
-  "
-          >
-            <option value="all">All Plans</option>
-            <option value="Starter">Starter</option>
-            <option value="Pro">Pro</option>
-            <option value="Enterprise">Enterprise</option>
-          </select>
-        </div>
+    <h3 className="mt-4 text-3xl font-bold text-slate-900 dark:text-white">
+      {totalCustomers}
+    </h3>
+
+    <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
+
+    <div className="mt-4 flex items-center justify-between text-sm">
+      <span className="text-emerald-500 font-medium">
+        +12%
+      </span>
+
+      <span className="text-slate-500">
+        this month
+      </span>
+    </div>
+  </div>
+
+  {/* Active Customers */}
+  <div
+    className="
+      h-full
+      p-6
+      rounded-3xl
+      border
+      bg-white
+      dark:bg-slate-900
+      border-slate-200
+      dark:border-slate-800
+      shadow-sm
+      hover:shadow-xl
+      hover:-translate-y-1
+      transition-all
+    "
+  >
+    <div className="flex items-center justify-between">
+      <p className="text-xs uppercase tracking-wider text-slate-500">
+        Active Customers
+      </p>
+
+      <div className="p-2 rounded-xl bg-emerald-500/10">
+        <FiActivity  className="text-emerald-500 text-lg" />
       </div>
-<div
+    </div>
+
+    <h3 className="mt-4 text-3xl font-bold text-slate-900 dark:text-white">
+      {activeCustomers}
+    </h3>
+
+    <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
+
+    <div className="mt-4 flex items-center justify-between text-sm">
+      <span className="text-emerald-500 font-medium">
+        Active
+      </span>
+
+      <span className="text-slate-500">
+        customers
+      </span>
+    </div>
+  </div>
+
+  {/* Enterprise */}
+  <div
+    className="
+      h-full
+      p-6
+      rounded-3xl
+      border
+      bg-white
+      dark:bg-slate-900
+      border-slate-200
+      dark:border-slate-800
+      shadow-sm
+      hover:shadow-xl
+      hover:-translate-y-1
+      transition-all
+    "
+  >
+    <div className="flex items-center justify-between">
+      <p className="text-xs uppercase tracking-wider text-slate-500">
+        Enterprise
+      </p>
+
+      <div className="p-2 rounded-xl bg-purple-500/10">
+        < FiBriefcase  className="text-purple-500 text-lg" />
+      </div>
+    </div>
+
+    <h3 className="mt-4 text-3xl font-bold text-slate-900 dark:text-white">
+      {enterpriseCustomers}
+    </h3>
+
+    <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
+
+    <div className="mt-4 flex items-center justify-between text-sm">
+      <span className="text-purple-500 font-medium">
+        Premium
+      </span>
+
+      <span className="text-slate-500">
+        accounts
+      </span>
+    </div>
+  </div>
+
+  {/* Revenue */}
+  <div
+    className="
+      h-full
+      p-6
+      rounded-3xl
+      border
+      bg-white
+      dark:bg-slate-900
+      border-slate-200
+      dark:border-slate-800
+      shadow-sm
+      hover:shadow-xl
+      hover:-translate-y-1
+      transition-all
+    "
+  >
+    <div className="flex items-center justify-between">
+      <p className="text-xs uppercase tracking-wider text-slate-500">
+        Revenue
+      </p>
+
+      <div className="p-2 rounded-xl bg-amber-500/10">
+        <FiDollarSign className="text-amber-500 text-lg" />
+      </div>
+    </div>
+
+    <h3 className="mt-4 text-3xl font-bold text-slate-900 dark:text-white">
+      ${totalRevenue}
+    </h3>
+
+    <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
+
+    <div className="mt-4 flex items-center justify-between text-sm">
+      <span className="text-emerald-500 font-medium">
+        +8.5%
+      </span>
+
+      <span className="text-slate-500">
+        growth
+      </span>
+    </div>
+  </div>
+  </div> 
+
+              {/* ====================================
+  SEARCH AND FILTERS
+========================================= */}
+
+    <div
   className="
-  p-5
-  rounded-3xl
-  border
-  border-slate-200
-  dark:border-slate-800
-  bg-white
-  dark:bg-slate-900
-"
+    bg-white
+    dark:bg-slate-900
+    border
+    border-slate-200
+    dark:border-slate-800
+    rounded-3xl
+    p-5
+    shadow-sm
+  "
 >
-  <h3 className="font-semibold mb-4">
-    Recent Activity
-  </h3>
+  <div className="flex flex-col lg:flex-row gap-4 justify-between items-center">
 
-  <div className="space-y-3">
+    {/* Search */}
+    <div className="relative w-full lg:max-w-md">
+      <input
+        type="text"
+        placeholder={lang === "ar" ? "ابحث عن عميل..." : "Search customers..."}
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="
+          w-full
+          h-12
+          pl-11
+          pr-4
+          rounded-2xl
+          border
+          border-slate-200
+          dark:border-slate-700
+          bg-slate-50
+          dark:bg-slate-800
+          text-sm
+          focus:outline-none
+          focus:ring-2
+          focus:ring-indigo-500/30
+          focus:border-indigo-500
+        "
+      />
 
-    {customers.slice(0,5).map((c)=>(
+      <FiSearch
+        className="
+          absolute
+          left-4
+          top-1/2
+          -translate-y-1/2
+          text-slate-400
+        "
+      />
+    </div>
+
+    {/* Filters */}
+    <div className="flex flex-wrap gap-2 justify-center lg:justify-end">
+
+      {["all", "active", "pending", "canceled"].map((status) => (
+        <button
+          key={status}
+          onClick={() => setStatusFilter(status)}
+          className={`
+            px-4
+            h-11
+            rounded-xl
+            text-sm
+            font-medium
+            transition-all
+            ${
+              statusFilter === status
+                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+            }
+          `}
+        >
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </button>
+      ))}
+
+      <select
+        value={planFilter}
+        onChange={(e) => setPlanFilter(e.target.value)}
+        className="
+          h-11
+          px-4
+          rounded-xl
+          border
+          border-slate-200
+          dark:border-slate-700
+          bg-slate-100
+          dark:bg-slate-800
+          text-sm
+        "
+      >
+        <option value="all">All Plans</option>
+        <option value="Starter">Starter</option>
+        <option value="Pro">Pro</option>
+        <option value="Enterprise">Enterprise</option>
+      </select>
+
+    </div>
+  </div>
+</div>
+              {/* ====================================
+          ACTIVITY
+========================================= */}
+
+     <div
+  className="
+    p-6
+    rounded-3xl
+    border
+    border-slate-200
+    dark:border-slate-800
+    bg-white
+    dark:bg-slate-900
+    shadow-sm
+  "
+>
+  <div className="flex items-center justify-between mb-5">
+    <h3 className="font-semibold text-lg">
+      Recent Activity
+    </h3>
+
+    <span className="text-xs text-slate-500">
+      Last 5 customers
+    </span>
+  </div>
+
+  <div className="space-y-4">
+    {customers.slice(0, 5).map((c) => (
       <div
         key={c.id}
         className="
-        flex
-        justify-between
-        text-sm
-      "
+          flex
+          items-center
+          justify-between
+          p-3
+          rounded-2xl
+          hover:bg-slate-50
+          dark:hover:bg-slate-800/50
+          transition-all
+        "
       >
-        <span>
-          {c.name}
-        </span>
+        <div className="flex items-center gap-3">
+          <img
+            src={c.avatar}
+            alt={c.name}
+            className="w-10 h-10 rounded-full"
+          />
+
+          <div>
+            <p className="font-medium">
+              {c.name}
+            </p>
+
+            <p className="text-xs text-slate-500">
+              {c.company}
+            </p>
+          </div>
+        </div>
 
         <span
           className="
-          text-slate-500
-        "
+            text-xs
+            px-3
+            py-1
+            rounded-full
+            bg-emerald-500/10
+            text-emerald-500
+          "
         >
-          joined
+          Joined
         </span>
       </div>
     ))}
-
   </div>
 </div>
-      {/* الجدول */}
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-        <table className="w-full text-sm text-start border-collapse">
-          <thead className="text-[11px] font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 text-slate-400">
-            <tr>
-              <th className="px-6 py-4">
-                {lang === "ar" ? "المستخدم" : "User"}
-              </th>
 
-              <th className="px-6 py-4">{lang === "ar" ? "الخطة" : "Plan"}</th>
-              <th className="px-6 py-4">
-                {lang === "ar" ? "التاريخ" : "Date"}
-              </th>
-              <th className="px-6 py-4">{lang === "ar" ? "السعر" : "Price"}</th>
-              <th className="px-6 py-4">
-                {lang === "ar" ? "الحالة" : "Status"}
-              </th>
-              <th className="px-6 py-4 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-            {filteredCustomers.map((customer) => (
-              <tr
-                key={customer.id}
-                className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
-              >
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={customer.avatar}
-                      alt={customer.name}
-                      className="
-      w-10
-      h-10
-      rounded-full
-      object-cover
-      "
-                    />
+              {/* ====================================
+          Customers cards
+========================================= */}
 
-                    <div>
-                      <p className="font-semibold">{customer.name}</p>
 
-                      <p className="text-xs text-slate-500">{customer.email}</p>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs ${getPlanStyle(customer.plan)}`}
-                  >
-                    {customer.plan}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-slate-500">{customer.date}</td>
-                <td className="px-6 py-4 font-bold">${customer.revenue}</td>
-                <td className="px-6 py-4">
-                  <span
-                    className={`
-      px-3
-      py-1
-      rounded-full
-      text-xs
-      font-semibold
-      ${getStatusStyle(customer.status)}
-    `}
-                  >
-                    {customer.status.charAt(0).toUpperCase() +
-                      customer.status.slice(1)}
-                  </span>
-                </td>
-                <td className="px-6 py-4 relative">
-                  <button
-                    onClick={() =>
-                      setOpenMenu(openMenu === customer.id ? null : customer.id)
-                    }
-                    className="
-      p-2
-      rounded-lg
-      hover:bg-slate-100
-      dark:hover:bg-slate-800
-    "
-                  >
-                    <FiMoreVertical />
-                  </button>
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        {/* Left Side */}
+        <div>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+            Customers
+          </h3>
 
-                  {openMenu === customer.id && (
-                    <div
-                      className="
-        absolute
-        right-6
-        mt-2
-        w-40
+          <p className="text-sm text-slate-500">
+            {filteredCustomers.length} Customers Found
+          </p>
+        </div>
+
+        {/* Right Side */}
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={exportCSV}
+            className="
+        h-11
+        px-5
         rounded-xl
         border
         border-slate-200
         dark:border-slate-700
         bg-white
         dark:bg-slate-900
-        shadow-xl
-        z-50
+        hover:bg-slate-50
+        dark:hover:bg-slate-800
+        transition-all
       "
-                    >
-                      <button
-                        onClick={() => {
-                          setSelectedCustomer(customer);
-                          setOpenMenu(null);
-                        }}
-                        className="
-          w-full
-          flex
-          items-center
-          gap-2
-          px-4
-          py-3
-          hover:bg-slate-100
-          dark:hover:bg-slate-800
-        "
-                      >
-                        <FiEye />
-                        View
-                      </button>
+          >
+            Export CSV
+          </button>
 
-                      <button
-                        onClick={() => {
-                          setEditingCustomer(customer);
-                          setOpenMenu(null);
-                        }}
-                        className="
-          w-full
-          flex
-          items-center
-          gap-2
-          px-4
-          py-3
-          hover:bg-slate-100
-          dark:hover:bg-slate-800
-        "
-                      >
-                        <FiEdit />
-                        Edit
-                      </button>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="
+        h-11
+        px-5
+        rounded-xl
+        bg-gradient-to-r
+        from-indigo-600
+        to-violet-600
+        text-white
+        font-medium
+        text-sm
+        shadow-xl
+        shadow-indigo-600/20
+        hover:opacity-95
+        transition-all
+        flex
+        items-center
+        gap-2
+      "
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Add New User
+          </button>
+        </div>
+      </div>{" "}
 
-                      <button
-                        onClick={() => {
-                          deleteCustomer(customer.id);
-                          setOpenMenu(null);
-                        }}
-                        className="
-          w-full
-          flex
-          items-center
-          gap-2
-          px-4
-          py-3
-          text-red-500
-          hover:bg-red-500/10
-        "
-                      >
-                        <FiTrash2 />
-                        Delete
-                      </button>
-                    </div>
-                  )}
-                </td>{" "}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
 
+
+<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+
+  {currentCustomers.length === 0 ? (
+
+    <div
+      className="
+        col-span-full
+        p-16
+        text-center
+        rounded-3xl
+        border
+        border-dashed
+        border-slate-300
+        dark:border-slate-700
+        bg-white
+        dark:bg-slate-900
+      "
+    >
+      <h3 className="text-xl font-semibold">
+        No Customers Found
+      </h3>
+
+      <p className="mt-2 text-slate-500">
+        Try changing filters or add a new customer.
+      </p>
+    </div>
+
+  ) : (
+
+    currentCustomers.map((customer) => (
+              <div
+            key={customer.id}
+            className="
+            relative
+overflow-visible
+      bg-white
+      dark:bg-slate-900
+      border
+      border-slate-200
+      dark:border-slate-800
+      rounded-3xl
+      p-5
+      shadow-sm
+      hover:shadow-xl
+hover:-translate-y-1
+      transition-all
+      "
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between">
+              <div className="flex gap-3">
+                <img
+                  src={customer.avatar}
+                  alt={customer.name}
+                  className="w-12 h-12 rounded-full"
+                />
+
+                <div>
+                  <h3 className="font-semibold text-slate-900 dark:text-white">
+                    {customer.name}
+                  </h3>
+
+                  <p className="text-xs text-slate-500">{customer.email}</p>
+                </div>
+              </div>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+
+                  setOpenMenu(openMenu === customer.id ? null : customer.id);
+                }}
+                className="
+    p-2
+    rounded-lg
+    hover:bg-slate-100
+    dark:hover:bg-slate-800
+  "
+              >
+                <FiMoreVertical />
+              </button>
+            </div>
+            {/* Company */}
+            <div className="mt-5 space-y-2 text-sm">
+              <p>
+                <span className="text-slate-500">Company:</span>{" "}
+                {customer.company}
+              </p>
+
+              <p>
+                <span className="text-slate-500">Phone:</span> {customer.phone}
+              </p>
+
+              <p>
+                <span className="text-slate-500">Revenue:</span> $
+                {customer.revenue}
+              </p>
+
+              <p>
+                <span className="text-slate-500">Joined:</span> {customer.date}
+              </p>
+            </div>
+            {/* Plan + Status */}
+            <div className="flex gap-2 mt-5">
+              <span
+                className={`px-3 py-1 rounded-full text-xs ${getPlanStyle(customer.plan)}`}
+              >
+                {customer.plan}
+              </span>
+
+              <span
+                className={`px-3 py-1 rounded-full text-xs ${getStatusStyle(customer.status)}`}
+              >
+                {customer.status}
+              </span>
+            </div>
+            {openMenu === customer.id && (
+              <div
+                className="
+      absolute
+      top-14
+      right-4
+      z-50
+      w-44
+      rounded-2xl
+      border
+      border-slate-200
+      dark:border-slate-700
+      bg-white
+      dark:bg-slate-900
+      shadow-2xl
+      overflow-hidden
+    "
+              >
+                <button
+                  onClick={() => {
+                    setSelectedCustomer(customer);
+                    setOpenMenu(null);
+                  }}
+                  className="
+        w-full
+        px-4
+        py-3
+        text-left
+        hover:bg-slate-100
+        dark:hover:bg-slate-800
+      "
+                >
+                  View
+                </button>
+
+                <button
+                  onClick={() => {
+                    setEditingCustomer(customer);
+                    setOpenMenu(null);
+                  }}
+                  className="
+        w-full
+        px-4
+        py-3
+        text-left
+        hover:bg-slate-100
+        dark:hover:bg-slate-800
+      "
+                >
+                  Edit
+                </button>
+
+                <button
+                  onClick={() => {
+                    deleteCustomer(customer.id);
+                    setOpenMenu(null);
+                  }}
+                  className="
+        w-full
+        px-4
+        py-3
+        text-left
+        text-red-500
+        hover:bg-red-500/10
+      "
+                >
+                  Delete
+                </button>
+              </div>
+            )}{" "}
+          </div>
+    ))
+
+  )}
+
+</div>
+
+
+
+      
+      </div> 
+
+              {/* ====================================
+          Pagination
+========================================= */}
+
+
+
+      {totalPages > 1 && (
+  <div className="flex justify-center items-center gap-2 mt-8">
+
+    <button
+      disabled={currentPage === 1}
+      onClick={() =>
+        setCurrentPage(currentPage - 1)
+      }
+      className="
+        px-4
+        py-2
+        rounded-xl
+        border
+        disabled:opacity-40
+      "
+    >
+      Prev
+    </button>
+
+    {[...Array(totalPages)].map((_, i) => (
+      <button
+        key={i}
+        onClick={() =>
+          setCurrentPage(i + 1)
+        }
+        className={`
+          w-10
+          h-10
+          rounded-xl
+          transition-all
+          ${
+            currentPage === i + 1
+              ? "bg-indigo-600 text-white"
+              : "bg-slate-100 dark:bg-slate-800"
+          }
+        `}
+      >
+        {i + 1}
+      </button>
+    ))}
+
+    <button
+      disabled={currentPage === totalPages}
+      onClick={() =>
+        setCurrentPage(currentPage + 1)
+      }
+      className="
+        px-4
+        py-2
+        rounded-xl
+        border
+        disabled:opacity-40
+      "
+    >
+      Next
+    </button>
+
+  </div>
+)}
+      
       {/* المودال */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
@@ -657,7 +997,18 @@ function CRM() {
               <input
                 placeholder="Phone"
                 value={formData.phone}
-                className="w-full p-3 rounded-xl border"
+                className="
+w-full
+p-3
+rounded-xl
+border
+border-slate-200
+dark:border-slate-700
+bg-white
+dark:bg-slate-800
+text-slate-900
+dark:text-white
+"
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
                 }
@@ -666,14 +1017,36 @@ function CRM() {
               <input
                 placeholder="Company"
                 value={formData.company}
-                className="w-full p-3 rounded-xl border"
+                className="
+w-full
+p-3
+rounded-xl
+border
+border-slate-200
+dark:border-slate-700
+bg-white
+dark:bg-slate-800
+text-slate-900
+dark:text-white
+"
                 onChange={(e) =>
                   setFormData({ ...formData, company: e.target.value })
                 }
               />
               <select
                 value={formData.plan}
-                className="w-full p-3 rounded-xl border"
+                className="
+w-full
+p-3
+rounded-xl
+border
+border-slate-200
+dark:border-slate-700
+bg-white
+dark:bg-slate-800
+text-slate-900
+dark:text-white
+"
                 onChange={(e) =>
                   setFormData({ ...formData, plan: e.target.value })
                 }
@@ -683,7 +1056,18 @@ function CRM() {
                 <option value="Enterprise">Enterprise</option>
               </select>
               <select
-                className="w-full p-3 rounded-xl border"
+                className="
+w-full
+p-3
+rounded-xl
+border
+border-slate-200
+dark:border-slate-700
+bg-white
+dark:bg-slate-800
+text-slate-900
+dark:text-white
+"
                 value={formData.status}
                 onChange={(e) =>
                   setFormData({ ...formData, status: e.target.value })
@@ -712,7 +1096,6 @@ function CRM() {
           </div>
         </div>
       )}
-
       {editingCustomer && (
         <EditCustomerModal
           customer={editingCustomer}
@@ -720,7 +1103,6 @@ function CRM() {
           onSave={updateCustomer}
         />
       )}
-
       {selectedCustomer && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/30">
           <div
@@ -740,7 +1122,18 @@ function CRM() {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">Customer Details</h2>
 
-              <button onClick={() => setSelectedCustomer(null)}>✕</button>
+              <button
+                onClick={() => setSelectedCustomer(null)}
+                className="
+    w-9
+    h-9
+    rounded-lg
+    hover:bg-slate-100
+    dark:hover:bg-slate-800
+  "
+              >
+                ✕
+              </button>
             </div>
 
             <img
@@ -793,6 +1186,8 @@ function CRM() {
     </div>
   );
 }
+
+
 function EditCustomerModal({ customer, onClose, onSave }) {
   const [data, setData] = useState(customer);
 
@@ -817,6 +1212,7 @@ function EditCustomerModal({ customer, onClose, onSave }) {
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <input
+            placeholder="name"
             value={data.name}
             onChange={(e) =>
               setData({
@@ -824,10 +1220,22 @@ function EditCustomerModal({ customer, onClose, onSave }) {
                 name: e.target.value,
               })
             }
-            className="w-full p-3 rounded-xl border"
+            className="
+w-full
+p-3
+rounded-xl
+border
+border-slate-200
+dark:border-slate-700
+bg-white
+dark:bg-slate-800
+text-slate-900
+dark:text-white
+"
           />
 
           <input
+            placeholder="Email"
             value={data.email}
             onChange={(e) =>
               setData({
@@ -835,10 +1243,22 @@ function EditCustomerModal({ customer, onClose, onSave }) {
                 email: e.target.value,
               })
             }
-            className="w-full p-3 rounded-xl border"
+            className="
+w-full
+p-3
+rounded-xl
+border
+border-slate-200
+dark:border-slate-700
+bg-white
+dark:bg-slate-800
+text-slate-900
+dark:text-white
+"
           />
 
           <input
+            placeholder="phone"
             value={data.phone}
             onChange={(e) =>
               setData({
@@ -846,10 +1266,22 @@ function EditCustomerModal({ customer, onClose, onSave }) {
                 phone: e.target.value,
               })
             }
-            className="w-full p-3 rounded-xl border"
+            className="
+w-full
+p-3
+rounded-xl
+border
+border-slate-200
+dark:border-slate-700
+bg-white
+dark:bg-slate-800
+text-slate-900
+dark:text-white
+"
           />
 
           <input
+            placeholder="company"
             value={data.company}
             onChange={(e) =>
               setData({
@@ -857,7 +1289,18 @@ function EditCustomerModal({ customer, onClose, onSave }) {
                 company: e.target.value,
               })
             }
-            className="w-full p-3 rounded-xl border"
+            className="
+w-full
+p-3
+rounded-xl
+border
+border-slate-200
+dark:border-slate-700
+bg-white
+dark:bg-slate-800
+text-slate-900
+dark:text-white
+"
           />
 
           <select
@@ -868,7 +1311,18 @@ function EditCustomerModal({ customer, onClose, onSave }) {
                 plan: e.target.value,
               })
             }
-            className="w-full p-3 rounded-xl border"
+            className="
+w-full
+p-3
+rounded-xl
+border
+border-slate-200
+dark:border-slate-700
+bg-white
+dark:bg-slate-800
+text-slate-900
+dark:text-white
+"
           >
             <option value="Starter">Starter</option>
             <option value="Pro">Pro</option>
@@ -883,7 +1337,18 @@ function EditCustomerModal({ customer, onClose, onSave }) {
                 status: e.target.value,
               })
             }
-            className="w-full p-3 rounded-xl border"
+            className="
+w-full
+p-3
+rounded-xl
+border
+border-slate-200
+dark:border-slate-700
+bg-white
+dark:bg-slate-800
+text-slate-900
+dark:text-white
+"
           >
             <option value="active">Active</option>
             <option value="pending">Pending</option>
@@ -901,10 +1366,16 @@ function EditCustomerModal({ customer, onClose, onSave }) {
             rows="4"
             placeholder="Customer Notes"
             className="
-              w-full
-              p-3
-              rounded-xl
-              border
+   w-full
+p-3
+rounded-xl
+border
+border-slate-200
+dark:border-slate-700
+bg-white
+dark:bg-slate-800
+text-slate-900
+dark:text-white
             "
           />
 

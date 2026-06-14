@@ -111,7 +111,263 @@ function Users() {
             Manage team members and roles.
           </p>
         </div>
+
         {/* =========================================
+    STATS CARDS
+========================================= */}
+
+
+
+         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+          <div
+            className="
+      h-full
+      p-6
+      rounded-3xl
+      border
+      bg-white
+      dark:bg-slate-900
+      border-slate-200
+      dark:border-slate-800
+      shadow-sm
+      hover:shadow-xl
+      hover:-translate-y-1
+      transition-all
+"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm text-slate-500">Total Users</p>
+
+                <h3 className="text-3xl font-bold mt-2">{users.length}</h3>
+              </div>
+
+              <div
+                className="
+      w-12
+      h-12
+      rounded-2xl
+      bg-indigo-500/10
+      text-indigo-600
+      flex
+      items-center
+      justify-center
+      "
+              >
+                <UsersIcon size={22} />
+              </div>
+            </div>
+    <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
+            <div className="mt-5">
+              <span
+                className="
+      px-2
+      py-1
+      rounded-full
+      text-xs
+      bg-emerald-500/10
+      text-emerald-600
+      "
+              >
+                +12% this month
+              </span>
+
+             
+            </div>
+          </div>
+
+          {/* Active Users */}
+
+          <div
+            className="
+relative
+overflow-hidden
+rounded-3xl
+border
+border-slate-200
+dark:border-slate-800
+bg-white
+dark:bg-slate-900
+p-5
+shadow-sm
+hover:shadow-xl
+hover:-translate-y-1
+transition-all
+"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm text-slate-500">Active Users</p>
+
+                <h3 className="text-3xl font-bold mt-2">
+                  {users.filter((u) => u.status === "Active").length}
+                </h3>
+              </div>
+              <div
+                className="
+      w-12
+      h-12
+      rounded-2xl
+      bg-emerald-500/10
+      text-emerald-600
+      flex
+
+      items-center
+      justify-center
+      "
+              >
+                <UserCheck size={22} />
+              </div>
+            </div>
+    <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
+            <div className="mt-5">
+              <span
+                className="
+      px-2
+      py-1
+      rounded-full
+      text-xs
+      bg-emerald-500/10
+      text-emerald-600
+      "
+              >
+                +10% this month
+              </span>
+
+           
+            </div>
+          </div>
+
+             
+
+          {/* Admins */}
+
+          <div
+            className="
+relative
+overflow-hidden
+rounded-3xl
+border
+border-slate-200
+dark:border-slate-800
+bg-white
+dark:bg-slate-900
+p-5
+shadow-sm
+hover:shadow-xl
+hover:-translate-y-1
+transition-all
+"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm text-slate-500">Admins</p>
+
+                <h3 className="text-3xl font-bold mt-2">
+                  {users.filter((u) => u.role === "Admin").length}
+                </h3>
+              </div>
+
+              <div
+                className="
+      w-12
+      h-12
+      rounded-2xl
+      bg-violet-500/10
+      text-violet-600
+      flex
+      items-center
+      justify-center
+      "
+              >
+                <Shield size={22} />
+              </div>
+            </div>
+                <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
+
+            <div className="mt-5">
+              <span
+                className="
+      px-2
+      py-1
+      rounded-full
+      text-xs
+      bg-violet-500/10
+      text-violet-600
+      "
+              >
+                +8% this month
+              </span>
+
+            </div>
+          </div>
+
+          {/* Suspended Users */}
+
+          <div
+            className="
+relative
+overflow-hidden
+rounded-3xl
+border
+border-slate-200
+dark:border-slate-800
+bg-white
+dark:bg-slate-900
+p-5
+shadow-sm
+hover:shadow-xl
+hover:-translate-y-1
+transition-all
+"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm text-slate-500">Suspended Users</p>
+
+                <h3 className="text-3xl font-bold mt-2">
+                  {users.filter((u) => u.status === "Suspended").length}
+                </h3>
+              </div>
+
+              <div
+                className="
+      w-12
+      h-12
+      rounded-2xl
+      bg-red-500/10
+      text-red-600
+      flex
+      items-center
+      justify-center
+      "
+              >
+                <UserX size={22} />
+              </div>
+            </div>
+
+                <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
+
+            <div className="mt-5">
+              <span
+                className="
+      px-2
+      py-1
+      rounded-full
+      text-xs
+      bg-red-500/10
+      text-red-600
+      "
+              >
+                +12% this month
+              </span>
+
+           
+            </div>
+          </div>
+        </div>
+
+                {/* =========================================
     SEARCH & FILTERS
 ========================================= */}
 
@@ -175,270 +431,13 @@ function Users() {
             >
               <option value="All">{t.usersPage.filterStatus}</option>
 
-              <option value="Active">{t.usersPage.active}</option>
+              <option value="Active">{t.usersPage.Active}</option>
 
               <option value="Suspended">{t.usersPage.suspended}</option>
             </select>
           </div>
         </div>
 
-        {/* =========================================
-    STATS CARDS
-========================================= */}
-
-        <div className="mb-2">
-          <h2 className="text-2xl font-bold">Statistics</h2>
-
-          <p className="text-sm text-slate-500">
-            Overview of users and activity
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-          <div
-            className="
-relative
-overflow-hidden
-rounded-3xl
-border
-border-slate-200
-dark:border-slate-800
-bg-white
-dark:bg-slate-900
-p-5
-shadow-sm
-hover:shadow-xl
-hover:-translate-y-1
-transition-all
-"
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-slate-500">Total Users</p>
-
-                <h3 className="text-3xl font-bold mt-2">{users.length}</h3>
-              </div>
-
-              <div
-                className="
-      w-12
-      h-12
-      rounded-2xl
-      bg-indigo-500/10
-      text-indigo-600
-      flex
-      items-center
-      justify-center
-      "
-              >
-                <UsersIcon size={22} />
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <span
-                className="
-      px-2
-      py-1
-      rounded-full
-      text-xs
-      bg-emerald-500/10
-      text-emerald-600
-      "
-              >
-                +12%
-              </span>
-
-              <span className="ml-2 text-xs text-slate-500">this month</span>
-            </div>
-          </div>
-
-          {/* Active Users */}
-
-          <div
-            className="
-relative
-overflow-hidden
-rounded-3xl
-border
-border-slate-200
-dark:border-slate-800
-bg-white
-dark:bg-slate-900
-p-5
-shadow-sm
-hover:shadow-xl
-hover:-translate-y-1
-transition-all
-"
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-slate-500">Active Users</p>
-
-                <h3 className="text-3xl font-bold mt-2">
-                  {users.filter((u) => u.status === "Active").length}
-                </h3>
-              </div>
-
-              <div
-                className="
-      w-12
-      h-12
-      rounded-2xl
-      bg-emerald-500/10
-      text-emerald-600
-      flex
-      items-center
-      justify-center
-      "
-              >
-                <UserCheck size={22} />
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <span
-                className="
-      px-2
-      py-1
-      rounded-full
-      text-xs
-      bg-emerald-500/10
-      text-emerald-600
-      "
-              >
-                +10%
-              </span>
-
-              <span className="ml-2 text-xs text-slate-500">this month</span>
-            </div>
-          </div>
-
-          {/* Admins */}
-
-          <div
-            className="
-relative
-overflow-hidden
-rounded-3xl
-border
-border-slate-200
-dark:border-slate-800
-bg-white
-dark:bg-slate-900
-p-5
-shadow-sm
-hover:shadow-xl
-hover:-translate-y-1
-transition-all
-"
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-slate-500">Admins</p>
-
-                <h3 className="text-3xl font-bold mt-2">
-                  {users.filter((u) => u.role === "Admin").length}
-                </h3>
-              </div>
-
-              <div
-                className="
-      w-12
-      h-12
-      rounded-2xl
-      bg-violet-500/10
-      text-violet-600
-      flex
-      items-center
-      justify-center
-      "
-              >
-                <Shield size={22} />
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <span
-                className="
-      px-2
-      py-1
-      rounded-full
-      text-xs
-      bg-violet-500/10
-      text-violet-600
-      "
-              >
-                +8%
-              </span>
-
-              <span className="ml-2 text-xs text-slate-500">this month</span>
-            </div>
-          </div>
-
-          {/* Suspended Users */}
-
-          <div
-            className="
-relative
-overflow-hidden
-rounded-3xl
-border
-border-slate-200
-dark:border-slate-800
-bg-white
-dark:bg-slate-900
-p-5
-shadow-sm
-hover:shadow-xl
-hover:-translate-y-1
-transition-all
-"
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-slate-500">Suspended Users</p>
-
-                <h3 className="text-3xl font-bold mt-2">
-                  {users.filter((u) => u.status === "Suspended").length}
-                </h3>
-              </div>
-
-              <div
-                className="
-      w-12
-      h-12
-      rounded-2xl
-      bg-red-500/10
-      text-red-600
-      flex
-      items-center
-      justify-center
-      "
-              >
-                <UserX size={22} />
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <span
-                className="
-      px-2
-      py-1
-      rounded-full
-      text-xs
-      bg-red-500/10
-      text-red-600
-      "
-              >
-                +12%
-              </span>
-
-              <span className="ml-2 text-xs text-slate-500">this month</span>
-            </div>
-          </div>
-        </div>
 
         {/* =========================================
     USERS GRID
