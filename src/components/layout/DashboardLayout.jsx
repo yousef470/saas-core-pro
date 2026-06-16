@@ -4,6 +4,7 @@ import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 
 function DashboardLayout() {
+  
   const [isOpen, setIsOpen] = useState(false);
 
 return (

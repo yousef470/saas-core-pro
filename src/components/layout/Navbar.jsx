@@ -20,6 +20,7 @@ import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 function Navbar({ setIsOpen }) {
+
   const { darkMode, toggleDarkMode, toggleLanguage, lang } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] =

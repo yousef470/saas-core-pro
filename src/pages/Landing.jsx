@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+
 import { Link, useNavigate } from "react-router-dom"; 
 import useTheme from "../hooks/useTheme";
 import { 
@@ -10,6 +11,7 @@ function Landing() {
 const { lang, darkMode, toggleDarkMode, toggleLanguage } = useTheme();
   const navigate = useNavigate(); // 🆕 تعريف الـ navigate
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -61,36 +63,30 @@ useEffect(() => {
     }
   ];
 
-const plans = [
-  { 
-    name: lang === "ar" ? "الخطة الأساسية" : "Starter Plan", 
-    price: "$19", 
-    desc: lang === "ar" ? "مثالية للأفراد والشركات الناشئة" : "Best for individuals and startups",
-    features: lang === "ar" 
-      ? ["3 مشاريع نشطة", "تحليلات أساسية", "دعم عبر البريد 24/7"] 
-      : ["3 Active Projects", "Basic Analytics", "24/7 Email Support"],
-    popular: false 
-  },
-  { 
-    name: lang === "ar" ? "الخطة المتقدمة" : "Pro Plan", 
-    price: "$49", 
-    desc: lang === "ar" ? "الخيار الأفضل للشركات المتنامية" : "Best for growing companies",
-    features: lang === "ar" 
-      ? ["مشاريع غير محدودة", "تحليلات متقدمة لحظية", "نطاق مخصص", "دعم فني ذو أولوية"] 
-      : ["Unlimited Projects", "Advanced Live Analytics", "Custom Domain", "Priority Support"],
-    popular: true 
-  },
-  { 
-    name: lang === "ar" ? "خطة الشركات" : "Enterprise Plan", 
-    price: lang === "ar" ? "تواصل معنا" : "Custom", 
-    desc: lang === "ar" ? "للمؤسسات الكبرى واحتياجات التوسع" : "For large-scale operations and scaling",
-    features: lang === "ar" 
-      ? ["كل مميزات Pro", "ميزات مخصصة (Custom)", "دعم مخصص 24/7", "مدير حساب خاص"] 
-      : ["Everything in Pro", "Custom Features & Integrations", "24/7 Dedicated Support", "Dedicated Account Manager"],
-    popular: false 
-  }
-];
+const [plans, setPlans] = useState([]);
 
+useEffect(() => {
+  const loadPlans = () => {
+    setPlans(
+      JSON.parse(
+        localStorage.getItem("products")
+      ) || []
+    );
+  };
+
+  loadPlans();
+
+  window.addEventListener(
+    "products-updated",
+    loadPlans
+  );
+
+  return () =>
+    window.removeEventListener(
+      "products-updated",
+      loadPlans
+    );
+}, []);
   // 3. آراء الناس (Testimonials)
  
   const reviews = [
@@ -138,13 +134,44 @@ const plans = [
     navigate("/checkout", { state: { plan: { name: planName, price: planPrice } } });
   };
 
-  const handleContactSubmit = (e) => {
+const handleContactSubmit = (e) => {
+  e.preventDefault();
 
-    e.preventDefault();
-    alert(lang === "ar" ? "تم إرسال رسالتك بنجاح!" : "Message sent successfully!");
-    setEmail("");
-    setMessage("");
-  };
+  const existingMessages =
+    JSON.parse(
+      localStorage.getItem("contactMessages")
+    ) || [];
+
+const newMessage = {
+  id: Date.now(),
+  name,
+  email,
+  message,
+  createdAt: new Date().toISOString(),
+  unread: true,
+  status: "New Lead",
+};
+
+  localStorage.setItem(
+    "contactMessages",
+    JSON.stringify([
+      ...existingMessages,
+      newMessage,
+    ])
+  );
+  window.dispatchEvent(
+  new Event("contact-update")
+);
+
+  alert(
+    lang === "ar"
+      ? "تم إرسال الرسالة بنجاح"
+      : "Message sent successfully"
+  );
+  setName("");
+  setEmail("");
+  setMessage("");
+};
 const handleLogout = () => {
   localStorage.removeItem("isLoggedIn");
 
@@ -370,6 +397,8 @@ const handleLogout = () => {
     ))}
   </div>
 </section>
+
+
 {/* Pricing Section */}
 <section id="pricing" className="max-w-6xl mx-auto px-6 py-24">
   <div className="text-center mb-16">
@@ -377,7 +406,7 @@ const handleLogout = () => {
   </div>
 
   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-    {plans.map((plan, idx) => (
+    {(plans || []).map((plan, idx) => (
       <div 
         key={idx} 
         className={`p-8 rounded-3xl border ${plan.popular ? "border-indigo-500 shadow-xl scale-105" : "border-slate-200 dark:border-slate-800"} bg-white dark:bg-slate-900 flex flex-col relative`}
@@ -392,11 +421,25 @@ const handleLogout = () => {
         )}
         
         <h3 className="text-lg font-semibold text-center mb-4">{plan.name}</h3>
-        <div className="text-3xl font-bold text-center mb-6">{plan.price}</div>
+<div className="text-center mb-6">
+<div className="text-center mb-6">
+  <div className="flex justify-center items-end gap-1">
+    <span className="text-5xl font-black text-indigo-600">
+      {plan.price}
+    </span>
+
+    <span className="text-slate-500 mb-2">
+      {lang === "ar" ? "/شهر" : "/month"}
+    </span>
+  </div>
+</div>
+</div>
         
-        <ul className="space-y-4 flex-1 mb-8 text-sm text-center text-slate-500 dark:text-slate-400">
-          {plan.features.map((f, i) => <li key={i}>{f}</li>)}
-        </ul>
+<ul className="space-y-4 flex-1 mb-8 text-sm text-center text-slate-500 dark:text-slate-400">
+  {(plan.features || []).map((f, i) => (
+    <li key={i}>{f}</li>
+  ))}
+</ul>
         
         {/* استخدام دالة handleCheckoutNavigation هنا */}
         <button 
@@ -540,6 +583,38 @@ const handleLogout = () => {
     {/* كارد النموذج (Contact Form) */}
     <form onSubmit={handleContactSubmit} className="bg-white dark:bg-slate-950 p-12 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-2xl">
       <div className="space-y-8">
+
+        <div>
+  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
+    {lang === "ar" ? "الاسم" : "Name"}
+  </label>
+
+  <input
+    type="text"
+    required
+    value={name}
+    onChange={(e) => setName(e.target.value)}
+    placeholder={
+      lang === "ar"
+        ? "اكتب اسمك"
+        : "Your Name"
+    }
+    className="
+      w-full
+      px-5
+      py-4
+      rounded-xl
+      border
+      border-slate-200
+      dark:border-slate-800
+      bg-slate-50
+      dark:bg-slate-900
+      outline-none
+      focus:border-indigo-500
+      transition-all
+    "
+  />
+</div>
         <div>
           <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
             {lang === "ar" ? "البريد الإلكتروني" : "Email Address"}

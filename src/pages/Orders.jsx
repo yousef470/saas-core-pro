@@ -18,7 +18,7 @@ import {
   updateOrder,
   deleteOrder,
 } from "../services/orderService";
-
+import { useRef } from "react";
 import * as XLSX from "xlsx";
 
 // دالة لتحديد ألوان الـ Status
@@ -47,9 +47,11 @@ function Orders() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [deleteModal, setDeleteModal] = useState(null);
+  const [selectedDate, setSelectedDate] = useState("");
 const { t } = useTheme();
 
   const [editModal, setEditModal] = useState(null);
+  const dateInputRef = useRef(null);
 
   const [newOrder, setNewOrder] = useState({
     customer: "",
@@ -129,16 +131,26 @@ const { t } = useTheme();
   };
 
   const ordersPerPage = 5;
-  const filteredOrders = orders.filter((o) => {
-    const matchesStatus = statusFilter === "All" || o.status === statusFilter;
+const filteredOrders = orders.filter((o) => {
+  const matchesStatus =
+    statusFilter === "All" ||
+    o.status === statusFilter;
 
-    const matchesSearch =
-      o.customer.toLowerCase().includes(search.toLowerCase()) ||
-      o.email.toLowerCase().includes(search.toLowerCase()) ||
-      o.id.toLowerCase().includes(search.toLowerCase());
+  const matchesSearch =
+    o.customer.toLowerCase().includes(search.toLowerCase()) ||
+    o.email.toLowerCase().includes(search.toLowerCase()) ||
+    o.id.toLowerCase().includes(search.toLowerCase());
 
-    return matchesStatus && matchesSearch;
-  });
+  const matchesDate =
+    !selectedDate ||
+    o.date === selectedDate;
+
+  return (
+    matchesStatus &&
+    matchesSearch &&
+    matchesDate
+  );
+});
 
   const totalPages = Math.max(
     1,
@@ -173,13 +185,7 @@ const { t } = useTheme();
     setSelectedOrders([]);
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    setOrders(
-      updateOrder(id, {
-        status: newStatus,
-      }),
-    );
-  };
+
 
   const handleAddOrder = () => {
     if (!newOrder.customer || !newOrder.email) return;
@@ -416,20 +422,40 @@ duration-300
             <option value="Cancelled">Cancelled</option>
           </select>
 
-          <button
-            className="
-        px-4
-        h-12
-        rounded-2xl
-        border
-        flex
-        items-center
-        gap-2
-      "
-          >
-            <Calendar size={18} />
-            Date
-          </button>
+      <div className="relative">
+  <button
+    onClick={() => dateInputRef.current?.showPicker()}
+    className="
+      px-4
+      h-12
+      rounded-2xl
+      border
+      flex
+      items-center
+      gap-2
+    "
+  >
+    <Calendar size={18} />
+
+    {selectedDate || "Date"}
+  </button>
+
+<input
+  ref={dateInputRef}
+  type="date"
+  value={selectedDate}
+  onChange={(e) =>
+    setSelectedDate(e.target.value)
+  }
+  className="
+    absolute
+    opacity-0
+    pointer-events-none
+    w-0
+    h-0
+  "
+/>
+</div>
         </div>
 
         {/* Row 2 */}
@@ -705,27 +731,30 @@ cursor-pointer
                 <div className="flex justify-between items-center">
                   <span className="text-slate-400">Status</span>
 
-                  <select
-                    value={order.status}
-                    onChange={(e) =>
-                      handleStatusChange(order.id, e.target.value)
-                    }
-                    className="
-                px-3
-                py-2
-                rounded-xl
-                border
-                bg-white
-                dark:bg-slate-900
-                text-sm
-              "
-                  >
-                    <option value="Pending">Pending</option>
+<div
+  className={`
+    inline-flex
+    items-center
+    gap-2
+    px-3
+    py-2
+    rounded-full
+    text-xs
+    font-bold
 
-                    <option value="Completed">Completed</option>
+    ${
+      order.status === "Completed"
+        ? "bg-green-500/10 text-green-500"
+        : order.status === "Cancelled"
+        ? "bg-red-500/10 text-red-500"
+        : "bg-yellow-500/10 text-yellow-500"
+    }
+  `}
+>
+  <span className="w-2 h-2 rounded-full bg-current"></span>
 
-                    <option value="Cancelled">Cancelled</option>
-                  </select>
+  {order.status}
+</div>
                 </div>
 
                 <div className="flex justify-between">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { 
   Plus, 
@@ -41,8 +41,10 @@ const initialData = {
 };
 
 function Kanban() {
+
   const { user } = useAuth(); // سيُستخدم لإظهار اسم المستخدم في الترحيب
-  const { lang } = useTheme(); // سيُستخدم لتحديد اللغة
+  const { lang } = useTheme();
+  const [searchTerm, setSearchTerm] = useState("");
   const [data, setData] = useState(() => {
   const saved =
     localStorage.getItem("kanbanData");
@@ -184,6 +186,13 @@ setData({
   const taskId =
     `task-${Date.now()}`;
 
+const columnStatusMap = {
+  "col-1": "todo",
+  "col-2": "progress",
+  "col-3": "done",
+};
+
+
 const task = {
   id: taskId,
   content: newTask.title,
@@ -191,7 +200,9 @@ const task = {
   priority: newTask.priority,
   category: newTask.category,
   date: newTask.date,
-  status: newTask.status,
+
+  status:
+    columnStatusMap[newTask.columnId],
 };
 
   const column =
@@ -230,14 +241,9 @@ const task = {
     status:"todo"
   });
 
-const columnStatusMap = {
-  "col-1": "todo",
-  "col-2": "progress",
-  "col-3": "done",
-};
 
-status:
-columnStatusMap[newTask.columnId]
+
+
 
 };
 
@@ -270,9 +276,13 @@ Object.values(data.columns).forEach(
 );
 
 // إضافته للعمود الجديد
-newColumns[targetColumnId].taskIds.push(
-  editingTask.id
-);
+newColumns[targetColumnId] = {
+  ...newColumns[targetColumnId],
+  taskIds: [
+    ...newColumns[targetColumnId].taskIds,
+    editingTask.id,
+  ],
+};
 
 setData({
   ...data,
@@ -322,12 +332,26 @@ const handleDeleteTask = (
 
 };
 
-const [searchTerm,setSearchTerm] =
-useState("");
+// داخل المكون Kanban قبل الـ return
+const filteredColumns = useMemo(() => {
+  const newColumns = { ...data.columns };
+  
+  Object.keys(newColumns).forEach((colId) => {
+    const column = newColumns[colId];
+    // فلترة المهام بناءً على السيرش
+    const filteredTaskIds = column.taskIds.filter((taskId) =>
+      data.tasks[taskId].content.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    newColumns[colId] = { ...column, taskIds: filteredTaskIds };
+  });
+  
+  return newColumns;
+}, [data, searchTerm]);
 
 
   return (
     <motion.div
+      layout
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
@@ -338,6 +362,10 @@ useState("");
       {/* الخلفية المضيئة - نفس ستايل الداشبورد */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 blur-[140px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 blur-[140px] pointer-events-none" />
+
+                 {/* =========================================
+  Header
+========================================= */}  
 
       <div className="relative z-10 space-y-8">
         {/* قسم العنوان والترحيب */}
@@ -352,17 +380,20 @@ useState("");
                 {lang === "ar" ? "نظم مشاريعك وتابع تقدم فريقك لحظة بلحظة بتصميم زجاجي عصري." : "Manage your project workflows and track team performance with modern glassmorphism."}
               </p>
             </div>
+
+           {/* =========================================
+    Search
+========================================= */}  
             
             <div className="flex gap-3">
-               <div className="relative hidden sm:block">
+               <div className="relative ">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
 <input
+
 type="text"
 value={searchTerm}
 onChange={(e)=>
-setSearchTerm(
-e.target.value
-)
+setSearchTerm(e.target.value)
 }
 placeholder={
 lang === "ar"
@@ -388,7 +419,7 @@ focus:ring-2
 focus:ring-indigo-500/20
 focus:border-indigo-500
 
-transition-all
+
 "/>
                </div>
 
@@ -405,6 +436,11 @@ className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700
             </div>
           </div>
         </div>
+
+
+                   {/* =========================================
+    STATS CARDS
+========================================= */}  
 
 <div className="
 grid
@@ -486,24 +522,16 @@ text-emerald-500
 
 
 
-        {/* لوحة الكانبان */}
+              {/* =========================================
+    Kanban CARDS
+========================================= */}  
+
         <DragDropContext onDragEnd={onDragEnd}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {data.columnOrder.map((columnId) => {
-              const column = data.columns[columnId];
-const tasks =
-column.taskIds
-.map(
-(taskId)=>
-data.tasks[taskId]
-)
-.filter(task =>
-task.content
-.toLowerCase()
-.includes(
-searchTerm.toLowerCase()
-)
-);
+{data.columnOrder.map((columnId) => {
+  // استخدم الأعمدة المفلترة التي جهزناها في الـ useMemo
+  const column = filteredColumns[columnId]; 
+  const tasks = column.taskIds.map((taskId) => data.tasks[taskId]);
 
               return (
                 <div key={column.id} className="flex flex-col space-y-4">
@@ -665,7 +693,9 @@ setShowTaskModal(true)
       </div>
 </div>
 
-
+           {/* =========================================
+    modals
+========================================= */}  
 {showTaskModal && (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 
@@ -1016,69 +1046,9 @@ In Progress
 Done
 </option>
 </select>
-<select
-
-  value={newTask.status}
-
-  onChange={(e) =>
-
-    setNewTask({
-
-      ...newTask,
-
-      status: e.target.value,
-
-    })
-
-  }
-
-  className="
-
-  w-full
-
-  h-11
-
-  px-4
-
-  rounded-xl
-
-  bg-slate-50
-
-  dark:bg-slate-800
-
-  border
-
-  border-slate-200
-
-  dark:border-white/10
-
-  "
-
->
-
-  <option value="todo">
-
-    To Do
-
-  </option>
 
 
 
-  <option value="progress">
-
-    In Progress
-
-  </option>
-
-
-
-  <option value="done">
-
-    Done
-
-  </option>
-
-</select>
 <select
 value={editingTask.category}
 onChange={(e)=>
