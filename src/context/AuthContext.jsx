@@ -153,15 +153,24 @@ function AuthProvider({ children }) {
       user: newUser,
     };
   };
-
   const updateProfile = (updatedData) => {
+    console.log("USER ID =", user?.id);
+    console.log("BEFORE =", users);
+
     const updatedUsers = users.map((u) =>
       u.id === user.id ? { ...u, ...updatedData } : u,
     );
 
-    setUsers(updatedUsers);
+    console.log("AFTER =", updatedUsers);
 
     localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
+
+    console.log(
+      "LOCAL STORAGE AFTER SAVE =",
+      JSON.parse(localStorage.getItem("saas_users")),
+    );
+
+    setUsers(updatedUsers);
 
     const updatedUser = updatedUsers.find((u) => u.id === user.id);
 

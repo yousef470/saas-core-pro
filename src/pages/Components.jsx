@@ -1,77 +1,198 @@
-
 import { motion } from "framer-motion";
-import { Mail, Bell, Settings, Search, CheckCircle, AlertTriangle, Info } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+ 
+  Search,
+  CheckCircle,
+  AlertTriangle,
+  XCircle,
+  Loader2,
+} from "lucide-react";
 
 function Components() {
   return (
-    <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
-      className="space-y-12 pb-20"
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-8 pb-10"
     >
-      <div className="border-b border-white/10 pb-6">
-        <h1 className="text-4xl font-black mb-2">Design System</h1>
-        <p className="text-slate-400">مجموعة العناصر البريميوم الخاصة بنظام Pro SaaS.</p>
+      {/* Header */}
+      <div className="rounded-3xl border border-slate-200 dark:border-white/10 p-8 bg-white dark:bg-slate-900">
+        <h1 className="text-4xl font-black">
+          Components Library
+        </h1>
+
+        <p className="text-slate-500 mt-2">
+          Reusable UI components used across SaaS Core Pro.
+        </p>
       </div>
 
-      {/* Buttons Section */}
-      <section className="space-y-6">
-        <h2 className="text-xl font-bold flex items-center gap-2"><div className="w-1.5 h-6 bg-indigo-500 rounded-full"/> الأزرار (Buttons)</h2>
-        <div className="flex flex-wrap gap-4 bg-white/5 p-8 rounded-[2rem] border border-white/5">
-          <button className="px-8 py-3 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20">Primary Button</button>
-          <button className="px-8 py-3 bg-white/10 text-white rounded-2xl font-bold hover:bg-white/20 transition-all border border-white/10">Secondary</button>
-          <button className="px-8 py-3 border-2 border-dashed border-slate-600 text-slate-400 rounded-2xl font-bold hover:border-indigo-500 hover:text-indigo-500 transition-all">Dashed Outline</button>
-          <button className="p-3 bg-emerald-500/20 text-emerald-500 rounded-xl hover:bg-emerald-500 hover:text-white transition-all"><Settings size={22} /></button>
+      {/* Buttons */}
+      <section className="rounded-3xl border border-slate-200 dark:border-white/10 p-6 bg-white dark:bg-slate-900">
+        <h2 className="text-2xl font-bold mb-6">
+          Buttons
+        </h2>
+
+        <div className="flex flex-wrap gap-4">
+          <button className="px-5 py-3 rounded-xl bg-indigo-600 text-white">
+            Primary
+          </button>
+
+          <button className="px-5 py-3 rounded-xl border border-slate-300 dark:border-white/10">
+            Secondary
+          </button>
+
+          <button className="px-5 py-3 rounded-xl bg-red-600 text-white">
+            Danger
+          </button>
+
+          <button className="px-5 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5">
+            Ghost
+          </button>
+
+          <button className="p-3 rounded-xl bg-indigo-600 text-white">
+            <Plus size={18} />
+          </button>
         </div>
       </section>
 
-      {/* Input Fields Section */}
-      <section className="space-y-6">
-        <h2 className="text-xl font-bold flex items-center gap-2"><div className="w-1.5 h-6 bg-emerald-500 rounded-full"/> حقول الإدخال (Inputs)</h2>
-        <div className="grid md:grid-cols-2 gap-6 bg-white/5 p-8 rounded-[2rem] border border-white/5">
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 ml-2">Email Address</label>
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-              <input type="text" placeholder="name@company.com" className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all" />
+      {/* Inputs */}
+      <section className="rounded-3xl border border-slate-200 dark:border-white/10 p-6 bg-white dark:bg-slate-900">
+        <h2 className="text-2xl font-bold mb-6">
+          Inputs
+        </h2>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          <input
+            placeholder="Text Input"
+            className="h-11 px-4 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-50 dark:bg-slate-800"
+          />
+
+          <div className="relative">
+            <Search
+              size={18}
+              className="absolute left-3 top-1/2 -translate-y-1/2"
+            />
+
+            <input
+              placeholder="Search Input"
+              className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-50 dark:bg-slate-800"
+            />
+          </div>
+
+          <textarea
+            rows={4}
+            placeholder="Textarea"
+            className="md:col-span-2 p-4 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-50 dark:bg-slate-800"
+          />
+        </div>
+      </section>
+
+      {/* Badges */}
+      <section className="rounded-3xl border border-slate-200 dark:border-white/10 p-6 bg-white dark:bg-slate-900">
+        <h2 className="text-2xl font-bold mb-6">
+          Badges
+        </h2>
+
+        <div className="flex gap-3 flex-wrap">
+          <span className="px-3 py-1 rounded-full bg-emerald-500 text-white text-sm">
+            Active
+          </span>
+
+          <span className="px-3 py-1 rounded-full bg-orange-500 text-white text-sm">
+            Pending
+          </span>
+
+          <span className="px-3 py-1 rounded-full bg-indigo-500 text-white text-sm">
+            Premium
+          </span>
+
+          <span className="px-3 py-1 rounded-full bg-red-500 text-white text-sm">
+            Rejected
+          </span>
+        </div>
+      </section>
+
+      {/* Alerts */}
+      <section className="rounded-3xl border border-slate-200 dark:border-white/10 p-6 bg-white dark:bg-slate-900">
+        <h2 className="text-2xl font-bold mb-6">
+          Alerts
+        </h2>
+
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+            <CheckCircle size={18} />
+            Success Alert
+          </div>
+
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-orange-500/10 border border-orange-500/20">
+            <AlertTriangle size={18} />
+            Warning Alert
+          </div>
+
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+            <XCircle size={18} />
+            Error Alert
+          </div>
+        </div>
+      </section>
+
+      {/* Cards */}
+      <section className="rounded-3xl border border-slate-200 dark:border-white/10 p-6 bg-white dark:bg-slate-900">
+        <h2 className="text-2xl font-bold mb-6">
+          Cards
+        </h2>
+
+        <div className="grid md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((card) => (
+            <div
+              key={card}
+              className="rounded-2xl border border-slate-200 dark:border-white/10 p-5"
+            >
+              <p className="text-sm text-slate-500">
+                Revenue
+              </p>
+
+              <h3 className="text-3xl font-black mt-2">
+                $12,450
+              </h3>
             </div>
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 ml-2">Search Project</label>
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-              <input type="text" placeholder="Type keywords..." className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 focus:outline-none focus:border-indigo-500 transition-all" />
-            </div>
-          </div>
+          ))}
         </div>
       </section>
 
-      {/* Badges & Status Section */}
-      <section className="space-y-6">
-        <h2 className="text-xl font-bold flex items-center gap-2"><div className="w-1.5 h-6 bg-amber-500 rounded-full"/> الشارات (Badges)</h2>
-        <div className="flex flex-wrap gap-6 bg-white/5 p-8 rounded-[2rem] border border-white/5">
-          <div className="flex items-center gap-2 px-4 py-1.5 bg-emerald-500/10 text-emerald-500 rounded-full text-xs font-black uppercase tracking-tighter"><CheckCircle size={14} /> Completed</div>
-          <div className="flex items-center gap-2 px-4 py-1.5 bg-amber-500/10 text-amber-500 rounded-full text-xs font-black uppercase tracking-tighter"><AlertTriangle size={14} /> In Progress</div>
-          <div className="flex items-center gap-2 px-4 py-1.5 bg-red-500/10 text-red-500 rounded-full text-xs font-black uppercase tracking-tighter"><Bell size={14} /> Priority</div>
-          <div className="flex items-center gap-2 px-4 py-1.5 bg-indigo-500/10 text-indigo-500 rounded-full text-xs font-black uppercase tracking-tighter"><Info size={14} /> Info</div>
-        </div>
+      {/* Loaders */}
+      <section className="rounded-3xl border border-slate-200 dark:border-white/10 p-6 bg-white dark:bg-slate-900">
+        <h2 className="text-2xl font-bold mb-6">
+          Loaders
+        </h2>
+
+        <Loader2
+          size={40}
+          className="animate-spin text-indigo-600"
+        />
       </section>
 
-      {/* Glass Cards */}
-      <section className="space-y-6">
-        <h2 className="text-xl font-bold flex items-center gap-2"><div className="w-1.5 h-6 bg-pink-500 rounded-full"/> البطاقات (Cards)</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="p-6 rounded-[2rem] bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-xl shadow-indigo-500/20 transition-transform hover:scale-105">
-            <h3 className="text-xl font-bold mb-2">Upgrade to Pro</h3>
-            <p className="text-white/70 text-sm mb-6">Get access to unlimited projects and analytics.</p>
-            <button className="w-full py-2 bg-white text-indigo-600 rounded-xl font-bold">Start Now</button>
-          </div>
-          <div className="p-6 rounded-[2rem] bg-white/5 border border-white/10 backdrop-blur-xl relative overflow-hidden group">
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all" />
-            <h3 className="font-bold mb-2">Stat Card</h3>
-            <div className="text-3xl font-black mb-1">2,482</div>
-            <p className="text-emerald-500 text-xs font-bold">+12.5% Incr.</p>
-          </div>
+      {/* Empty State */}
+      <section className="rounded-3xl border border-slate-200 dark:border-white/10 p-6 bg-white dark:bg-slate-900">
+        <h2 className="text-2xl font-bold mb-6">
+          Empty States
+        </h2>
+
+        <div className="text-center py-12">
+          <Trash2
+            size={48}
+            className="mx-auto mb-4 text-slate-400"
+          />
+
+          <h3 className="font-bold text-lg">
+            No Data Found
+          </h3>
+
+          <p className="text-slate-500 mt-2">
+            Nothing to display yet.
+          </p>
         </div>
       </section>
     </motion.div>

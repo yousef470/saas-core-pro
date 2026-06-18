@@ -91,6 +91,13 @@ event => event.date === selectedDate
 );
 
 
+const totalEvents = events.length;
+
+const todayEvents =
+events.filter(
+event => event.date === todayString
+).length;
+
 const getEventColor = (type) => {
   switch (type) {
     case "work":
@@ -166,6 +173,16 @@ const getWeekDates = () => {
 
 const weekDates = getWeekDates();
 
+
+const workEvents =
+events.filter(e => e.type === "work").length;
+
+const meetingEvents =
+events.filter(e => e.type === "meeting").length;
+
+const personalEvents =
+events.filter(e => e.type === "personal").length;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -173,6 +190,9 @@ const weekDates = getWeekDates();
       className=" pb-10"
     >
       <div className="space-y-8 ">
+
+
+        
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white/5 p-6 rounded-3xl border border-slate-200 dark:border-white/10 backdrop-blur-xl">
         <div className="flex items-center gap-4">
@@ -184,6 +204,7 @@ const weekDates = getWeekDates();
               {lang === "ar" ? "التقويم" : "Calendar"}
             </h1>
 <p className="text-sm text-slate-400">
+  
   {currentDate.toLocaleDateString(
     lang === "ar" ? "ar-EG" : "en-US",
     {
@@ -192,8 +213,25 @@ const weekDates = getWeekDates();
     }
   )}
 </p>
+
+<div className="flex gap-4 mt-2 text-sm">
+
+<span className="text-indigo-500 font-semibold">
+{totalEvents} Events
+</span>
+
+<span className="text-emerald-500 font-semibold">
+{todayEvents} Today
+</span>
+
+</div>
+
           </div>
+
+          
         </div>
+
+        
 
         <div className="flex items-center gap-3 bg-white/5 p-2 rounded-2xl border border-white/5">
 <button
@@ -247,6 +285,46 @@ className="p-2 hover:bg-white/10 rounded-xl transition-all"
           {lang === "ar" ? "حدث جديد" : "New Event"}
         </button>
       </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+<div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+<h3 className="text-sm text-slate-400">
+Total Events
+</h3>
+<p className="text-2xl font-black">
+{totalEvents}
+</p>
+</div>
+
+<div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+<h3 className="text-sm text-slate-400">
+Work
+</h3>
+<p className="text-2xl font-black">
+{workEvents}
+</p>
+</div>
+
+<div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+<h3 className="text-sm text-slate-400">
+Meetings
+</h3>
+<p className="text-2xl font-black">
+{meetingEvents}
+</p>
+</div>
+
+<div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+<h3 className="text-sm text-slate-400">
+Personal
+</h3>
+<p className="text-2xl font-black">
+{personalEvents}
+</p>
+</div>
+
+</div>
 
       <div className="
 flex items-center gap-2
@@ -318,6 +396,8 @@ ${view === tab.id
 
     const dayEvents = events.filter((event) => event.date === dateString);
 
+    const isToday =
+dateString === todayString;
 
 
 
@@ -326,11 +406,16 @@ ${view === tab.id
       <div
         key={i}
         onClick={() => setSelectedDate(dateString)}
-className={`h-24 md:h-32 border border-white/5 rounded-3xl p-3 transition-all hover:bg-indigo-500/5 cursor-pointer group ${
-  isSelected
-    ? "bg-indigo-600 ring-4 ring-indigo-500/20 text-white"
-    : ""
-}`}
+className={`h-24 md:h-32 border border-white/5 rounded-3xl p-3 transition-all hover:bg-indigo-500/5 cursor-pointer group
+
+${isSelected
+? "bg-indigo-600 ring-4 ring-indigo-500/20 text-white"
+: ""}
+
+${isToday
+? "ring-2 ring-emerald-500"
+: ""}
+`}
       >
         <span className="font-bold text-sm">{dayNumber}</span>
         <div className="mt-2 space-y-1">
@@ -350,6 +435,32 @@ ${getEventColor(event.type)}
               {event.title}
             </div>
           ))}
+
+          {dayEvents.length > 2 && (
+
+<div
+className="
+text-[10px]
+text-indigo-500
+font-semibold
+"
+>
++{dayEvents.length - 2} more
+</div>
+
+)}
+
+          {dayEvents.length > 2 && (
+  <div
+    className="
+    text-[10px]
+    text-indigo-500
+    font-semibold
+    "
+  >
+    +{dayEvents.length - 2} more
+  </div>
+)}
         </div>
       </div>
     );
@@ -622,11 +733,27 @@ ${getEventColor(event.type)}
 </div>
 
 ))}
-
 {events.length === 0 && (
 
-<div className="text-center text-slate-400">
-No Events
+<div className="text-center py-16">
+
+  <CalendarIcon
+    size={48}
+    className="
+    mx-auto
+    mb-4
+    text-slate-400
+    "
+  />
+
+  <h3 className="font-bold text-lg">
+    No Events Yet
+  </h3>
+
+  <p className="text-slate-500 mt-2">
+    Create your first event.
+  </p>
+
 </div>
 
 )}
@@ -634,7 +761,6 @@ No Events
 </div>
 
 )}
-
 {view === "day" && (
 
 <div className="
@@ -1009,11 +1135,22 @@ transition-all
               <button
                 onClick={() => {
                   if (
-  !newEvent.title ||
+  !newEvent.title.trim() ||
   !newEvent.date ||
   !newEvent.time
-)
-return;
+) {
+  alert("Please fill all fields");
+  return;
+}
+
+const eventDateTime = new Date(
+  `${newEvent.date}T${newEvent.time}`
+);
+
+if (eventDateTime < new Date()) {
+  alert("Cannot create event in the past");
+  return;
+}
 
                   const event = {
                     id: Date.now(),

@@ -15,13 +15,14 @@ function Settings() {
     useContext(AuthContext);
   const [activeTab, setActiveTab] = useState("profile");
 
-  // حالات فورم الملف الشخصي
-const [profile, setProfile] =
-useState({
+
+const [profile, setProfile] = useState({
   name: user?.name || "",
   email: user?.email || "",
   phone: user?.phone || "",
 });
+
+
 
 const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -52,20 +53,32 @@ useState(user?.emailNotifications || false);
   const securityScore = () => {
    
 
-let score = 40;
+let score = 0;
 
 if (user?.avatar) score += 20;
 if (user?.phone) score += 20;
 if (user?.twoFactor) score += 20;
 
-    if (user?.password?.match(/[A-Z]/)) score += 10;
+    if (user?.password?.match(/[A-Z]/)) score += 20;
 
-    if (user?.password?.match(/[0-9]/)) score += 10;
+    if (user?.password?.match(/[0-9]/)) score += 20;
 
  
 
     return score;
   };
+
+  const profileCompletion = () => {
+
+let score = 0;
+
+if(user?.name) score += 25;
+if(user?.email) score += 25;
+if(user?.phone) score += 25;
+if(user?.avatar) score += 25;
+
+return score;
+};
 
   const getPasswordStrength = () => {
  let score = 0;
@@ -78,57 +91,68 @@ if (user?.twoFactor) score += 20;
 return Math.min(score, 100);
 }
 
-  const handleSave = () => {
+const handleSave = (e) => {
+  // لمنع المتصفح من عمل تحديث تلقائي للصفحة بالخطأ
+  if (e && e.preventDefault) e.preventDefault();
 
-        if (
-  newPassword &&
-  confirmPassword &&
-  newPassword !== confirmPassword
-) {
-  addNotification(
-    "Error",
-    "Passwords do not match"
-  );
-  return;
-}
-     {
-updateProfile({
-  name: profile.name,
-  email: profile.email,
-  phone: profile.phone,
-  twoFactor: twoFA,
-  emailNotifications,
-});
+  // 1️⃣ التحقق من تطابق كلمتي المرور (في حال كُتبت)
+  if (newPassword && confirmPassword && newPassword !== confirmPassword) {
+    addNotification("Error", "Passwords do not match");
+    return;
+  }
 
-      addNotification(
-        "Profile Updated",
-        "Your profile information was updated.",
-      );
-    }
-    if (currentPassword && newPassword) {
-      const result = updatePassword(currentPassword, newPassword);
-
-      if (result.success) {
-        addNotification(
-          "Password Updated",
-          "Your password was changed successfully.",
-        );
-      }
-    }
-    setSaved(true);
-
-    setTimeout(() => {
-      setSaved(false);
-    }, 3000);
-
+  // 2️⃣ تجميع البيانات بشكل سليم ومباشر
+  const profileData = {
+    name: profile.name,
+    email: profile.email,
+    phone: profile.phone,
+    twoFactor: twoFA,
+    emailNotifications: emailNotifications,
   };
 
+  console.log("Saving Profile Data ->", profileData);
+
+  // 3️⃣ تحديث الـ Context وحفظها في الـ LocalStorage
+  updateProfile(profileData);
+
+  addNotification(
+    "Profile Updated",
+    "Your profile information was updated."
+  );
+
+  // 4️⃣ تحديث كلمة المرور إذا طلبت
+  if (currentPassword && newPassword) {
+    const result = updatePassword(currentPassword, newPassword);
+
+    if (result.success) {
+      addNotification(
+        "Password Updated",
+        "Your password was changed successfully."
+      );
+      // تصفير حقول الباسورد بعد النجاح
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    }
+  }
+
+  // 5️⃣ إشعار نجاح الحفظ على الزر
+  setSaved(true);
+  setTimeout(() => {
+    setSaved(false);
+  }, 3000);
+};
 const [twoFA, setTwoFA] =
   useState(user?.twoFactor || false);
+
+
 
   return (
     <div className="space-y-7 animate-fade-in pb-10">
       {/* 1️⃣ الهيدر العلوي */}
+     
+     
+     
       <div>
         <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
           {lang === "ar" ? "إعدادات النظام" : "System Settings"}
@@ -140,7 +164,13 @@ const [twoFA, setTwoFA] =
         </p>
       </div>
 
+                       {/* ====================================
+    state cards
+========================================= */}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+         {/* card 1*/}
         <div
           className="p-5 rounded-3xl border"
           style={{
@@ -153,42 +183,65 @@ const [twoFA, setTwoFA] =
             {user?.status}
           </h3>
         </div>
-
+ {/* card 2*/}
         <div
-          className="p-5 rounded-3xl border"
-          style={{
-            background: "var(--bg-card)",
-            borderColor: "var(--border)",
-          }}
-        >
-          <p className="text-sm text-slate-500">Security Score</p>
-          <h3 className="text-2xl font-black text-indigo-500 mt-2">
-            {securityScore()}%
-          </h3>
-                  <div className="mt-4 h-3 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-indigo-500 to-violet-500"
-            style={{
-              width: `${securityScore()}%`,
-            }}
-          />
-        </div>
-        </div>
+  className="p-5 rounded-3xl border"
+  style={{
+    background: "var(--bg-card)",
+    borderColor: "var(--border)",
+  }}
+>
+  <p className="text-sm text-slate-500">
+    Profile Completion
+  </p>
+
+  <h3 className="text-2xl font-black text-indigo-500 mt-2">
+    {profileCompletion()}%
+  </h3>
+
+  <div className="mt-4 h-3 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+    <div
+      className="h-full bg-gradient-to-r from-indigo-500 to-violet-500"
+      style={{
+        width: `${profileCompletion()}%`,
+      }}
+    />
+  </div>
+</div>
+ {/* card 3*/}
+<div
+  className="p-5 rounded-3xl border"
+  style={{
+    background: "var(--bg-card)",
+    borderColor: "var(--border)",
+  }}
+>
+  <p className="text-sm text-slate-500">
+    Security Score
+  </p>
+
+  <h3 className="text-2xl font-black text-emerald-500 mt-2">
+    {securityScore()}%
+  </h3>
+
+  <div className="mt-4 h-3 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+    <div
+      className="h-full bg-gradient-to-r from-emerald-500 to-green-500"
+      style={{
+        width: `${securityScore()}%`,
+      }}
+    />
+  </div>
+</div>
 
 
-        <div
-          className="p-5 rounded-3xl border"
-          style={{
-            background: "var(--bg-card)",
-            borderColor: "var(--border)",
-          }}
-        >
-          <p className="text-sm text-slate-500">Notifications</p>
-          <h3 className="text-2xl font-black text-violet-500 mt-2">
-            {emailNotifications ? "Enabled" : "Disabled"}
-          </h3>
-        </div>
+
       </div>
+
+
+                       {/* ====================================
+        tabs button
+========================================= */}
 
       {/* 2️⃣ أزرار التنقل بين الأقسام (Tabs) بتصميم ناعم */}
       <div
@@ -217,12 +270,18 @@ const [twoFA, setTwoFA] =
         ))}
       </div>
 
-      {/* 3️⃣ محتوى الأقسام الديناميكي */}
+
+
+   
       <div
         className="p-8 rounded-3xl border shadow-sm"
         style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
       >
-        {/* قسم الملف الشخصي */}
+  
+                 {/* ====================================
+        profile
+========================================= */}
+
       {activeTab === "profile" && (
   <div className="grid lg:grid-cols-3 gap-8">
           <div
@@ -293,6 +352,8 @@ const [twoFA, setTwoFA] =
     </p>
 
     <div className="flex gap-3 mt-5">
+
+      
       <div className="px-4 py-2 rounded-xl bg-indigo-500/10">
         <p className="text-xs text-slate-500">
           Plan
@@ -313,6 +374,40 @@ const [twoFA, setTwoFA] =
         </p>
       </div>
     </div>
+
+    <div className="mt-6 w-full space-y-3">
+
+  <div
+    className="p-3 rounded-xl"
+    style={{
+      background: "var(--bg-main)",
+    }}
+  >
+    <p className="text-xs text-slate-500">
+      Member Since
+    </p>
+
+    <p className="font-semibold">
+      Jan 2026
+    </p>
+  </div>
+
+  <div
+    className="p-3 rounded-xl"
+    style={{
+      background: "var(--bg-main)",
+    }}
+  >
+    <p className="text-xs text-slate-500">
+      Last Login
+    </p>
+
+    <p className="font-semibold">
+      Today
+    </p>
+  </div>
+
+</div>
 
   </div>
 </div>
@@ -384,32 +479,37 @@ const [twoFA, setTwoFA] =
     </div>
 
     {/* Phone */}
-    <div>
-      <label className="text-xs text-slate-500">
-        Phone Number
-      </label>
-
-      <input
-        type="tel"
-        value={profile.phone}
-        onChange={(e) =>
-          setProfile({
-            ...profile,
-            phone: e.target.value,
-          })
-        }
-        className="
-        w-full
-        mt-2
-        h-12
-        px-4
-        rounded-xl
-        border
-        bg-transparent
-        outline-none
-        "
-      />
-    </div>
+{/* Phone */}
+<div>
+  <label className="text-xs text-slate-500">Phone Number</label>
+  <input
+    type="tel"
+    value={profile.phone}
+    onChange={(e) =>
+      setProfile({
+        ...profile,
+        phone: e.target.value,
+      })
+    }
+    className="w-full mt-2 h-12 px-4 rounded-xl border bg-transparent outline-none"
+  />
+</div>
+<button
+type="button"
+className="
+mt-6
+h-12
+px-6
+rounded-xl
+bg-indigo-600
+text-white
+font-medium
+hover:bg-indigo-700
+transition
+"
+>
+Export My Data
+</button>
 
   </div>
 
@@ -417,7 +517,10 @@ const [twoFA, setTwoFA] =
       </div>
 )}    
 
-   
+                 {/* ====================================
+        platform
+========================================= */}
+
    
    
    {activeTab === "system" && (
@@ -936,8 +1039,83 @@ const [twoFA, setTwoFA] =
 
       </div>
     </div>
+    <div
+className="rounded-3xl border p-6"
+style={{
+  borderColor: "var(--border)",
+  background: "var(--bg-card)",
+}}
+>
+  <h4 className="font-semibold mb-4">
+    Active Sessions
+  </h4>
+
+  <div className="space-y-3">
+
+    <div className="flex justify-between items-center">
+      <div>
+        <p className="font-medium">
+          Windows PC
+        </p>
+
+        <p className="text-xs text-slate-500">
+          Alexandria, Egypt
+        </p>
+      </div>
+
+      <span className="text-emerald-500 text-sm">
+        Current Session
+      </span>
+    </div>
+
+    <button
+      className="
+      mt-4
+      text-red-500
+      text-sm
+      font-medium
+      "
+    >
+      Logout Other Devices
+    </button>
 
   </div>
+</div>
+
+
+<div
+className="
+rounded-3xl
+border
+border-red-500/20
+p-6
+"
+>
+  <h3 className="text-red-500 font-bold">
+    Danger Zone
+  </h3>
+
+  <p className="text-sm text-slate-500 mt-2">
+    Delete account permanently.
+  </p>
+
+  <button
+    className="
+    mt-4
+    px-5
+    py-2
+    rounded-xl
+    bg-red-600
+    text-white
+    "
+  >
+    Delete Account
+  </button>
+</div>
+  </div>
+
+
+
 )}       {/* 4️⃣ زر الحفظ الموحد أسفل الكارت */}
       <div
   className="mt-8 pt-4 border-t flex justify-end"
@@ -946,6 +1124,7 @@ const [twoFA, setTwoFA] =
   }}
 >
   <button
+  type="button"
     onClick={handleSave}
     disabled={saved}
     className={`
@@ -978,7 +1157,12 @@ const [twoFA, setTwoFA] =
     }
   </button>
 </div>
+
+
       </div>
+    
+    
+    
     </div>
   );
 }

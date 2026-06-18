@@ -109,7 +109,8 @@ const leadsChats = [...contactMessages]
 
 
 
-
+const [leadFilter, setLeadFilter] =
+useState("All");
 
 
 
@@ -137,6 +138,33 @@ const leadsChats = [...contactMessages]
       icon: Target,
     },
   ];
+
+  const filteredChats =
+activeCategory === "leads"
+? leadsChats.filter((lead) => {
+
+const matchesSearch =
+lead.name
+.toLowerCase()
+.includes(searchTerm.toLowerCase()) ||
+
+lead.email
+.toLowerCase()
+.includes(searchTerm.toLowerCase());
+
+const matchesStatus =
+leadFilter === "All" ||
+lead.status === leadFilter;
+
+return matchesSearch &&
+matchesStatus;
+
+})
+: chatData[activeCategory]?.filter((chat) =>
+chat.name
+.toLowerCase()
+.includes(searchTerm.toLowerCase())
+);
 
   return (
     <motion.div
@@ -196,6 +224,8 @@ const leadsChats = [...contactMessages]
           </div>
         </div>
       </div>
+
+
 
       {/* Main Layout */}
 
@@ -261,6 +291,60 @@ xl:col-span-3
             })}
           </div>
 
+                {activeCategory === "leads" && (
+
+<select
+value={leadFilter}
+onChange={(e)=>
+setLeadFilter(e.target.value)
+}
+className="
+mt-3
+w-full
+
+px-4
+py-2
+
+rounded-xl
+
+border
+border-slate-200
+dark:border-white/10
+
+bg-white
+dark:bg-slate-900
+"
+>
+
+<option value="All">
+All Leads
+</option>
+
+<option value="New Lead">
+New Lead
+</option>
+
+<option value="Contacted">
+Contacted
+</option>
+
+<option value="Interested">
+Interested
+</option>
+
+<option value="Customer">
+Customer
+</option>
+
+<option value="Rejected">
+Rejected
+</option>
+
+</select>
+
+)}
+
+
           {/* Conversations */}
 
           <div
@@ -270,19 +354,29 @@ xl:col-span-3
     space-y-2
     "
           >
-            {(activeCategory === "leads"
-  ? leadsChats.filter((lead) =>
-      lead.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      lead.email
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
-    )
-              : chatData[activeCategory]?.filter((chat) =>
-                  chat.name.toLowerCase().includes(searchTerm.toLowerCase()),
-                )
-            )?.map((chat) => (
+
+
+{filteredChats?.length === 0 ? (
+
+<div className="text-center py-16">
+
+<Target
+  size={50}
+  className="mx-auto text-slate-400"
+/>
+
+<h3 className="font-bold text-center">
+  No Leads Yet
+</h3>
+
+<p className="text-sm text-slate-500 text-center">
+  Leads from Contact page will appear here.
+</p>
+</div>
+
+) : (
+
+filteredChats.map((chat) => (
               <button
                 key={chat.id}
 onClick={() => {
@@ -307,6 +401,7 @@ onClick={() => {
     );
   }
 }}
+
                 className={`
           w-full
 
@@ -324,6 +419,7 @@ onClick={() => {
               : "hover:bg-slate-100 dark:hover:bg-white/5"
           }
           `}
+          
               >
                 <div className="flex justify-between">
                   <div className="flex items-center gap-3">
@@ -403,7 +499,10 @@ onClick={() => {
 
                 <p className="text-[11px] opacity-50 mt-2">{chat.time}</p>
               </button>
-            ))}
+            ))
+          
+         ) }
+            
           </div>
         </div>
 
@@ -440,7 +539,7 @@ xl:col-span-9
             >
               <div className="flex items-center gap-3">
                 <img
-                  src={`https://ui-avatars.com/api/?name=${selectedChat?.name}`}
+           src={`https://ui-avatars.com/api/?name=${selectedChat?.name || "User"}`}
                   alt=""
                   className="
     w-12
@@ -464,6 +563,7 @@ xl:col-span-9
   : selectedChat?.online
   ? "Online"
   : "Offline"}
+  
                   </p>
                 </div>
               </div>
@@ -502,11 +602,11 @@ xl:col-span-9
   <span className="font-semibold">
     Status:
   </span>{" "}
-  {selectedChat.status}
+  {selectedChat?.status}
 </div>
 
 <select
-  value={selectedChat.status}
+  value={selectedChat?.status || ""}
   onChange={(e) => {
     const updated =
       contactMessages.map((lead) =>
@@ -579,9 +679,7 @@ xl:col-span-9
     );
 
     setSelectedChat(
-  activeCategory === "leads"
-    ? updated[0] || {}
-    : chatData.team[0]
+  updated.length > 0 ? updated[0] : null
 );
   }}
   className="

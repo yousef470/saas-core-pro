@@ -339,14 +339,40 @@ const filteredColumns = useMemo(() => {
   Object.keys(newColumns).forEach((colId) => {
     const column = newColumns[colId];
     // فلترة المهام بناءً على السيرش
-    const filteredTaskIds = column.taskIds.filter((taskId) =>
-      data.tasks[taskId].content.toLowerCase().includes(searchTerm.toLowerCase())
+const filteredTaskIds =
+  column.taskIds.filter((taskId) => {
+
+    const task =
+      data.tasks[taskId];
+
+    return (
+      task.content
+        .toLowerCase()
+        .includes(
+          searchTerm.toLowerCase()
+        ) ||
+
+      task.desc
+        .toLowerCase()
+        .includes(
+          searchTerm.toLowerCase()
+        )
     );
+  });
     newColumns[colId] = { ...column, taskIds: filteredTaskIds };
   });
   
   return newColumns;
 }, [data, searchTerm]);
+
+const TASKS_PER_COLUMN = 5;
+
+const [visibleTasks, setVisibleTasks] =
+  useState({
+    "col-1": TASKS_PER_COLUMN,
+    "col-2": TASKS_PER_COLUMN,
+    "col-3": TASKS_PER_COLUMN,
+  });
 
 
   return (
@@ -355,7 +381,8 @@ const filteredColumns = useMemo(() => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-     className="min-h-screen "
+     className="min-h-screen
+overflow-x-hidden"
     >
       <div className="relative space-y-8">
 
@@ -385,8 +412,14 @@ const filteredColumns = useMemo(() => {
     Search
 ========================================= */}  
             
-            <div className="flex gap-3">
-               <div className="relative ">
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+               <div
+  className="
+  relative
+  w-full
+  md:w-auto
+  "
+>
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
 <input
 
@@ -403,7 +436,7 @@ lang === "ar"
 pl-10
 pr-4
 py-2
-w-64
+w-full md:w-64
 
 bg-white
 dark:bg-slate-900
@@ -526,12 +559,19 @@ text-emerald-500
     Kanban CARDS
 ========================================= */}  
 
-        <DragDropContext onDragEnd={onDragEnd}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<DragDropContext onDragEnd={onDragEnd}>
+  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 {data.columnOrder.map((columnId) => {
   // استخدم الأعمدة المفلترة التي جهزناها في الـ useMemo
   const column = filteredColumns[columnId]; 
-  const tasks = column.taskIds.map((taskId) => data.tasks[taskId]);
+const tasks = column.taskIds
+  .map((taskId) => data.tasks[taskId]);
+
+const visibleColumnTasks =
+  tasks.slice(
+    0,
+    visibleTasks[column.id]
+  );
 
               return (
                 <div key={column.id} className="flex flex-col space-y-4">
@@ -559,7 +599,8 @@ text-emerald-500
                           snapshot.isDraggingOver ? "bg-indigo-500/5 border-indigo-500/30 ring-4 ring-indigo-500/5" : "border-slate-200 dark:border-white/10 bg-white/5 backdrop-blur-sm"
                         }`}
                       >
-                        {tasks.map((task, index) => (
+                        {visibleColumnTasks.map(
+  (task, index) => (
                           <Draggable key={task.id} draggableId={task.id} index={index}>
                             {(provided, snapshot) => (
                               <div
@@ -665,15 +706,67 @@ onClick={() =>
                                   </div>
                                   <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-bold">
                                     <Calendar size={12} />
-                                    {new Date(task.date)
-.toLocaleDateString()}
+{
+task.date
+? new Date(task.date)
+    .toLocaleDateString()
+: "No Date"
+}
                                   </div>
                                 </div>
                               </div>
                             )}
                           </Draggable>
                         ))}
+{tasks.length === 0 && (
+  <div
+    className="
+    flex
+    flex-col
+    items-center
+    justify-center
+    py-16
+    text-slate-400
+    "
+  >
+    <Layout size={32} />
+
+    <p className="mt-3 text-sm">
+      {lang === "ar"
+        ? "لا توجد مهام"
+        : "No Tasks"}
+    </p>
+  </div>
+)}
+
                         {provided.placeholder}
+                        
+{tasks.length >
+  visibleTasks[column.id] && (
+  <button
+    onClick={() =>
+      setVisibleTasks((prev) => ({
+        ...prev,
+        [column.id]:
+          prev[column.id] + TASKS_PER_COLUMN,
+      }))
+    }
+    className="
+      w-full
+      py-3
+      rounded-2xl
+      border
+      border-indigo-500/20
+      text-indigo-500
+      font-semibold
+      hover:bg-indigo-500/10
+      transition
+    "
+  >
+    Load More
+  </button>
+)}
+
                         
                         {/* زر إضافة سريع في نهاية العمود */}
                         <button
@@ -707,9 +800,11 @@ dark:border-white/10
 shadow-2xl
 shadow-black/20 rounded-3xl p-6">
 
-      <h2 className="text-xl font-bold mb-5">
-        Add Task
-      </h2>
+<h2 className="text-xl font-bold mb-5">
+  {lang === "ar"
+    ? "إضافة مهمة"
+    : "Add Task"}
+</h2>
 
       <div className="space-y-4">
 
@@ -935,7 +1030,9 @@ shadow-black/20
 <h2 className="
 text-xl font-bold mb-5
 ">
-Edit Task
+{lang === "ar"
+ ? "تعديل المهمة"
+ : "Edit Task"}
 </h2>
 
 <div className="space-y-4">
@@ -1175,7 +1272,9 @@ font-bold
 text-lg
 "
 >
-Delete Task
+{lang === "ar"
+ ? "حذف المهمة"
+ : "Delete Task"}
 </h2>
 
 <p
