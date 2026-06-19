@@ -81,6 +81,7 @@ function Settings() {
 
   // 4️⃣ دالة الحفظ المحدثة والمربوطة بالـ Context والـ LocalStorage
   const handleSave = (e) => {
+    console.log("SAVE CLICKED");
     if (e && e.preventDefault) e.preventDefault();
 
     if (newPassword && confirmPassword && newPassword !== confirmPassword) {

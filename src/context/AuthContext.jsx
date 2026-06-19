@@ -162,23 +162,45 @@ function AuthProvider({ children }) {
   };
 
   // UPDATE PROFILE (الحفظ والتعديل الفوري)
-  const updateProfile = (updatedData) => {
-    if (!user) return;
+const updateProfile = (updatedData) => {
+  if (!user) return;
 
-    // نقرأ البيانات مباشرة من الـ LocalStorage لنضمن التعديل على آخر نسخة حقيقية
-    const localUsers = JSON.parse(localStorage.getItem("saas_users")) || users;
+  console.log("OLD USER =>", user);
+  console.log("UPDATED DATA =>", updatedData);
 
-    const updatedUsers = localUsers.map((u) =>
-      u.id === user.id ? { ...u, ...updatedData } : u
-    );
+  const localUsers =
+    JSON.parse(localStorage.getItem("saas_users")) || [];
 
-    // الحفظ المتزامن في الـ LocalStorage والـ State معاً لإلغاء أي تعليق من المتصفح
-    localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
-    setUsers(updatedUsers);
+  const updatedUsers = localUsers.map((u) =>
+    u.id === user.id
+      ? { ...u, ...updatedData }
+      : u
+  );
 
-    const updatedUser = updatedUsers.find((u) => u.id === user.id);
-    setUser(updatedUser);
-  };
+  console.log(
+    "UPDATED USER =>",
+    updatedUsers.find((u) => u.id === user.id)
+  );
+
+  localStorage.setItem(
+    "saas_users",
+    JSON.stringify(updatedUsers)
+  );
+
+  setUsers(updatedUsers);
+
+  console.log("USER ID =>", user.id);
+
+console.log(
+  "ALL IDS =>",
+  updatedUsers.map((u) => u.id)
+);
+
+  const updatedUser =
+    updatedUsers.find((u) => u.id === user.id);
+
+  setUser(updatedUser);
+};
 
   const addNotification = (title, message) => {
     if (!user) return;
