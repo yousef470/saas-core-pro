@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
+import { useContext } from "react";
+import { AuthContext } from "../context/auth-context";
+
+
 import { motion } from "framer-motion";
 import useTheme from "../hooks/useTheme";
 import { Plus, Search } from "lucide-react";
 import { Users as UsersIcon, UserCheck, Shield, UserX } from "lucide-react";
-import {
-  getUsers,
-  addUser,
-  updateUser,
-  deleteUser,
-} from "../services/userService";
+
 
 import { MoreVertical } from "lucide-react";
 
@@ -20,7 +19,7 @@ function Users() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [users, setUsers] = useState(getUsers());
+ const { users, setUsers } = useContext(AuthContext);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [userToDelete, setUserToDelete] = useState(null);
@@ -47,9 +46,12 @@ function Users() {
 
   const isRTL = document.documentElement.dir === "rtl";
 
-  useEffect(() => {
-    localStorage.setItem("users", JSON.stringify(users));
-  }, [users]);
+useEffect(() => {
+  localStorage.setItem(
+    "saas_users",
+    JSON.stringify(users)
+  );
+}, [users]);
 
   const filteredUsers = users.filter((user) => {
     const searchMatch =
@@ -88,7 +90,14 @@ function Users() {
       ...newUser,
       avatar: newUser.name.charAt(0).toUpperCase(),
     };
-    setUsers(addUser(user));
+    const updatedUsers = [...users, user];
+
+setUsers(updatedUsers);
+
+localStorage.setItem(
+  "saas_users",
+  JSON.stringify(updatedUsers)
+);
     toast.success("User added successfully");
     setShowAddModal(false);
     setNewUser({ name: "", email: "", role: "User", status: "Active" });
@@ -1051,7 +1060,16 @@ transition-all
                         return;
                       }
 
-                      setUsers(updateUser(editingUser));
+                      const updatedUsers = users.map((u) =>
+  u.id === editingUser.id ? editingUser : u
+);
+
+setUsers(updatedUsers);
+
+localStorage.setItem(
+  "saas_users",
+  JSON.stringify(updatedUsers)
+);
                       toast.success("User updated successfully");
                       setEditingUser(null);
                     }}
@@ -1092,7 +1110,16 @@ transition-all
                   </button>
                   <button
                     onClick={() => {
-                      setUsers(deleteUser(userToDelete.id));
+                      const updatedUsers = users.filter(
+  (u) => u.id !== userToDelete.id
+);
+
+setUsers(updatedUsers);
+
+localStorage.setItem(
+  "saas_users",
+  JSON.stringify(updatedUsers)
+);
                       toast.success("User deleted successfully");
                       setUserToDelete(null);
                     }}

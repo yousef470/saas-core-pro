@@ -2,14 +2,14 @@ import mockUsers from "../data/mockUsers";
 
 // Get All Users
 export const getUsers = () => {
-  const savedUsers = localStorage.getItem("users");
+  const savedUsers = localStorage.getItem("saas_users");
 
   if (savedUsers) {
     return JSON.parse(savedUsers);
   }
 
   localStorage.setItem(
-    "users",
+    "saas_users",
     JSON.stringify(mockUsers)
   );
 
@@ -30,7 +30,7 @@ export const addUser = (newUser) => {
   ];
 
   localStorage.setItem(
-    "users",
+    "saas_users",
     JSON.stringify(updatedUsers)
   );
 
@@ -48,7 +48,7 @@ export const updateUser = (updatedUser) => {
   );
 
   localStorage.setItem(
-    "users",
+    "saas_users",
     JSON.stringify(updatedUsers)
   );
 
@@ -64,7 +64,7 @@ export const deleteUser = (userId) => {
   );
 
   localStorage.setItem(
-    "users",
+    "saas_users",
     JSON.stringify(updatedUsers)
   );
 

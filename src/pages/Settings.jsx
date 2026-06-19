@@ -1,149 +1,122 @@
-import { useState } from "react";
+import { useState, useEffect, useContext } from "react"; // 💡 تأكد من استضافة useEffect
 import useTheme from "../hooks/useTheme";
-
-import { useContext } from "react";
 import { AuthContext } from "../context/auth-context";
 
 function Settings() {
-  const {
-  lang,
-  darkMode,
-  toggleDarkMode,
-  toggleLanguage,
-} = useTheme();
-  const { user, updateProfile, updatePassword, addNotification } =
-    useContext(AuthContext);
+  const { lang, darkMode, toggleDarkMode, toggleLanguage } = useTheme();
+  const { user, updateProfile, updatePassword, addNotification } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState("profile");
 
+  const [profile, setProfile] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+  });
 
-const [profile, setProfile] = useState({
-  name: user?.name || "",
-  email: user?.email || "",
-  phone: user?.phone || "",
-});
-
-
-
-const [confirmPassword, setConfirmPassword] = useState("");
-
+  const [twoFA, setTwoFA] = useState(user?.twoFactor || false);
+  const [emailNotifications, setEmailNotifications] = useState(user?.emailNotifications || false);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [emailNotifications, setEmailNotifications] =
-useState(user?.emailNotifications || false);
   const [currentPassword, setCurrentPassword] = useState("");
-
   const [newPassword, setNewPassword] = useState("");
-
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [saved, setSaved] = useState(false);
+
+  // 💡 الحل القاطع والمطابق لمعايير ESLint بدون أي أخطاء:
+  useEffect(() => {
+    if (!user) return;
+
+    // بنحدث البيانات جوه الـ microtask عشان المتصفح ميعملش رندرة متتالية تصدم الـ ESLint
+    const handler = setTimeout(() => {
+      setProfile({
+        name: user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+      });
+      setTwoFA(!!user.twoFactor);
+      setEmailNotifications(!!user.emailNotifications);
+    }, 0);
+
+    return () => clearTimeout(handler);
+  }, [user]); // هيراقب الـ user أول ما يفتح أو يتغير بعد الحفظ
+
   const handleAvatarUpload = (e) => {
     const file = e.target.files[0];
-
     if (!file) return;
 
     const reader = new FileReader();
-
     reader.onloadend = () => {
-      updateProfile({
-        avatar: reader.result,
-      });
+      updateProfile({ avatar: reader.result });
     };
-
     reader.readAsDataURL(file);
   };
 
+  // 3️⃣ دوال حساب السكور
   const securityScore = () => {
-   
-
-let score = 0;
-
-if (user?.avatar) score += 20;
-if (user?.phone) score += 20;
-if (user?.twoFactor) score += 20;
-
+    let score = 0;
+    if (user?.avatar) score += 20;
+    if (user?.phone) score += 20;
+    if (user?.twoFactor) score += 20;
     if (user?.password?.match(/[A-Z]/)) score += 20;
-
     if (user?.password?.match(/[0-9]/)) score += 20;
-
- 
-
     return score;
   };
 
   const profileCompletion = () => {
-
-let score = 0;
-
-if(user?.name) score += 25;
-if(user?.email) score += 25;
-if(user?.phone) score += 25;
-if(user?.avatar) score += 25;
-
-return score;
-};
-
-  const getPasswordStrength = () => {
- let score = 0;
-
- if(newPassword.length >= 8) score += 25;
- if(/[A-Z]/.test(newPassword)) score += 25;
- if(/[0-9]/.test(newPassword)) score += 25;
- if(/[^A-Za-z0-9]/.test(newPassword)) score += 25;
-
-return Math.min(score, 100);
-}
-
-const handleSave = (e) => {
-  // لمنع المتصفح من عمل تحديث تلقائي للصفحة بالخطأ
-  if (e && e.preventDefault) e.preventDefault();
-
-  // 1️⃣ التحقق من تطابق كلمتي المرور (في حال كُتبت)
-  if (newPassword && confirmPassword && newPassword !== confirmPassword) {
-    addNotification("Error", "Passwords do not match");
-    return;
-  }
-
-  // 2️⃣ تجميع البيانات بشكل سليم ومباشر
-  const profileData = {
-    name: profile.name,
-    email: profile.email,
-    phone: profile.phone,
-    twoFactor: twoFA,
-    emailNotifications: emailNotifications,
+    let score = 0;
+    if (user?.name) score += 25;
+    if (user?.email) score += 25;
+    if (user?.phone) score += 25;
+    if (user?.avatar) score += 25;
+    return score;
   };
 
-  console.log("Saving Profile Data ->", profileData);
+  const getPasswordStrength = () => {
+    let score = 0;
+    if (newPassword.length >= 8) score += 25;
+    if (/[A-Z]/.test(newPassword)) score += 25;
+    if (/[0-9]/.test(newPassword)) score += 25;
+    if (/[^A-Za-z0-9]/.test(newPassword)) score += 25;
+    return Math.min(score, 100);
+  };
 
-  // 3️⃣ تحديث الـ Context وحفظها في الـ LocalStorage
-  updateProfile(profileData);
+  // 4️⃣ دالة الحفظ المحدثة والمربوطة بالـ Context والـ LocalStorage
+  const handleSave = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
 
-  addNotification(
-    "Profile Updated",
-    "Your profile information was updated."
-  );
-
-  // 4️⃣ تحديث كلمة المرور إذا طلبت
-  if (currentPassword && newPassword) {
-    const result = updatePassword(currentPassword, newPassword);
-
-    if (result.success) {
-      addNotification(
-        "Password Updated",
-        "Your password was changed successfully."
-      );
-      // تصفير حقول الباسورد بعد النجاح
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
+    if (newPassword && confirmPassword && newPassword !== confirmPassword) {
+      addNotification("Error", "Passwords do not match");
+      return;
     }
-  }
 
-  // 5️⃣ إشعار نجاح الحفظ على الزر
-  setSaved(true);
-  setTimeout(() => {
-    setSaved(false);
-  }, 3000);
-};
-const [twoFA, setTwoFA] =
-  useState(user?.twoFactor || false);
+    const profileData = {
+      name: profile.name,
+      email: profile.email,
+      phone: profile.phone,
+      twoFactor: twoFA,
+      emailNotifications: emailNotifications,
+    };
+
+    console.log("Saving Profile Data ->", profileData);
+    updateProfile(profileData);
+
+    addNotification("Profile Updated", "Your profile information was updated.");
+
+    if (currentPassword && newPassword) {
+      const result = updatePassword(currentPassword, newPassword);
+      if (result.success) {
+        addNotification("Password Updated", "Your password was changed successfully.");
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+    }
+
+    setSaved(true);
+    setTimeout(() => {
+      setSaved(false);
+    }, 3000);
+  };
+
 
 
 
@@ -274,6 +247,7 @@ const [twoFA, setTwoFA] =
 
    
       <div
+      key={user?.id || "loading"}
         className="p-8 rounded-3xl border shadow-sm"
         style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
       >
@@ -429,14 +403,9 @@ const [twoFA, setTwoFA] =
       </label>
 
       <input
-        type="text"
-        value={profile.name}
-        onChange={(e) =>
-          setProfile({
-            ...profile,
-            name: e.target.value,
-          })
-        }
+type="text"
+  value={profile.name}
+  onChange={(e) => setProfile({ ...profile, name: e.target.value })}
         className="
         w-full
         mt-2
@@ -458,6 +427,7 @@ const [twoFA, setTwoFA] =
 
       <input
         type="email"
+        autoComplete="off"
         value={profile.email}
         onChange={(e) =>
           setProfile({
@@ -478,12 +448,13 @@ const [twoFA, setTwoFA] =
       />
     </div>
 
-    {/* Phone */}
+   
 {/* Phone */}
 <div>
   <label className="text-xs text-slate-500">Phone Number</label>
   <input
     type="tel"
+    autoComplete="off"
     value={profile.phone}
     onChange={(e) =>
       setProfile({

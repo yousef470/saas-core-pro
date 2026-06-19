@@ -93,5 +93,5 @@ function Profile() {
   );
 }
 
-// تأكد من وجود هذا السطر في أسفل الملف
+
 export default Profile;
