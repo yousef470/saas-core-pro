@@ -103,6 +103,8 @@ localStorage.setItem(
     setNewUser({ name: "", email: "", role: "User", status: "Active" });
   };
 
+
+  
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -529,24 +531,7 @@ blur-2xl
 "
                 />
                 <div className="flex items-center justify-between">
-                  <div
-                    className="
-w-14
-h-14
-rounded-2xl
-bg-gradient-to-br
-from-indigo-500
-to-violet-600
-text-white
-flex
-items-center
-justify-center
-font-bold
-shadow-lg
-"
-                  >
-                    {user.avatar}
-                  </div>
+<img src={user.avatar || "https://i.pravatar.cc/150"} alt="avatar" className="w-20 h-20 rounded-full object-cover" />
                   <div>
                     <h3 className="font-semibold text-lg">{user.name}</h3>
                     <p className="text-sm text-slate-500 mt-1">{user.email}</p>
