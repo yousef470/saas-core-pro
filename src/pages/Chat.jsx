@@ -1,725 +1,479 @@
-
-import { useState } from "react";
-import { motion } from "framer-motion";
-import {  useEffect } from "react";
-
-import {
-  Search,
-  Users,
-  Crown,
-  User,
-  Target,
-
+import { useState, useEffect, useMemo, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Search, Users, Crown, User, Target, Mail, Calendar, Trash2, Send 
 } from "lucide-react";
-
 import useTheme from "../hooks/useTheme";
 
-const chatData = {
+const initialChatData = {
   team: [
     {
       id: 1,
       name: "Ahmed Ali",
       online: true,
       unread: 3,
-      lastMessage: "Dashboard finished",
       time: "10:22 PM",
-      messages: 24,
+      messages: [
+        { id: 101, text: "Hello team! Status on the new updates?", sender: "them", time: "10:20 PM" },
+        { id: 102, text: "Dashboard finished", sender: "them", time: "10:22 PM" }
+      ],
     },
   ],
-
   premium: [
     {
       id: 2,
       name: "Sara Mohamed",
       online: true,
       unread: 1,
-      lastMessage: "Need support",
       time: "09:15 PM",
+      messages: [
+        { id: 201, text: "I am having trouble with premium API integration.", sender: "them", time: "09:10 PM" },
+        { id: 202, text: "Need support ASAP please.", sender: "them", time: "09:15 PM" }
+      ],
     },
   ],
-
   free: [
     {
       id: 3,
       name: "John Smith",
       online: false,
       unread: 0,
-      lastMessage: "Thank you",
       time: "Yesterday",
+      messages: [
+        { id: 301, text: "Is the core package completely free?", sender: "them", time: "Yesterday" },
+        { id: 302, text: "Thank you", sender: "them", time: "Yesterday" }
+      ],
     },
   ],
 };
+
+const getStatusStyles = (status) => {
+  switch (status) {
+    case "New Lead": return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+    case "Contacted": return "bg-amber-500/10 text-amber-500 border-amber-500/20";
+    case "Interested": return "bg-purple-500/10 text-purple-500 border-purple-500/20";
+    case "Customer": return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+    case "Rejected": return "bg-rose-500/10 text-rose-500 border-rose-500/20";
+    default: return "bg-slate-500/10 text-slate-500 border-slate-500/20";
+  }
+};
+
 function Chat() {
   const { lang } = useTheme();
+  const [activeCategory, setActiveCategory] = useState("team");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [leadFilter, setLeadFilter] = useState("All");
+  const messagesEndRef = useRef(null);
+  const [selectedChatId, setSelectedChatId] = useState(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const [typedMessage, setTypedMessage] = useState("");
 
+  // 1. إدارة بيانات الشات العادي مع الحفظ في الـ LocalStorage
+  const [dynamicChatData, setDynamicChatData] = useState(() => {
+    return JSON.parse(localStorage.getItem("interactiveChats")) || initialChatData;
+  });
+
+  // 2. إدارة بيانات الـ Leads
   const [contactMessages, setContactMessages] = useState(() => {
     return JSON.parse(localStorage.getItem("contactMessages")) || [];
   });
 
+
+
+
+  // تجميع الـ Leads
+  const leadsChats = useMemo(() => {
+    return [...contactMessages]
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .map((msg) => ({
+        id: msg.id,
+        name: msg.name,
+        email: msg.email,
+        message: msg.message,
+        createdAt: msg.createdAt,
+        unread: msg.unread ?? 1,
+        status: msg.status || "New Lead",
+      }));
+  }, [contactMessages]);
+
+  // تصفية المحادثات بناءً على القسم النشط والبحث
+  const filteredChats = useMemo(() => {
+    return activeCategory === "leads"
+      ? leadsChats.filter((lead) => {
+          const matchesSearch =
+            lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            lead.email.toLowerCase().includes(searchTerm.toLowerCase());
+
+          const matchesStatus =
+            leadFilter === "All" || lead.status === leadFilter;
+
+          return matchesSearch && matchesStatus;
+        })
+      : dynamicChatData[activeCategory]?.filter((chat) =>
+          chat.name.toLowerCase().includes(searchTerm.toLowerCase())
+        ) || [];
+  }, [activeCategory, leadsChats, dynamicChatData, searchTerm, leadFilter]);
+
+  // تحديد المحادثة النشطة بدقة
+  const selectedChat = useMemo(() => {
+    return filteredChats.find(chat => chat.id === selectedChatId) || filteredChats[0] || null;
+  }, [filteredChats, selectedChatId]);
+
+  // الاستماع للتحديثات الخارجية
   useEffect(() => {
     const handleStorage = () => {
-      const updated = JSON.parse(localStorage.getItem("contactMessages")) || [];
-
-      setContactMessages(updated);
+      const updatedLeads = JSON.parse(localStorage.getItem("contactMessages")) || [];
+      const updatedChats = JSON.parse(localStorage.getItem("interactiveChats")) || initialChatData;
+      setContactMessages(updatedLeads);
+      setDynamicChatData(updatedChats);
     };
-
     window.addEventListener("storage", handleStorage);
-
+    window.addEventListener("contact-update", handleStorage);
     return () => {
       window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("contact-update", handleStorage);
     };
   }, []);
 
+  // سكرول تلقائي لآخر الرسائل
   useEffect(() => {
-    const syncMessages = () => {
-      const updated = JSON.parse(localStorage.getItem("contactMessages")) || [];
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [selectedChat?.messages, isTyping]);
 
-      setContactMessages(updated);
+  // فانكشن إرسال رسالة جديدة مع الحفظ الفوري
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (!typedMessage.trim() || !selectedChat) return;
+
+    const newMsg = {
+      id: Date.now(),
+      text: typedMessage,
+      sender: "me",
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
-    window.addEventListener("contact-update", syncMessages);
+    const updatedData = { ...dynamicChatData };
+    updatedData[activeCategory] = updatedData[activeCategory].map(chat => {
+      if (chat.id === selectedChat.id) {
+        return {
+          ...chat,
+          time: newMsg.time,
+          messages: [...(chat.messages || []), newMsg]
+        };
+      }
+      return chat;
+    });
 
-    return () => {
-      window.removeEventListener("contact-update", syncMessages);
-    };
-  }, []);
+    setDynamicChatData(updatedData);
+    localStorage.setItem("interactiveChats", JSON.stringify(updatedData));
+    setTypedMessage("");
 
-const leadsChats = [...contactMessages]
-  .sort(
-    (a, b) =>
-      new Date(b.createdAt) -
-      new Date(a.createdAt)
-  )
-  .map((msg) => ({
-    id: msg.id,
-    name: msg.name,
-    email: msg.email,
-    message: msg.message,
-    createdAt: msg.createdAt,
-    unread: msg.unread ?? 1,
-      status: msg.status || "New Lead",
-  }));
-
-  const [activeCategory, setActiveCategory] = useState("team");
-
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const [selectedChat, setSelectedChat] = useState(chatData.team[0]);
-
-
-
-
-const [leadFilter, setLeadFilter] =
-useState("All");
-
-
-
-
+    // محاكاة كتابة الطرف الآخر لمظهر تفاعلي
+    setIsTyping(true);
+    setTimeout(() => {
+      setIsTyping(false);
+    }, 2000);
+  };
 
   const categories = [
-    {
-      id: "team",
-      label: "Team",
-      icon: Users,
-    },
-    {
-      id: "premium",
-      label: "Premium",
-      icon: Crown,
-    },
-    {
-      id: "free",
-      label: "Free",
-      icon: User,
-    },
-    {
-      id: "leads",
-      label: `Leads (${leadsChats.length})`,
-      icon: Target,
-    },
+    { id: "team", label: lang === "ar" ? "الفريق" : "Team", icon: Users },
+    { id: "premium", label: lang === "ar" ? "بريميوم" : "Premium", icon: Crown },
+    { id: "free", label: lang === "ar" ? "مجاني" : "Free", icon: User },
+    { id: "leads", label: `${lang === "ar" ? "العملاء" : "Leads"} (${leadsChats.length})`, icon: Target },
   ];
 
-  const filteredChats =
-activeCategory === "leads"
-? leadsChats.filter((lead) => {
-
-const matchesSearch =
-lead.name
-.toLowerCase()
-.includes(searchTerm.toLowerCase()) ||
-
-lead.email
-.toLowerCase()
-.includes(searchTerm.toLowerCase());
-
-const matchesStatus =
-leadFilter === "All" ||
-lead.status === leadFilter;
-
-return matchesSearch &&
-matchesStatus;
-
-})
-: chatData[activeCategory]?.filter((chat) =>
-chat.name
-.toLowerCase()
-.includes(searchTerm.toLowerCase())
-);
+  const isRtl = lang === "ar";
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-6"
+    <motion.div 
+      initial={{ opacity: 0, y: 15 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      className="space-y-6 text-slate-900 dark:text-white p-2"
+      dir={isRtl ? "rtl" : "ltr"}
     >
       {/* Header */}
-
-      <div className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 p-8 bg-gradient-to-br from-indigo-500/15 via-transparent to-cyan-500/10 backdrop-blur-xl">
-        <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 p-6 bg-white/50 dark:bg-[#12141c]/50 backdrop-blur-xl shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div>
-            <h1 className="text-4xl font-black">
-              {lang === "ar" ? "مركز المحادثات" : "Chat Center"}
+            <h1 className="text-4xl font-black tracking-tight bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
+              {isRtl ? "مركز إدارة المحادثات" : "Chat Control Center"}
             </h1>
-
-            <p className="text-slate-500 mt-2">
-              {lang === "ar"
-                ? "إدارة المحادثات والعملاء والفريق"
-                : "Manage team and customer conversations"}
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+              {isRtl ? "إدارة التفاعل الفوري مع أعضاء الفريق والـ Leads" : "Real-time communication and lead optimization platform."}
             </p>
           </div>
 
           <div className="relative">
-            <Search
-              size={18}
-              className="
-            absolute
-            left-3
-            top-1/2
-            -translate-y-1/2
-            text-slate-400
-            "
-            />
-
+            <Search size={16} className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${isRtl ? "right-4" : "left-4"}`} />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search..."
-              className="
-            pl-10
-            pr-4
-            py-2
-            w-72
-
-            rounded-xl
-
-            bg-white
-            dark:bg-slate-900
-
-            border
-            border-slate-200
-            dark:border-white/10
-            "
+              placeholder={isRtl ? "بحث عن اسم..." : "Search name..."}
+              className={`w-full md:w-80 py-2.5 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 focus:outline-none focus:border-indigo-500 text-sm  ${isRtl ? "pr-11 pl-4" : "pl-11 pr-4"}`}
             />
           </div>
         </div>
       </div>
 
-
-
       {/* Main Layout */}
-
-      <div className="grid grid-cols-12 gap-6 h-[700px]">
+      <div className="grid grid-cols-12 gap-6 min-h-[600px] h-[650px]">
+        
         {/* Sidebar */}
-
-        <div
-          className="
-  col-span-12
-  lg:col-span-4
-xl:col-span-3
-
-  rounded-3xl
-  border
-
-  border-slate-200
-  dark:border-white/10
-
-  bg-white
-  dark:bg-slate-900
-
-  p-4
-
-  flex
-  flex-col
-  gap-4
-  "
-        >
-          {/* Categories */}
-
-          <div className="grid grid-cols-4 gap-2">
+        <div className="col-span-12 lg:col-span-4 xl:col-span-3 rounded-3xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-[#12141c]/70 backdrop-blur-xl p-4 flex flex-col gap-4 shadow-sm overflow-hidden">
+          <div className="grid grid-cols-4 gap-1.5 p-1 bg-slate-100 dark:bg-white/5 rounded-2xl shrink-0">
             {categories.map((cat) => {
               const Icon = cat.icon;
-
+              const isActive = activeCategory === cat.id;
               return (
                 <button
                   key={cat.id}
-                  onClick={() => setActiveCategory(cat.id)}
-                  className={`
-          h-12
-
-          rounded-xl
-
-          flex
-          flex-col
-          items-center
-          justify-center
-
-          transition-all
-
-          ${
-            activeCategory === cat.id
-              ? "bg-indigo-600 text-white"
-              : "bg-slate-100 dark:bg-white/5"
-          }
-          `}
+                 onClick={() => {
+        setActiveCategory(cat.id);
+        setSelectedChatId(null);
+      }}
+                  className={`h-11 rounded-xl flex flex-col items-center justify-center transition-all relative ${isActive ? "text-white font-bold" : "text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-white/5"}`}
                 >
-                  <Icon size={16} />
-
-                  <span className="text-[10px]">{cat.label}</span>
+                  {isActive && (
+                    <motion.div layoutId="activeTabBg" className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl -z-10" />
+                  )}
+                  <Icon size={15} />
+                  <span className="text-[10px] mt-0.5 tracking-tight">{cat.label}</span>
                 </button>
               );
             })}
           </div>
 
-                {activeCategory === "leads" && (
-
-<select
-value={leadFilter}
-onChange={(e)=>
-setLeadFilter(e.target.value)
-}
-className="
-mt-3
-w-full
-
-px-4
-py-2
-
-rounded-xl
-
-border
-border-slate-200
-dark:border-white/10
-
-bg-white
-dark:bg-slate-900
-"
->
-
-<option value="All">
-All Leads
-</option>
-
-<option value="New Lead">
-New Lead
-</option>
-
-<option value="Contacted">
-Contacted
-</option>
-
-<option value="Interested">
-Interested
-</option>
-
-<option value="Customer">
-Customer
-</option>
-
-<option value="Rejected">
-Rejected
-</option>
-
-</select>
-
-)}
-
-
-          {/* Conversations */}
-
-          <div
-            className="
-    flex-1
-    overflow-y-auto
-    space-y-2
-    "
-          >
-
-
-{filteredChats?.length === 0 ? (
-
-<div className="text-center py-16">
-
-<Target
-  size={50}
-  className="mx-auto text-slate-400"
-/>
-
-<h3 className="font-bold text-center">
-  No Leads Yet
-</h3>
-
-<p className="text-sm text-slate-500 text-center">
-  Leads from Contact page will appear here.
-</p>
-</div>
-
-) : (
-
-filteredChats.map((chat) => (
-              <button
-                key={chat.id}
-onClick={() => {
-  setSelectedChat(chat);
-
-  if (activeCategory === "leads") {
-    const updated =
-      contactMessages.map((lead) =>
-        lead.id === chat.id
-          ? {
-              ...lead,
-              unread: 0,
-            }
-          : lead
-      );
-
-    setContactMessages(updated);
-
-    localStorage.setItem(
-      "contactMessages",
-      JSON.stringify(updated)
-    );
-  }
-}}
-
-                className={`
-          w-full
-
-          p-4
-
-          rounded-2xl
-
-          text-left
-
-          transition-all
-
-          ${
-            selectedChat?.id === chat.id
-              ? "bg-indigo-600 text-white"
-              : "hover:bg-slate-100 dark:hover:bg-white/5"
-          }
-          `}
-          
+          {activeCategory === "leads" && (
+            <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="shrink-0">
+              <select
+                value={leadFilter}
+                onChange={(e) => setLeadFilter(e.target.value)}
+                className="w-full px-4 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 outline-none cursor-pointer focus:border-indigo-500 text-slate-700 dark:text-slate-300 transition-colors shadow-sm"
               >
-                <div className="flex justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <img
-                        src={`https://ui-avatars.com/api/?name=${chat.name}`}
-                        alt={chat.name}
-                        className="
-      w-10
-      h-10
-      rounded-full
-      "
-                      />
+                <option value="All">{isRtl ? "جميع الحالات" : "All Leads"}</option>
+                <option value="New Lead">{isRtl ? "عميل جديد" : "New Lead"}</option>
+                <option value="Contacted">{isRtl ? "تم التواصل" : "Contacted"}</option>
+                <option value="Interested">{isRtl ? "مهتم" : "Interested"}</option>
+                <option value="Customer">{isRtl ? "مشترك / عميل مبيعات" : "Customer"}</option>
+                <option value="Rejected">{isRtl ? "مرفوض" : "Rejected"}</option>
+              </select>
+            </motion.div>
+          )}
 
-                      {chat.online && (
-                        <span
-                          className="
-        absolute
-        bottom-0
-        right-0
-
-        w-3
-        h-3
-
-        bg-emerald-500
-        rounded-full
-
-        border-2
-        border-white
-        "
-                        />
-                      )}
-                    </div>
-
-                    <div>
-                      <h4 className="font-bold">{chat.name}</h4>
-
-                      <p className="text-[11px] opacity-60">
-  {chat.status}
-</p>
-
-<p className="text-xs opacity-70">
-  {chat.message || chat.lastMessage}
-</p>
-                    </div>
-                  </div>
-                  <div className="text-[11px] opacity-50">
-                    Lead
-                  </div>
-
-                  {(chat.unread ?? 0) > 0 && (
-                    <span
-                      className="
-                min-w-[22px]
-                h-[22px]
-
-                flex
-                items-center
-                justify-center
-
-                rounded-full
-
-                bg-red-500
-                text-white
-
-                text-xs
-                font-bold
-                "
-                    >
-                      {chat.unread}
-                    </span>
-                  )}
+          {/* Conversations Feed */}
+          <div className="flex-1 overflow-y-auto pr-1 space-y-2 custom-scrollbar">
+            <AnimatePresence mode="popLayout">
+              {filteredChats.length === 0 ? (
+                <div className="text-center py-16 space-y-2 text-slate-400">
+                  <Target size={20} className="mx-auto" />
+                  <h3 className="font-bold text-sm">{isRtl ? "لا توجد نتائج" : "No Records"}</h3>
                 </div>
-<p className="text-xs opacity-70 mt-1">
-  {chat.message || chat.lastMessage}
-</p>
+              ) : (
+                filteredChats.map((chat) => {
+                  const isSelected = selectedChat?.id === chat.id;
+                  const latestMsg = chat.messages ? chat.messages[chat.messages.length - 1]?.text : (chat.message || chat.lastMessage);
+                  return (
+                    <button
+                      key={chat.id}
+                      onClick={() => setSelectedChatId(chat.id)}
+                      className={`w-full p-3 rounded-2xl flex items-center justify-between border transition-all ${isRtl ? "text-right" : "text-left"} ${isSelected ? "bg-gradient-to-r from-indigo-600 to-indigo-700 border-indigo-600 text-white shadow-md shadow-indigo-600/10" : "bg-white dark:bg-white/2 hover:bg-slate-50 dark:hover:bg-white/5 border-slate-100 dark:border-white/5"}`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="relative shrink-0">
+                          <img
+                            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(chat.name)}&background=random&color=fff`}
+                            alt={chat.name}
+                            className="w-9 h-9 rounded-full border border-white/10"
+                          />
+                          {chat.online && (
+                            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900" />
+                          )}
+                        </div>
 
-                <p className="text-[11px] opacity-50 mt-2">{chat.time}</p>
-              </button>
-            ))
-          
-         ) }
-            
+                        <div className="min-w-0">
+                          <h4 className="font-bold text-xs truncate">{chat.name}</h4>
+                          <p className={`text-[11px] truncate mt-0.5 ${isSelected ? "text-indigo-200" : "text-slate-400 dark:text-slate-500"}`}>
+                            {latestMsg}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-end shrink-0">
+                        <span className={`text-[10px] ${isSelected ? "text-indigo-200" : "text-slate-400"}`}>
+                          {chat.time || (chat.createdAt ? new Date(chat.createdAt).toLocaleDateString([], {month: 'short', day: 'numeric'}) : "")}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
-        {/* Chat Window */}
-
-        <div
-          className="
-       col-span-12
-lg:col-span-8
-xl:col-span-9
-
-        rounded-3xl
-        border
-
-        border-slate-200
-        dark:border-white/10
-
-        bg-white
-        dark:bg-slate-900
-
-        p-4
-        "
-        >
-          <div className="flex flex-col h-full">
-            {/* Header */}
-
-            <div
-              className="
-      pb-4
-      border-b
-      border-slate-200
-      dark:border-white/10
-    "
-            >
-              <div className="flex items-center gap-3">
-                <img
-           src={`https://ui-avatars.com/api/?name=${selectedChat?.name || "User"}`}
-                  alt=""
-                  className="
-    w-12
-    h-12
-    rounded-full
-    "
-                />
-
-                <div>
-                  <h2 className="font-bold text-lg">{selectedChat?.name}</h2>
-
-                  <p
-                    className={
-                      selectedChat?.online
-                        ? "text-sm text-emerald-500"
-                        : "text-sm text-slate-500"
-                    }
-                  >
-                    {activeCategory === "leads"
-  ? "Lead"
-  : selectedChat?.online
-  ? "Online"
-  : "Offline"}
-  
-                  </p>
+        {/* Chat / Info Window */}
+        <div className="col-span-12 lg:col-span-8 xl:col-span-9 rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#12141c] p-4 shadow-sm flex flex-col justify-between overflow-hidden">
+          <AnimatePresence mode="wait">
+            {selectedChat ? (
+              <div className="flex flex-col h-full justify-between overflow-hidden" key={selectedChat.id}>
+                
+                {/* Header */}
+                <div className="flex items-center pb-3 border-b border-slate-100 dark:border-white/5 shrink-0">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(selectedChat.name)}&background=random&color=fff`}
+                      alt={selectedChat.name}
+                      className="w-10 h-10 rounded-full"
+                    />
+                    <div>
+                      <h2 className="font-bold text-md leading-tight">{selectedChat.name}</h2>
+                      <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
+                        <div className="relative">
+                          <span className={`block w-2 h-2 rounded-full ${selectedChat.online ? "bg-emerald-500" : "bg-slate-400"}`} />
+                          {selectedChat.online && (
+                            <span className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-75" />
+                          )}
+                        </div>
+                        {activeCategory === "leads" ? "Lead Record" : "Live Chat"}
+                      </p>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Chat Space / Lead Info Body */}
+                <div className="flex-1 my-3 overflow-y-auto pr-1 custom-scrollbar">
+                  {activeCategory === "leads" ? (
+                    <div className="max-w-xl mx-auto space-y-4 py-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/2 border border-slate-100 dark:border-white/5">
+                          <span className="text-[10px] text-slate-400 block"><Mail size={12} className="inline mr-1"/> Email</span>
+                          <span className="text-xs font-medium block truncate mt-0.5">{selectedChat.email}</span>
+                        </div>
+                        <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/2 border border-slate-100 dark:border-white/5">
+                          <span className="text-[10px] text-slate-400 block"><Calendar size={12} className="inline mr-1"/> Created At</span>
+                          <span className="text-xs font-medium block mt-0.5">
+                            {selectedChat.createdAt ? new Date(selectedChat.createdAt).toLocaleString() : "-"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="p-4 rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/2 flex items-center justify-between">
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-400 block mb-0.5">Deal Stage</label>
+                          <span className={`inline-block text-[11px] px-2 py-0.5 rounded font-semibold border ${getStatusStyles(selectedChat.status)}`}>
+                            {selectedChat.status}
+                          </span>
+                        </div>
+                        <select
+                          value={selectedChat.status || ""}
+                          onChange={(e) => {
+                            const updated = contactMessages.map((lead) =>
+                              lead.id === selectedChat.id ? { ...lead, status: e.target.value } : lead
+                            );
+                            setContactMessages(updated);
+                            localStorage.setItem("contactMessages", JSON.stringify(updated));
+                          }}
+                          className="px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 focus:outline-none focus:border-indigo-500 dark:text-white"
+                        >
+                          <option value="New Lead">New Lead</option>
+                          <option value="Contacted">Contacted</option>
+                          <option value="Interested">Interested</option>
+                          <option value="Customer">Customer</option>
+                          <option value="Rejected">Rejected</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-slate-400">Message Body</label>
+                        <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 text-xs leading-relaxed">
+                          {selectedChat.message}
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end">
+                        <button
+                          onClick={() => {
+                            if(confirm("Delete this record?")) {
+                              const updated = contactMessages.filter((lead) => lead.id !== selectedChat.id);
+                              setContactMessages(updated);
+                              localStorage.setItem("contactMessages", JSON.stringify(updated));
+                              setSelectedChatId(null);
+                            }
+                          }}
+                          className="px-3 py-2 rounded-xl bg-rose-600/10 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-600/20 text-xs font-bold flex items-center gap-1.5 transition-all"
+                        >
+                          <Trash2 size={13} />
+                          <span>Delete Lead</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-3 min-h-full justify-end py-2 px-1">
+                      {selectedChat.messages?.map((msg) => {
+                        const isMe = msg.sender === "me";
+                        return (
+                          <div key={msg.id} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+                            <div className={`max-w-[60%] md:max-w-[50%] px-4 py-3 rounded-3xl text-sm shadow-lg ${isMe ? "bg-indigo-600 text-white rounded-br-none" : "bg-slate-100 dark:bg-white/5 text-slate-800 dark:text-slate-200 rounded-bl-none"}`}>
+                              {msg.text}
+                            </div>
+                            <div className="flex items-center gap-1 text-[9px] text-slate-400 mt-1 px-1">
+                              <span>{msg.time}</span>
+                              {isMe && <span className="text-indigo-500">✓✓</span>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div ref={messagesEndRef} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer Inputs */}
+                <div className="shrink-0">
+                  {isTyping && activeCategory !== "leads" && (
+                    <div className="px-2 pb-2">
+                      <div className="inline-flex items-center gap-1 text-xs text-slate-400">
+                        <span>typing</span>
+                        <div className="flex gap-1">
+                          <span className="w-1 h-1 bg-slate-400 rounded-full animate-bounce" />
+                          <span className="w-1 h-1 bg-slate-400 rounded-full animate-bounce delay-100" />
+                          <span className="w-1 h-1 bg-slate-400 rounded-full animate-bounce delay-200" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeCategory !== "leads" && (
+                    <form onSubmit={handleSendMessage} className="pt-3 border-t border-slate-100 dark:border-white/5 flex gap-2">
+                      <input
+                        type="text"
+                        value={typedMessage}
+                        onChange={(e) => setTypedMessage(e.target.value)}
+                        placeholder={isRtl ? "اكتب رسالة هنا..." : "Type your message here..."}
+                        className="flex-1 px-4 py-2.5 text-xs rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 focus:outline-none focus:border-indigo-500 text-slate-800 dark:text-slate-100"
+                      />
+                      <button
+                        type="submit"
+                        className="p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-md shadow-indigo-600/10 shrink-0"
+                      >
+                        <Send size={14} />
+                      </button>
+                    </form>
+                  )}
+                </div>
+
               </div>
-            </div>
-
-
-{/* Content */}
-
-<div className="flex-1 overflow-y-auto py-6 px-2">
-
-  {activeCategory === "leads" ? (
-
-    
-
-    <div className="max-w-3xl mx-auto">
-
-      <div className="rounded-3xl border border-slate-200 dark:border-white/10 p-8 bg-slate-50 dark:bg-white/5">
-
-        <h2 className="text-2xl font-bold mb-6">
-          Lead Information
-        </h2>
-
-        <div className="space-y-4">
-
-          <div>
-            <span className="font-semibold">Name:</span>{" "}
-            {selectedChat?.name}
-          </div>
-
-          <div>
-            <span className="font-semibold">Email:</span>{" "}
-            {selectedChat?.email}
-          </div>
-
-          <div>
-  <span className="font-semibold">
-    Status:
-  </span>{" "}
-  {selectedChat?.status}
-</div>
-
-<select
-  value={selectedChat?.status || ""}
-  onChange={(e) => {
-    const updated =
-      contactMessages.map((lead) =>
-        lead.id === selectedChat.id
-          ? {
-              ...lead,
-              status: e.target.value,
-            }
-          : lead
-      );
-
-    setContactMessages(updated);
-
-    localStorage.setItem(
-      "contactMessages",
-      JSON.stringify(updated)
-    );
-
-    setSelectedChat({
-      ...selectedChat,
-      status: e.target.value,
-    });
-  }}
-  className="
-  mt-3
-  px-4
-  py-2
-  rounded-xl
-  border
-  border-slate-200
-  dark:border-white/10
-  bg-white
-  dark:bg-slate-900
-  "
->
-  <option>New Lead</option>
-  <option>Contacted</option>
-  <option>Interested</option>
-  <option>Customer</option>
-  <option>Rejected</option>
-</select>
-
-          <div>
-            <span className="font-semibold">Date:</span>{" "}
-            {selectedChat?.createdAt
-              ? new Date(selectedChat.createdAt).toLocaleString()
-              : "-"}
-          </div>
-
-          <div className="pt-4 border-t border-slate-200 dark:border-white/10">
-            <span className="font-semibold">
-              Message:
-            </span>
-
-            <div className="mt-3 p-4 rounded-2xl bg-white dark:bg-slate-900">
-              {selectedChat?.message}
-            </div>
-
-            <button
-  onClick={() => {
-    const updated = contactMessages.filter(
-      (lead) => lead.id !== selectedChat.id
-    );
-
-    setContactMessages(updated);
-
-    localStorage.setItem(
-      "contactMessages",
-      JSON.stringify(updated)
-    );
-
-    setSelectedChat(
-  updated.length > 0 ? updated[0] : null
-);
-  }}
-  className="
-  mt-6
-  px-5
-  py-3
-  rounded-xl
-  bg-red-600
-  text-white
-  hover:bg-red-700
-  "
->
-Delete Lead
-</button>
-          </div>
-
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 space-y-2 w-full">
+                <Target size={32} className="text-slate-300 animate-pulse" />
+                <h3 className="font-bold text-xs">{isRtl ? "لم يتم تحديد أي محادثة" : "No Active Chat"}</h3>
+              </div>
+            )}
+          </AnimatePresence>
         </div>
 
       </div>
-
-    </div>
-
-  ) : (
-
-    <div className="flex items-center justify-center h-full text-slate-400">
-
-      Chat Window Coming Soon
-
-    </div>
-
-  )}
-
-</div>
-
-</div> 
-
-
-          </div>
-        </div>
-     
     </motion.div>
   );
 }

@@ -385,6 +385,7 @@ function AuthProvider({ children }) {
         deleteNotification,
         clearAllNotifications,
         addActivity,
+        
       }}
     >
       {children}

@@ -20,7 +20,7 @@ function Profile() {
           </p>
         </div>
         <Link
-          to="/dashboard/settings"
+          to="/settings"
           className="h-11 px-6 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white text-sm font-medium hover:bg-slate-800 dark:hover:bg-indigo-700 transition-all shadow-md flex items-center gap-2"
         >
           <Settings className="w-4 h-4" /> Account Settings
@@ -120,7 +120,7 @@ function Profile() {
             </p>
           </div>
           <Link
-            to="/dashboard/settings"
+            to="/settings"
             className="block w-full text-center mt-8 py-3 bg-white text-slate-900 rounded-xl text-sm font-semibold hover:bg-slate-100 transition-all shadow-md"
           >
             Update Password
@@ -131,9 +131,9 @@ function Profile() {
       {/* 4. Quick Links Navigation Grid */}
       <div className="grid sm:grid-cols-3 gap-4">
         {[
-          { title: "Account Settings", path: "/dashboard/settings", icon: <Settings className="w-5 h-5 text-indigo-500" /> },
-          { title: "Billing & Invoices", path: "/dashboard/billing", icon: <CreditCard className="w-5 h-5 text-emerald-500" /> },
-          { title: "Security & Privacy", path: "/dashboard/settings", icon: <Shield className="w-5 h-5 text-amber-500" /> }
+          { title: "Account Settings", path: "/settings", icon: <Settings className="w-5 h-5 text-indigo-500" /> },
+          { title: "Billing & Invoices", path: "/billing", icon: <CreditCard className="w-5 h-5 text-emerald-500" /> },
+          { title: "Security & Privacy", path: "/settings", icon: <Shield className="w-5 h-5 text-amber-500" /> }
         ].map((link, index) => (
           <Link
             key={index}

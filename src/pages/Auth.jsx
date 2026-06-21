@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   User,
 } from "lucide-react";
+import { useEffect } from "react";
 
 import { motion } from "framer-motion";
 
@@ -21,7 +22,7 @@ function Auth() {
   const [isLogin, setIsLogin] = useState(true);
 
   const navigate = useNavigate();
-  const { login, register } = useAuth()
+  const { login, register, isAuthenticated } = useAuth()
   const [errors, setErrors] = useState({});
   // States
   const [email, setEmail] = useState("");
@@ -39,7 +40,7 @@ function Auth() {
 const result = login(email, loginPassword);
 
 if (result.success) {
-  navigate("/dashboard");
+  navigate("/");
 } else {
   alert(result.message);
 }
@@ -50,45 +51,26 @@ const handleRegister = (e) => {
 
   let newErrors = {};
 
-  const emailRegex =
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   if (name.trim().length < 3) {
-    newErrors.name =
-      "Name must be at least 3 characters";
+    newErrors.name = "Name must be at least 3 characters";
   }
 
   if (!emailRegex.test(email)) {
-    newErrors.email =
-      "Invalid email address";
+    newErrors.email = "Invalid email address";
   }
 
-  if (
-    registerPassword !==
-    confirmPassword
-  ) {
-    newErrors.confirmPassword =
-      "Passwords do not match";
+  if (registerPassword !== confirmPassword) {
+    newErrors.confirmPassword = "Passwords do not match";
   }
 
-  if (
-    Object.keys(newErrors).length > 0
-  ) {
+  if (Object.keys(newErrors).length > 0) {
     setErrors(newErrors);
     return;
   }
 
-  const result = register(
-    name,
-    email,
-    registerPassword
-  );
-
-  if (result.success) {
-    navigate("/dashboard");
-  } else {
-    alert(result.message);
-  }
+  register(name, email, registerPassword);
 };
 
   // حركة الـ Overlay
@@ -113,6 +95,12 @@ const handleRegister = (e) => {
   };
 
   const isPasswordValid = Object.values(passwordChecks).every(Boolean);
+
+  useEffect(() => {
+  if (isAuthenticated) {
+    navigate("/");
+  }
+}, [isAuthenticated, navigate]);
 
   return (
     <div
@@ -395,15 +383,7 @@ const handleRegister = (e) => {
                       >
                         • One uppercase letter
                       </p>
-                      <p
-                        className={
-                          passwordChecks.lowercase
-                            ? "text-green-400"
-                            : "text-red-400"
-                        }
-                      >
-                        • One lowercase letter
-                      </p>
+
                       <p
                         className={
                           passwordChecks.number
@@ -448,7 +428,7 @@ const handleRegister = (e) => {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="bg-transparent outline-none text-sm w-full text-white placeholder:text-gray-600 pr-10 pl-10"
+                     className="bg-transparent outline-none text-sm w-full text-white placeholder:text-gray-600"
                   />
 
                   {/* Eye Button (Fixed RTL/LTR) */}

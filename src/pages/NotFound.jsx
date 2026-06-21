@@ -29,7 +29,7 @@ function NotFound() {
 
         {/* زرار العودة للرئيسية */}
         <Link
-          to="/dashboard"
+          to="/"
           className="inline-flex items-center justify-center px-6 h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 transition text-white font-medium text-sm shadow-lg shadow-indigo-600/20"
         >
           العودة للوحة التحكم

@@ -402,11 +402,7 @@ focus:ring-indigo-500/30
             <p className="text-sm text-slate-500">KPI Metrics</p>
           </div>
         </div>
-        <div
-          className="grid  grid-cols-1
-sm:grid-cols-2
-xl:grid-cols-3 gap-5"
-        >
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {performanceCards.map((card, idx) => (
             <div
               key={idx}
@@ -471,7 +467,7 @@ xl:grid-cols-3 gap-5"
 ========================================= */}
 
       {/* 3️⃣ سيكشن الرسوم البيانية الحية (Dynamic Charts) */}
-      <div className="grid grid-cols-1 2xl:grid-cols-3   gap-6">
+     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {/* المخطط الخطي المساحي المتدرج */}
         <div
           className="p-6 rounded-3xl border shadow-sm flex flex-col justify-between"
@@ -573,21 +569,20 @@ shadow-sm
               </Pie>
 
               <Tooltip />
-              <text
-                x="50%"
-                y="50%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="fill-white"
-              >
-                <tspan x="50%" dy="-5" fontSize="28" fontWeight="700">
-                  {totalPlans}
-                </tspan>
-
-                <tspan x="50%" dy="22" fontSize="12">
-                  Plans
-                </tspan>
-              </text>
+<text
+  x="50%"
+  y="50%"
+  textAnchor="middle"
+  dominantBaseline="middle"
+  className="fill-slate-800 dark:fill-white"
+>
+  <tspan x="50%" dy="-5" fontSize="24" fontWeight="700">
+    {totalPlans}
+  </tspan>
+  <tspan x="50%" dy="20" fontSize="12">
+    Plans
+  </tspan>
+</text>
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -723,129 +718,105 @@ shadow-sm
         })}
       </div>
 
-      {/* =========================================
- TOP PLANS TABLE
+{/* =========================================
+    TOP PLANS TABLE
 ========================================= */}
+<div
+  className="rounded-3xl border overflow-hidden"
+  style={{
+    background: "var(--bg-card)",
+    borderColor: "var(--border)",
+  }}
+>
+  <div className="p-6 border-b" style={{ borderColor: "var(--border)" }}>
+    <h3 className="font-bold text-lg">
+      {lang === "ar" ? "أفضل الخطط" : "Top Performing Plans"}
+    </h3>
+    <p className="text-sm text-slate-500 mt-1">
+      {lang === "ar" ? "تفاصيل أداء كل خطة" : "Performance breakdown by subscription plan"}
+    </p>
+  </div>
 
-      <div
-        className="rounded-3xl border overflow-hidden"
-        style={{
-          background: "var(--bg-card)",
-          borderColor: "var(--border)",
-        }}
-      >
-        <div className="p-6 border-b" style={{ borderColor: "var(--border)" }}>
-          <h3 className="font-bold text-lg">
-            {lang === "ar" ? "أفضل الخطط" : "Top Performing Plans"}
-          </h3>
-
-          <p className="text-sm text-slate-500 mt-1">
-            {lang === "ar"
-              ? "تفاصيل أداء كل خطة"
-              : "Performance breakdown by subscription plan"}
-          </p>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table
-            className={`w-full text-sm ${
-              lang === "ar" ? "text-right" : "text-left"
-            }`}
+  {/* الجدول العادي: يظهر من شاشات sm فما فوق ويختفي في الموبايل */}
+  <div className="hidden sm:block overflow-x-auto">
+    <table className={`w-full text-sm ${lang === "ar" ? "text-right" : "text-left"}`}>
+      <thead>
+        <tr className="text-sm" style={{ background: "rgba(99,102,241,.05)" }}>
+          <th className="p-4">{lang === "ar" ? "الخطة" : "Plan"}</th>
+          <th className="p-4">{lang === "ar" ? "العملاء" : "Customers"}</th>
+          <th className="p-4">{lang === "ar" ? "الإيراد" : "Revenue"}</th>
+          <th className="p-4">{lang === "ar" ? "الحصة" : "Share"}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {topPlans.map((plan, index) => (
+          <tr
+            key={index}
+            className="border-t hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
+            style={{ borderColor: "var(--border)" }}
           >
-            <thead>
-              <tr
-                className={`  text-sm ${
-                  lang === "ar" ? "text-right" : "text-left"
-                }`}
-                style={{
-                  background: "rgba(99,102,241,.05)",
-                }}
-              >
-                <th className="p-4">{lang === "ar" ? "الخطة" : "Plan"}</th>
+            <td className="p-4">
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-500 inline-flex items-center">
+                {plan.name}
+                {index === 0 && (
+                  <span className={`${lang === "ar" ? "mr-2" : "ml-2"} px-2 py-1 text-[10px] rounded-full bg-emerald-500/10 text-emerald-500`}>
+                    TOP
+                  </span>
+                )}
+              </span>
+            </td>
+            <td className="p-4">{plan.sales}</td>
+            <td className="p-4 font-bold text-indigo-500">{plan.revenue}</td>
+            <td className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-24 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div className="h-full bg-indigo-500" style={{ width: plan.share }} />
+                </div>
+                <span className="text-xs font-semibold">{plan.share}</span>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
 
-                <th className="p-4">
-                  {lang === "ar" ? "العملاء" : "Customers"}
-                </th>
-
-                <th className="p-4">{lang === "ar" ? "الإيراد" : "Revenue"}</th>
-
-                <th className="p-4">{lang === "ar" ? "الحصة" : "Share"}</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {topPlans.map((plan, index) => (
-                <tr
-                  key={index}
-                  className="border-t
-             hover:bg-slate-50
- dark:hover:bg-slate-800/40
- transition-colors"
-                  style={{
-                    borderColor: "var(--border)",
-                  }}
-                >
-                  <td className="p-4">
-                    <span
-                      className="
-    px-3
-    py-1
-    rounded-full
-    text-xs
-    font-semibold
-    bg-indigo-500/10
-    text-indigo-500
-    "
-                    >
-                      {plan.name}
-
-                      {index === 0 && (
-                        <span
-                          className="
-    ml-2
-    px-2
-    py-1
-    text-[10px]
-    rounded-full
-    bg-emerald-500/10
-    text-emerald-500
-    "
-                        >
-                          TOP
-                        </span>
-                      )}
-                    </span>
-                  </td>
-
-                  <td className="p-4">{plan.sales}</td>
-
-                  <td className="p-4 font-bold text-indigo-500">
-                    {plan.revenue}
-                  </td>
-
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-24 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-indigo-500"
-                          style={{
-                            width: plan.share,
-                          }}
-                        />
-                      </div>
-
-                      <span className="text-xs font-semibold">
-                        {plan.share}
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+  {/* كروت الموبايل: تظهر في الموبايل وتختفي في الشاشات الأكبر */}
+  <div className="block sm:hidden divide-y divide-slate-100 dark:divide-slate-800">
+    {topPlans.map((plan, index) => (
+      <div key={index} className="p-5 space-y-3 text-sm">
+        <div className="flex justify-between items-center">
+          <span className="font-medium text-slate-500">{lang === "ar" ? "الخطة" : "Plan"}</span>
+          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-500 inline-flex items-center">
+            {plan.name}
+            {index === 0 && (
+              <span className="mr-2 px-1.5 py-0.5 text-[9px] rounded-full bg-emerald-500/10 text-emerald-500">TOP</span>
+            )}
+          </span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="font-medium text-slate-500">{lang === "ar" ? "العملاء" : "Customers"}</span>
+          <span className="font-semibold text-slate-700 dark:text-slate-300">{plan.sales}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="font-medium text-slate-500">{lang === "ar" ? "الإيراد" : "Revenue"}</span>
+          <span className="font-bold text-indigo-500">{plan.revenue}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="font-medium text-slate-500">{lang === "ar" ? "الحصة" : "Share"}</span>
+          <div className="flex items-center gap-2">
+            <div className="w-20 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+              <div className="h-full bg-indigo-500" style={{ width: plan.share }} />
+            </div>
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{plan.share}</span>
+          </div>
         </div>
       </div>
-    </div>
+    ))}
+  </div>
+</div>
+      </div>
+  
   );
 }
 

@@ -465,7 +465,7 @@ className={`absolute top-16 z-[9999] w-[380px] rounded-3xl border shadow-2xl ove
         <div className="p-2">
 <button
   onClick={() => {
-    navigate("/dashboard/profile")
+    navigate("/profile")
     setShowUserMenu(false);
   }}
   className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/[0.04] transition-all text-sm dark:text-white"
@@ -476,7 +476,7 @@ className={`absolute top-16 z-[9999] w-[380px] rounded-3xl border shadow-2xl ove
 
 <button
   onClick={() => {
-    navigate("/dashboard/settings");
+    navigate("/settings");
     setShowUserMenu(false);
   }}
   className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/[0.04] transition-all text-sm dark:text-white"

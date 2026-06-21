@@ -36,7 +36,7 @@ const menuItems = [
 
     items: [
       {
-        path: "/dashboard",
+        path: "/",
         name:
           t.dashboard || "Dashboard",
         icon: (
@@ -45,7 +45,7 @@ const menuItems = [
       },
 
       {
-        path: "/dashboard/analytics",
+        path: "/analytics",
         name:
           t.analytics ||
           "Analytics",
@@ -53,7 +53,7 @@ const menuItems = [
       },
 
       {
-        path: "/dashboard/crm",
+        path: "/crm",
         name: t.crm || "CRM",
         icon: <Users size={20} />,
       },
@@ -68,13 +68,13 @@ const menuItems = [
 
     items: [
       {
-        path: "/dashboard/users",
+        path: "/users",
         name: t.users || "Users",
         icon: <UserCog size={20} />,
       },
 
       {
-        path: "/dashboard/billing",
+        path: "/billing",
         name:
           t.billing || "Billing",
         icon: (
@@ -83,7 +83,7 @@ const menuItems = [
       },
 
       {
-        path: "/dashboard/settings",
+        path: "/settings",
         name:
           t.settings ||
           "Settings",
@@ -100,37 +100,37 @@ const menuItems = [
 
     items: [
       {
-        path: "/dashboard/kanban",
+        path: "/kanban",
         name: "Kanban",
         icon: <KanbanSquare size={20} />,
       },
 
       {
-        path: "/dashboard/chat",
+        path: "/chat",
         name: "Chat",
         icon: <MessageCircle size={20} />,
       },
 
       {
-        path: "/dashboard/calendar",
+        path: "/calendar",
         name: t.calendar,
         icon: <CalendarDays size={20} />,
       },
 
       {
-        path: "/dashboard/components",
+        path: "/components",
         name: "Components",
         icon: <Boxes size={20} />,
       },
 
       {
-        path: "/dashboard/products",
+        path: "/products",
         name: t.products,
         icon: <ShoppingBag size={20} />,
       },
 
       {
-        path: "/dashboard/orders",
+        path: "/orders",
         name: t.orders,
         icon: <ClipboardList size={20} />,
       },
