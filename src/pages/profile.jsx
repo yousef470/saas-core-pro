@@ -16,7 +16,7 @@ function Profile() {
             Profile Settings
           </h1>
           <p className="text-sm mt-1 text-slate-500 dark:text-slate-400">
-            Manage your identity, subscription, and security configurations.
+            Manage your identity,  security configurations.
           </p>
         </div>
         <Link
@@ -79,7 +79,7 @@ function Profile() {
     { label: "Full Name", val: user?.name || "Not Provided" },
     { label: "Email Address", val: user?.email || "Not Provided" },
     { label: "Phone Number", val: user?.phone || "Not Provided" }, // السطر الجديد هنا
-    { label: "Current Plan", val: user?.plan || "Starter" },
+  
     { label: "Role Account", val: user?.role || "User" },
   ].map((item) => (
     <div key={item.label} className="bg-slate-50/50 dark:bg-slate-800/30 p-4 rounded-xl border border-slate-100 dark:border-slate-800/50">
@@ -90,38 +90,35 @@ function Profile() {
 </div>
           </div>
 
-          {/* Integrated Subscription Box */}
-          <div className="pt-2">
-            <h3 className="font-bold mb-4 dark:text-white text-sm uppercase tracking-wider text-slate-400">Subscription Status</h3>
-            <div className="p-5 rounded-2xl bg-indigo-500/[0.03] dark:bg-indigo-500/[0.02] border border-indigo-500/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div>
-                <p className="font-bold text-lg text-indigo-600 dark:text-indigo-400">{user?.plan || "Starter"} Plan</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Your subscription renews automatically.</p>
-              </div>
-              <button className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-md shadow-indigo-600/10 transition-all">
-                Upgrade Plan
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Security Sidebar */}
-        <div className="bg-slate-900 dark:bg-slate-950 text-white p-6 md:p-8 rounded-3xl shadow-xl flex flex-col justify-between h-full border border-slate-800">
+<div className="bg-white dark:bg-slate-950 
+                text-slate-900 dark:text-white
+                p-6 md:p-8 rounded-3xl shadow-sm
+                border border-slate-200 dark:border-slate-800
+                flex flex-col justify-between h-full">
           <div className="space-y-4">
-            <h3 className="font-bold text-lg flex items-center gap-2 border-b border-slate-800 pb-3">
+            <h3 className="font-bold text-lg flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
               <Shield className="w-5 h-5 text-indigo-400" /> Security Control
             </h3>
-            <div className="bg-slate-800/40 p-4 rounded-xl border border-slate-800/60">
+            <div className="bg-slate-50 dark:bg-slate-800/40 
+                p-4 rounded-xl 
+                border border-slate-200 dark:border-slate-800/60">
               <p className="text-xs text-slate-400 font-medium">Last Login Session</p>
               <p className="text-sm font-semibold text-indigo-300 mt-1">{user?.lastLogin || "No active history"}</p>
             </div>
-            <p className="text-slate-400 text-xs leading-relaxed">
+            <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
               We recommend updating your credentials periodically to maintain top-tier account defense.
             </p>
           </div>
           <Link
             to="/settings"
-            className="block w-full text-center mt-8 py-3 bg-white text-slate-900 rounded-xl text-sm font-semibold hover:bg-slate-100 transition-all shadow-md"
+            className="block w-full text-center mt-8 py-3
+           bg-indigo-600 text-white
+           rounded-xl text-sm font-semibold
+           hover:bg-indigo-700
+           transition-all shadow-md"
           >
             Update Password
           </Link>

@@ -25,6 +25,8 @@ function Users() {
   // حالة جديدة لتحديد اتجاه فتح المنيو (أسفل أو أعلى) لكل كارت
   const [menuDirection, setMenuDirection] = useState("down"); 
 
+  
+
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
@@ -114,6 +116,13 @@ function Users() {
 
   // التعديل على مستخدم الحالي
   const handleEditUser = () => {
+    if (
+  editingUser.role === "Owner" &&
+  editingUser.id !== user.id
+) {
+  toast.error("Owner account cannot be modified");
+  return;
+}
     if (!editingUser.name.trim()) {
       toast.error("Name is required");
       return;
@@ -133,12 +142,22 @@ function Users() {
 
   // حذف مستخدم
   const handleDeleteUser = () => {
+
+if (
+  userToDelete.role === "Owner" &&
+  user.role !== "Owner"
+) {
+  toast.error("Only Owner can delete Owner");
+  return;
+}
     const updatedUsers = users.filter((u) => u.id !== userToDelete.id);
     setUsers(updatedUsers);
     localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
 
     toast.success("User deleted successfully");
     setUserToDelete(null);
+
+
   };
 
   // دالة لحساب مكان الضغط وتحديد اتجاه فتح المنيو تلقائيًا
@@ -281,7 +300,7 @@ function Users() {
               className="px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
             >
               <option value="All">{t.usersPage?.filterRole || "All Roles"}</option>
-              <option value="Owner">Owner</option>
+              
               <option value="Admin">Admin</option>
               <option value="Editor">Editor</option>
               <option value="User">User</option>
@@ -456,7 +475,7 @@ function Users() {
                   onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
                   className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none transition-all"
                 >
-                  <option value="Owner">Owner</option>
+
                   <option value="Admin">Admin</option>
                   <option value="Editor">Editor</option>
                   <option value="User">User</option>
@@ -498,6 +517,7 @@ function Users() {
                   className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all"
                   value={editingUser.name}
                   onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
+                  
                 />
                 <input
                   placeholder="Email"
@@ -510,7 +530,7 @@ function Users() {
                   onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
                   className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none transition-all"
                 >
-                  <option value="Owner">Owner</option>
+                  
                   <option value="Admin">Admin</option>
                   <option value="Editor">Editor</option>
                   <option value="User">User</option>

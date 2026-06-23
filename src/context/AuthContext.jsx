@@ -93,7 +93,9 @@ function AuthProvider({ children }) {
 
   // REGISTER
   const register = (name, email, password) => {
-    const localUsers = JSON.parse(localStorage.getItem("saas_users")) || users;
+      const localUsers =
+    JSON.parse(localStorage.getItem("saas_users")) || [];
+
     const existingUser = localUsers.find((u) => u.email === email);
 
     if (existingUser) {
@@ -110,15 +112,23 @@ function AuthProvider({ children }) {
       };
     }
 
+
+
+const role =
+  localUsers.length === 0 ? "Owner" : "User";
+
+const status = "Active";
+
     const newUser = {
       id: crypto.randomUUID(),
       name,
       email,
       password,
-      role: "user",
-      plan: "Starter",
+     role,
+      
       avatar: "https://i.pravatar.cc/150",
-      status: "Active",
+   
+status,
       phone: "",
       twoFactor: false,
       language: "en",
