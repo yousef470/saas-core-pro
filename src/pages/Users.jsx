@@ -11,6 +11,10 @@ function Users() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [resetPasswordUser, setResetPasswordUser] = useState(null);
+
+const [newPassword, setNewPassword] = useState("");
   
   // جلب البيانات من الـ Context
   const { users, setUsers, user } = useContext(AuthContext);
@@ -27,12 +31,13 @@ function Users() {
 
   
 
-  const [newUser, setNewUser] = useState({
-    name: "",
-    email: "",
-    role: "User",
-    status: "Active",
-  });
+const [newUser, setNewUser] = useState({
+  name: "",
+  email: "",
+  password: "",
+  role: "User",
+  status: "Active",
+});
 
   const roleLabel = {
     Owner: t.usersPage?.owner || "Owner",
@@ -99,31 +104,67 @@ function Users() {
       return;
     }
 
-    const createdUser = {
-      id: Date.now(),
-      ...newUser,
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(newUser.name)}&background=6366f1&color=fff`,
-    };
+    if (!newUser.password || newUser.password.length < 6) {
+  toast.error("Password must be at least 6 characters");
+  return;
+}
 
+const createdUser = {
+  id: crypto.randomUUID(),
+  name: newUser.name,
+  email: newUser.email,
+  password: newUser.password,
+  role: newUser.role,
+  status: newUser.status,
+
+  avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    newUser.name
+  )}&background=6366f1&color=fff`,
+
+  phone: "",
+  language: "en",
+  theme: "light",
+  twoFactor: false,
+  emailNotifications: true,
+
+  notifications: [],
+
+  activityLog: [
+    {
+      id: crypto.randomUUID(),
+      action: "Account Created",
+      description: "User account created by admin",
+      createdAt: new Date().toISOString(),
+    },
+  ],
+
+  createdAt: new Date().toISOString(),
+};
     const updatedUsers = [...users, createdUser];
     setUsers(updatedUsers);
     localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
     
     toast.success("User added successfully");
     setShowAddModal(false);
-    setNewUser({ name: "", email: "", role: "User", status: "Active" });
+    setNewUser({
+  name: "",
+  email: "",
+  password: "",
+  role: "User",
+  status: "Active",
+});
   };
 
   // التعديل على مستخدم الحالي
   const handleEditUser = () => {
     if (
-  editingUser.role === "Owner" &&
-  editingUser.id !== user.id
-) {
+  editingUser.role === "Owner"
+)
+{
   toast.error("Owner account cannot be modified");
   return;
 }
-    if (!editingUser.name.trim()) {
+  if (!editingUser.name.trim()) {
       toast.error("Name is required");
       return;
     }
@@ -201,6 +242,46 @@ if (
       </div>
     );
   }
+
+  const handleResetPassword = () => {
+  if (!newPassword || newPassword.length < 6) {
+    toast.error("Password must be at least 6 characters");
+    return;
+  }
+
+  const updatedUsers = users.map((u) =>
+    u.id === resetPasswordUser.id
+      ? {
+          ...u,
+          password: newPassword,
+
+          activityLog: [
+            {
+              id: crypto.randomUUID(),
+              action: "Password Reset",
+              description: "Password reset by admin",
+              createdAt: new Date().toISOString(),
+            },
+
+            ...(u.activityLog || []),
+          ],
+        }
+      : u
+  );
+
+  setUsers(updatedUsers);
+
+  localStorage.setItem(
+    "saas_users",
+    JSON.stringify(updatedUsers)
+  );
+
+  toast.success("Password updated");
+
+  setResetPasswordUser(null);
+
+  setNewPassword("");
+};
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4">
@@ -406,6 +487,16 @@ if (
                       >
                         Edit
                       </button>
+<button
+  onClick={() => {
+    setResetPasswordUser(u);
+    setOpenMenu(null);
+  }}
+  className="w-full text-left px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+>
+  Reset Password
+</button>
+
                       <button
                         onClick={() => {
                           setUserToDelete(u);
@@ -470,6 +561,19 @@ if (
                   className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all"
                   onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                 />
+
+                <input
+  type="password"
+  placeholder="Password"
+  value={newUser.password}
+  className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all"
+  onChange={(e) =>
+    setNewUser({
+      ...newUser,
+      password: e.target.value,
+    })
+  }
+/>
                 <select
                   value={newUser.role}
                   onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
@@ -587,6 +691,54 @@ if (
           </div>
         </div>
       )}
+
+      {resetPasswordUser && (
+  <div className="fixed inset-0 z-[99999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl w-full max-w-md border border-slate-200 dark:border-slate-800">
+
+      <h2 className="text-xl font-bold mb-4">
+        Reset Password
+      </h2>
+
+      <p className="text-sm text-slate-500 mb-4">
+        Change password for
+        <span className="font-bold ml-1">
+          {resetPasswordUser.name}
+        </span>
+      </p>
+
+      <input
+        type="password"
+        placeholder="New Password"
+        value={newPassword}
+        onChange={(e) =>
+          setNewPassword(e.target.value)
+        }
+        className="w-full h-12 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80"
+      />
+
+      <div className="flex gap-3 mt-5">
+        <button
+          onClick={() => {
+            setResetPasswordUser(null);
+            setNewPassword("");
+          }}
+          className="flex-1 h-12 rounded-xl border border-slate-200 dark:border-slate-700"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={handleResetPassword}
+          className="flex-1 h-12 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
+        >
+          Save
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
 
       {/* USER DETAILS MODAL */}
       {selectedUser && (

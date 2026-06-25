@@ -468,6 +468,7 @@ const handleRegister = (e) => {
 
               {/* Submit */}
               <button
+              
                 type="submit"
                 className="
                   w-full

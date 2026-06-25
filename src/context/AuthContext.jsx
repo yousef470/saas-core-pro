@@ -45,8 +45,15 @@ function AuthProvider({ children }) {
   const login = (email, password) => {
     const localUsers = JSON.parse(localStorage.getItem("saas_users")) || users;
     const foundUser = localUsers.find(
+      
       (u) => u.email === email && u.password === password
     );
+    if (foundUser?.status === "Suspended") {
+  return {
+    success: false,
+    message: "Account suspended",
+  };
+}
 
     if (!foundUser) {
       return {
@@ -93,6 +100,7 @@ function AuthProvider({ children }) {
 
   // REGISTER
   const register = (name, email, password) => {
+    console.log("REGISTER START");
       const localUsers =
     JSON.parse(localStorage.getItem("saas_users")) || [];
 
@@ -111,7 +119,6 @@ function AuthProvider({ children }) {
         message: "Password must be at least 6 characters",
       };
     }
-
 
 
 const role =
@@ -153,7 +160,7 @@ status,
       ],
       createdAt: new Date().toISOString(),
     };
-
+console.log("USER CREATED", newUser);
     const updatedUsers = [...localUsers, newUser];
     localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
     setUsers(updatedUsers);
@@ -164,7 +171,7 @@ status,
     };
     localStorage.setItem("saas_session", JSON.stringify(session));
     setUser(newUser);
-
+console.log("REGISTER SUCCESS");
     return {
       success: true,
       user: newUser,
