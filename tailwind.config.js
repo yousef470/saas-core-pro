@@ -8,8 +8,14 @@ export default {
   ],
 
   theme: {
-    extend: {},
+  extend: {
+    fontFamily: {
+      sans: ["Plus Jakarta Sans", "sans-serif"],
+    },
   },
+},
 
   plugins: [],
+
+
 }

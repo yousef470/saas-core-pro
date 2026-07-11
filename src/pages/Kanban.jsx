@@ -362,8 +362,8 @@ overflow-x-hidden"
           <div className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 p-8 bg-gradient-to-br from-indigo-500/15 via-transparent to-cyan-500/10 backdrop-blur-xl">
             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
-                <h1 className="text-3xl md:text-4xl font-black tracking-tight flex items-center gap-3">
-                  <Layout className="text-indigo-500" size={32} />
+                <h1 className="text-3xl md:text-4xl font-black tracking-normal flex items-center gap-3">
+                  <Layout className="slate" size={32} />
                   {lang === "ar"
                     ? `مهامك، ${user?.name || "بطل"} 👋`
                     : `Your Tasks, ${user?.name || "Pro"} 👋`}
@@ -464,7 +464,7 @@ border-indigo-500/20
 text-4xl
 font-black
 mt-2
-text-indigo-500
+slate
 "
               >
                 {Object.keys(data.tasks).length}
@@ -551,7 +551,7 @@ text-emerald-500
                         <div
                           className={`w-2 h-2 rounded-full ${column.id === "col-1" ? "bg-amber-500" : column.id === "col-2" ? "bg-indigo-500" : "bg-emerald-500"}`}
                         />
-                        <h3 className="font-bold text-lg tracking-tight uppercase">
+                        <h3 className="font-bold text-lg tracking-normal uppercase">
                           {lang === "ar" ? column.titleAr : column.title}
                         </h3>
                         <span className="px-2 py-0.5 rounded-lg bg-slate-200 dark:bg-white/5 text-[10px] font-black opacity-60">
@@ -605,7 +605,7 @@ text-emerald-500
                                         task.category === "Design"
                                           ? "bg-pink-500/10 text-pink-500"
                                           : task.category === "Dev"
-                                            ? "bg-indigo-500/10 text-indigo-500"
+                                            ? "bg-slate-200/40 dark:bg-slate-700/30 slate"
                                             : "bg-emerald-500/10 text-emerald-500"
                                       }`}
                                     >
@@ -623,7 +623,7 @@ ${
   task.status === "todo"
     ? "bg-amber-500/10 text-amber-500"
     : task.status === "progress"
-      ? "bg-indigo-500/10 text-indigo-500"
+      ? "bg-slate-200/40 dark:bg-slate-700/30 slate"
       : "bg-emerald-500/10 text-emerald-500"
 }
 `}
@@ -646,7 +646,7 @@ ${
 
                                       <button
                                         onClick={() => setEditingTask(task)}
-                                        className="p-1 hover:bg-indigo-500/10 rounded-lg transition-colors"
+                                        className="p-1 hover:bg-slate-200/40 dark:bg-slate-700/30 rounded-lg transition-colors"
                                       >
                                         <Edit
                                           size={15}
@@ -666,7 +666,7 @@ ${
                                     </div>
                                   </div>
 
-                                  <h4 className="font-bold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-500 transition-colors">
+                                  <h4 className="font-bold text-slate-900 dark:text-white mb-2 group-hover:slate transition-colors">
                                     {task.content}
                                   </h4>
                                   <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-5">
@@ -739,7 +739,7 @@ ${
       border-indigo-500/20
       text-indigo-500
       font-semibold
-      hover:bg-indigo-500/10
+      hover:bg-slate-200/40 dark:bg-slate-700/30
       transition
     "
                             >

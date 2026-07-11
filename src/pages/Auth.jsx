@@ -545,7 +545,7 @@ const handleRegister = (e) => {
             </motion.div>
 
             <div className="space-y-3 mt-8">
-              <h1 className="text-5xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-500">
+              <h1 className="text-5xl font-black tracking-normal bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-500">
                 SaaS-Core
               </h1>
               <p className="text-xs text-indigo-300 font-semibold uppercase tracking-[0.3em]">

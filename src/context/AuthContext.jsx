@@ -141,15 +141,7 @@ status,
       language: "en",
       theme: "light",
       emailNotifications: true,
-      notifications: [
-        {
-          id: crypto.randomUUID(),
-          title: "Welcome to Saas core",
-          message: "Your account has been created successfully.",
-          read: false,
-          createdAt: new Date().toISOString(),
-        },
-      ],
+      notifications: [],
       activityLog: [
         {
           id: crypto.randomUUID(),

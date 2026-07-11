@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import useTheme from "../hooks/useTheme";
 import { motion, AnimatePresence } from "framer-motion";
+import Avatar from "../components/ui/Avatar";
+
 
 import {
   getOrders,
@@ -188,7 +190,7 @@ function Orders() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/60 dark:border-white/10 pb-5">
         <div>
-          <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-black tracking-normal bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
             {t.orders || "Orders"}
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
@@ -200,7 +202,7 @@ function Orders() {
       {/* Stats Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {[
-          { label: "Total Orders", val: orders.length, icon: ShoppingCart, color: "text-indigo-500 bg-indigo-500/10" },
+          { label: "Total Orders", val: orders.length, icon: ShoppingCart, color: "slate bg-slate-200/40 dark:bg-slate-700/30" },
           { label: "Completed", val: orders.filter((o) => o.status === "Completed").length, icon: CheckCircle, color: "text-emerald-500 bg-emerald-500/10" },
           { label: "Pending", val: orders.filter((o) => o.status === "Pending").length, icon: Clock3, color: "text-amber-500 bg-amber-500/10" },
           { label: "Cancelled", val: orders.filter((o) => o.status === "Cancelled").length, icon: XCircle, color: "text-rose-500 bg-rose-500/10" },
@@ -212,7 +214,7 @@ function Orders() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-medium text-slate-400 dark:text-slate-500 tracking-wide uppercase">{stat.label}</h3>
-                <p className="text-3xl font-black tracking-tight mt-1">{stat.val}</p>
+                <p className="text-3xl font-black tracking-normal mt-1">{stat.val}</p>
               </div>
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner ${stat.color}`}>
                 <stat.icon size={22} />
@@ -343,12 +345,12 @@ function Orders() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="relative flex-shrink-0">
-                      <img
-                        src={`https://i.pravatar.cc/100?u=${order.id}`}
-                        alt=""
-                        className="w-12 h-12 rounded-2xl object-cover bg-slate-100 dark:bg-slate-800 ring-2 ring-slate-100 dark:ring-white/5"
-                        onError={(e) => { e.target.src = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'></path><circle cx='12' cy='7' r='4'></circle></svg>`; }}
-                      />
+<Avatar
+  src={order.avatar}
+  name={order.customer}
+  size={48}
+  className="ring-2 ring-slate-100 dark:ring-white/5"
+/>
                       <input
                         type="checkbox"
                         checked={isChecked}
@@ -363,7 +365,7 @@ function Orders() {
                       />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-bold text-base text-slate-800 dark:text-slate-100 truncate tracking-tight">{order.customer}</h3>
+                      <h3 className="font-bold text-base text-slate-800 dark:text-slate-100 truncate tracking-normal">{order.customer}</h3>
                       <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{order.email}</p>
                     </div>
                   </div>
@@ -466,21 +468,25 @@ function Orders() {
               className="w-full max-w-lg p-6 sm:p-8 rounded-[2rem] bg-white dark:bg-slate-900 shadow-2xl border border-slate-100 dark:border-white/10 space-y-5"
             >
               <div className="flex items-center gap-4 border-b border-slate-100 dark:border-white/5 pb-4">
-                <img src={`https://i.pravatar.cc/120?u=${selectedOrder.id}`} alt="" className="w-14 h-14 rounded-2xl" />
+                <Avatar
+  src={selectedOrder.avatar}
+  name={selectedOrder.customer}
+  size={56}
+/>
                 <div>
                   <h3 className="font-black text-xl">{selectedOrder.customer}</h3>
                   <p className="text-sm text-slate-400">{selectedOrder.email}</p>
                 </div>
               </div>
 
-              <h2 className="text-lg font-black tracking-tight">Invoice Breakdown</h2>
+              <h2 className="text-lg font-black tracking-normal">Invoice Breakdown</h2>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between"><span className="text-slate-400">Order ID</span><span className="font-mono font-bold">{selectedOrder.id}</span></div>
                 <div className="flex justify-between"><span className="text-slate-400">Date Logged</span><span>{selectedOrder.date}</span></div>
                 <div className="flex justify-between items-center"><span className="text-slate-400">Fulfillment Status</span>{getStatusBadge(selectedOrder.status)}</div>
                 <div className="border-t border-slate-100 dark:border-white/5 my-2 pt-3 flex justify-between items-center">
                   <span className="font-bold">Total Aggregate</span>
-                  <span className="font-black text-lg text-indigo-500">{selectedOrder.total}</span>
+                  <span className="font-black text-lg slate">{selectedOrder.total}</span>
                 </div>
               </div>
               <button onClick={() => setSelectedOrder(null)} className="w-full h-12 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-2xl hover:opacity-90 transition-opacity">
@@ -500,7 +506,7 @@ function Orders() {
               className="w-full max-w-md rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 p-6 shadow-2xl space-y-5"
             >
               <div>
-                <h2 className="text-2xl font-black tracking-tight">Add New Order</h2>
+                <h2 className="text-2xl font-black tracking-normal">Add New Order</h2>
                 <p className="text-xs text-slate-400 mt-1">Create a premium billing order index directly into database logs.</p>
               </div>
 
@@ -538,7 +544,7 @@ function Orders() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="w-full max-w-md rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 p-6 shadow-2xl space-y-5"
             >
-              <h2 className="text-2xl font-black tracking-tight">Edit Order #{editModal.id}</h2>
+              <h2 className="text-2xl font-black tracking-normal">Edit Order #{editModal.id}</h2>
 
               <div className="space-y-3.5">
                 <input value={editModal.customer} onChange={(e) => setEditModal({ ...editModal, customer: e.target.value })} className="w-full h-12 px-4 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />

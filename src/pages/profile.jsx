@@ -1,6 +1,7 @@
 import useAuth from "../hooks/useAuth";
 import { User, Shield, Clock, CreditCard, Settings, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import Avatar from "../components/ui/Avatar";
 
 function Profile() {
   const { user } = useAuth();
@@ -12,7 +13,7 @@ function Profile() {
       {/* 1. Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-semibold tracking-normal bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
             Profile Settings
           </h1>
           <p className="text-sm mt-1 text-slate-500 dark:text-slate-400">
@@ -31,18 +32,18 @@ function Profile() {
       <div className="grid md:grid-cols-3 gap-6">
         {/* Main User Card */}
         <div className="md:col-span-2 p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-center gap-6">
-          <img 
-            src={user?.avatar || "https://i.pravatar.cc/150"} 
-            alt="avatar" 
-            className="w-24 h-24 rounded-2xl object-cover border-4 border-slate-50 dark:border-slate-800 shadow-md" 
-          />
+<Avatar
+    src={user?.avatar}
+    name={user?.name}
+    size={96}
+/>
           <div className="flex-1 text-center sm:text-left space-y-2">
             <div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{user?.name || "User Name"}</h2>
+              <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">{user?.name || "User Name"}</h2>
               <p className="text-slate-500 dark:text-slate-400 text-sm">{user?.email || "user@example.com"}</p>
             </div>
             <div className="flex flex-wrap justify-center sm:justify-start gap-2 pt-1">
-              <span className="px-3 py-1 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/10 rounded-lg text-xs font-bold uppercase tracking-wider">
+              <span className="px-3 py-1 bg-slate-200/40 dark:bg-slate-700/30 text-indigo-600 dark:text-indigo-400 border border-indigo-500/10 rounded-lg text-xs font-bold uppercase tracking-wider">
                 {user?.plan || "Starter"} Plan
               </span>
               <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10 rounded-lg text-xs font-bold uppercase tracking-wider">
@@ -71,7 +72,7 @@ function Profile() {
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 md:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-8">
           <div>
             <h3 className="text-lg font-bold mb-6 flex items-center gap-2 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3">
-              <User className="w-5 h-5 text-indigo-500" /> Account Information
+              <User className="w-5 h-5 slate" /> Account Information
             </h3>
 {/* تم تحديث هذا القسم فقط داخل الكود ليتضمن رقم الهاتف */}
 <div className="grid sm:grid-cols-2 gap-6">
@@ -128,7 +129,7 @@ function Profile() {
       {/* 4. Quick Links Navigation Grid */}
       <div className="grid sm:grid-cols-3 gap-4">
         {[
-          { title: "Account Settings", path: "/settings", icon: <Settings className="w-5 h-5 text-indigo-500" /> },
+          { title: "Account Settings", path: "/settings", icon: <Settings className="w-5 h-5 slate" /> },
           { title: "Billing & Invoices", path: "/billing", icon: <CreditCard className="w-5 h-5 text-emerald-500" /> },
           { title: "Security & Privacy", path: "/settings", icon: <Shield className="w-5 h-5 text-amber-500" /> }
         ].map((link, index) => (
@@ -153,7 +154,7 @@ function Profile() {
       {/* 5. Recent Activity Log */}
       <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
         <h3 className="text-lg font-bold mb-6 flex items-center gap-2 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3">
-          <Clock className="w-5 h-5 text-indigo-500" /> Recent Activity Log
+          <Clock className="w-5 h-5 slate" /> Recent Activity Log
         </h3>
         {activities.length > 0 ? (
           <div className="space-y-3">

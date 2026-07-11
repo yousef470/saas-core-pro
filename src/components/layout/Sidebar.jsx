@@ -196,7 +196,7 @@ const menuItems = [
                 className={`group relative flex items-center justify-between px-4 py-3 rounded-2xl transition-all overflow-hidden ${
                   isActive
                     ? "text-white"
-                    : "text-slate-500 dark:text-slate-400 hover:text-indigo-500"
+                    : "text-slate-500 dark:text-slate-400 hover:slate"
                 }`}
               >
                 {isActive && (

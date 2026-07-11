@@ -11,7 +11,7 @@ function NotFound() {
         className="text-center relative flex flex-col items-center"
       >
         {/* رقم الخطأ الـ Premium */}
-        <h1 className="text-9xl font-extrabold tracking-widest text-indigo-600 dark:text-indigo-500 drop-shadow-sm select-none">
+        <h1 className="text-9xl font-extrabold tracking-widest text-indigo-600 dark:slate drop-shadow-sm select-none">
           404
         </h1>
         
@@ -19,7 +19,7 @@ function NotFound() {
           Page Not Found
         </div>
 
-        <h2 className="text-2xl md:text-3xl font-bold mt-10 mb-2 text-slate-800 dark:text-slate-100">
+        <h2 className="text-2xl md:text-3xl font-semibold mt-10 mb-2 text-slate-800 dark:text-slate-100">
           عذراً، الصفحة غير موجودة!
         </h2>
         

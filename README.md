@@ -1,16 +1,258 @@
-# React + Vite
+# SaaS-Core Pro
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern and professional React Admin Dashboard Template built for SaaS products, CRM systems, startup dashboards, and business management platforms.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Live Demo
 
-## React Compiler
+https://dist-pi-nine-99.vercel.app/
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Demo Account
 
-## Expanding the ESLint configuration
+**Owner**
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Email:
+[owner@saascore.com](mailto:owner@saascore.com)
+
+Password:
+123456
+
+---
+
+## 📸 Preview
+
+* Modern Dashboard
+* Analytics
+* CRM
+* User Management
+* Products
+* Orders
+* Billing
+* Calendar
+* Kanban
+* Chat
+* Notifications
+* Profile
+* Settings
+* Authentication
+* Dark / Light Mode
+
+---
+
+# ✨ Features
+
+* React 19
+* Vite
+* Tailwind CSS
+* Responsive Design
+* Modern UI
+* Clean Folder Structure
+* Authentication System
+* Owner Role
+* Admin Role
+* Editor Role
+* User Role
+* Protected Routes
+* Public Routes
+* User Management
+* Products Management
+* Orders Management
+* CRM Dashboard
+* Analytics Dashboard
+* Billing System UI
+* Chat Interface
+* Kanban Board
+* Calendar
+* Notifications
+* Activity Logs
+* Profile Management
+* Settings Page
+* Localization (i18next)
+* Dark Mode
+* Light Mode
+* Framer Motion Animations
+* Recharts
+* React Big Calendar
+* XLSX Export
+* Mock Database
+* Easy Customization
+
+---
+
+# 🛠 Technologies
+
+* React 19
+* Vite
+* Tailwind CSS
+* React Router
+* Framer Motion
+* Lucide React
+* React Hot Toast
+* Recharts
+* React Big Calendar
+* XLSX
+
+---
+
+# 📂 Folder Structure
+
+```
+src/
+│
+├── components/
+├── pages/
+├── layouts/
+├── hooks/
+├── context/
+├── data/
+├── locales/
+├── routes/
+├── assets/
+└── utils/
+```
+
+---
+
+# 📦 Installation
+
+Clone the repository
+
+```
+git clone <repository-url>
+```
+
+Install dependencies
+
+```
+npm install
+```
+
+Run development server
+
+```
+npm run dev
+```
+
+Create production build
+
+```
+npm run build
+```
+
+Preview production build
+
+```
+npm run preview
+```
+
+---
+
+# 🔑 Authentication
+
+The project includes a complete frontend authentication system.
+
+Features include:
+
+* Login
+* Register
+* Logout
+* Session Persistence
+* Protected Routes
+* Role Based Access
+
+---
+
+# 👥 User Roles
+
+* Owner
+* Admin
+* Editor
+* User
+
+---
+
+# 🌙 Theme
+
+* Light Mode
+* Dark Mode
+
+Theme preference is automatically saved.
+
+---
+
+# 🌍 Localization
+
+The project supports localization using i18next.
+
+Current language:
+
+* English
+
+Additional languages can easily be added.
+
+---
+
+# 📈 Included Pages
+
+* Dashboard
+* Analytics
+* CRM
+* Users
+* Products
+* Orders
+* Billing
+* Calendar
+* Chat
+* Kanban
+* Notifications
+* Profile
+* Settings
+* Login
+* Register
+
+---
+
+# 📋 Roadmap
+
+Current Version
+
+Version 1.0
+
+Upcoming
+
+* Landing Page
+* UI Improvements
+* Backend API
+* Database Integration
+* Stripe Payments
+* Email Verification
+* Enterprise Features
+
+---
+
+# 📄 License
+
+This template is provided for personal and commercial projects according to the included license.
+
+Redistribution or resale of the source code is prohibited without permission.
+
+---
+
+# 👨‍💻 Author
+
+Developed by
+
+Yousef Ahmed
+
+Faculty of Engineering
+
+Electronics & Communications Engineering
+
+---
+
+## ⭐ Support
+
+If you like this project, please consider leaving a rating.
+
+Your feedback helps improve future releases.

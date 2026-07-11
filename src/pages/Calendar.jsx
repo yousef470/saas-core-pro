@@ -141,7 +141,7 @@ function Calendar() {
                 })}
               </p>
               <div className="flex gap-4 mt-2 text-sm">
-                <span className="text-indigo-500 font-semibold">{stats.total} Events</span>
+                <span className="slate font-semibold">{stats.total} Events</span>
                 <span className="text-emerald-500 font-semibold">{stats.today} Today</span>
               </div>
             </div>
@@ -255,7 +255,7 @@ function Calendar() {
                         ))}
                         {/* تم حل تكرار الـ More الحاصل هنا */}
                         {dayEvents.length > 2 && (
-                          <div className="text-[10px] text-indigo-500 font-semibold">
+                          <div className="text-[10px] slate font-semibold">
                             +{dayEvents.length - 2} more
                           </div>
                         )}
@@ -309,10 +309,10 @@ function Calendar() {
   <div className="bg-white/5 border border-slate-200 dark:border-white/10 rounded-[2.5rem] p-6 backdrop-blur-xl space-y-6">
     {/* عنوان القسم */}
     <div className="flex justify-between items-center border-b border-slate-200 dark:border-white/10 pb-4">
-      <h2 className="text-xl font-black tracking-tight">
+      <h2 className="text-xl font-black tracking-normal">
         {lang === "ar" ? "عرض الأسبوع الحالي" : "Weekly Schedule"}
       </h2>
-      <span className="text-xs font-semibold px-3 py-1 bg-indigo-500/10 text-indigo-400 rounded-full border border-indigo-500/20">
+      <span className="text-xs font-semibold px-3 py-1 bg-slate-200/40 dark:bg-slate-700/30 text-indigo-400 rounded-full border border-indigo-500/20">
         7 Days View
       </span>
     </div>
@@ -376,7 +376,7 @@ function Calendar() {
                       ${getEventColor(event.type)} bg-opacity-20 backdrop-blur-sm border-white/10 hover:bg-opacity-30
                     `}
                   >
-                    <div className="font-black truncate tracking-tight">{event.title}</div>
+                    <div className="font-black truncate tracking-normal">{event.title}</div>
                     <div className="flex items-center gap-1 text-[10px] opacity-80 font-medium">
                       <Clock size={10} />
                       {event.time}
@@ -399,7 +399,7 @@ function Calendar() {
 
         {view === "agenda" && (
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <h2 className="text-2xl font-bold mb-6">Agenda</h2>
+            <h2 className="text-2xl font-semibold mb-6">Agenda</h2>
             {[...events]
               .sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`))
               .map((event) => (
@@ -426,7 +426,7 @@ function Calendar() {
 
         {view === "day" && (
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <h2 className="text-2xl font-bold mb-6">{selectedDate}</h2>
+            <h2 className="text-2xl font-semibold mb-6">{selectedDate}</h2>
             <div className="space-y-3">
               {selectedEvents.length === 0 && <div className="text-slate-400">No events</div>}
               {selectedEvents.map((event) => (

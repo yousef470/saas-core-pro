@@ -195,7 +195,7 @@ function Chat() {
       <div className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 p-6 bg-white/50 dark:bg-[#12141c]/50 backdrop-blur-xl shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div>
-            <h1 className="text-4xl font-black tracking-tight bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-black tracking-normal bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
               {isRtl ? "مركز إدارة المحادثات" : "Chat Control Center"}
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
@@ -238,7 +238,7 @@ function Chat() {
                     <motion.div layoutId="activeTabBg" className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl -z-10" />
                   )}
                   <Icon size={15} />
-                  <span className="text-[10px] mt-0.5 tracking-tight">{cat.label}</span>
+                  <span className="text-[10px] mt-0.5 tracking-normal">{cat.label}</span>
                 </button>
               );
             })}
@@ -419,7 +419,7 @@ function Chat() {
                             </div>
                             <div className="flex items-center gap-1 text-[9px] text-slate-400 mt-1 px-1">
                               <span>{msg.time}</span>
-                              {isMe && <span className="text-indigo-500">✓✓</span>}
+                              {isMe && <span className="slate">✓✓</span>}
                             </div>
                           </div>
                         );

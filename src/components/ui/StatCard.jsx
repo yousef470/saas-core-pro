@@ -32,7 +32,7 @@ transition={{
             {title}
           </p>
 
-          <h3 className="text-3xl font-bold">
+          <h3 className="text-3xl font-semibold">
             {value}
           </h3>
         </div>

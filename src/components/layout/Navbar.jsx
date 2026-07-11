@@ -18,6 +18,7 @@ import useAuth from "../../hooks/useAuth";
 import { BellRing } from "lucide-react";
 import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import Avatar from "../ui/Avatar";
 
 function Navbar({ setIsOpen }) {
 
@@ -241,13 +242,28 @@ className={`absolute top-16 z-[9999] w-[380px] rounded-3xl border shadow-2xl ove
       </h3>
 
 <p className="text-xs text-slate-500 mt-1">
-  {unreadCount} unread notifications
+  {unreadCount === 0
+    ? "You're all caught up"
+    : `${unreadCount} unread notifications`}
 </p>
     </div>
 
 <button
+  disabled={unreadCount === 0}
   onClick={markAllNotificationsAsRead}
-  className="px-3 py-1 rounded-xl text-xs bg-indigo-500/10 text-indigo-500 font-semibold hover:bg-indigo-500/20"
+  className={`
+px-3
+py-1
+rounded-xl
+text-xs
+font-semibold
+transition
+${
+  unreadCount === 0
+    ? "bg-slate-200 text-slate-400 cursor-not-allowed dark:bg-slate-800"
+    : "bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20"
+}
+`}
 >
   Mark all read
 </button>
@@ -258,8 +274,19 @@ className={`absolute top-16 z-[9999] w-[380px] rounded-3xl border shadow-2xl ove
 
 
               {notifications.length === 0 && (
-  <div className="p-8 text-center text-slate-500">
-    No notifications
+  <div className="flex flex-col items-center justify-center py-10">
+    <BellRing
+      size={34}
+      className="text-slate-300 mb-3"
+    />
+
+    <h3 className="font-semibold text-slate-700 dark:text-slate-300">
+      No notifications
+    </h3>
+
+    <p className="text-xs text-slate-500 mt-1">
+      You're all caught up.
+    </p>
   </div>
 )}
           {notifications.map((item) => (
@@ -291,7 +318,7 @@ className={`absolute top-16 z-[9999] w-[380px] rounded-3xl border shadow-2xl ove
    <div className="p-2 rounded-xl bg-indigo-500/10">
   <BellRing
     size={14}
-    className="text-indigo-500"
+    className="slate"
   />
 </div>
 
@@ -339,17 +366,20 @@ className={`absolute top-16 z-[9999] w-[380px] rounded-3xl border shadow-2xl ove
   }}
 >
 <button
+  disabled={notifications.length === 0}
   onClick={clearAllNotifications}
-  className="
-      w-full
-      h-11
-      rounded-xl
-      bg-red-500
-      text-white
-      font-semibold
-      hover:bg-red-600
-      transition-all
-    "
+className={`
+w-full
+h-11
+rounded-xl
+font-semibold
+transition-all
+${
+  notifications.length === 0
+    ? "bg-slate-300 text-slate-500 cursor-not-allowed dark:bg-slate-800"
+    : "bg-red-500 text-white hover:bg-red-600"
+}
+`}
 >
   Clear All Notifications
 </button>
@@ -383,13 +413,11 @@ className={`absolute top-16 z-[9999] w-[380px] rounded-3xl border shadow-2xl ove
       </p>
     </div>
 
-<img
-  src={
-    user?.avatar ||
-    "/default-avatar.png"
-  }
-  alt="avatar"
-  className="
+<Avatar
+    src={user.avatar}
+    name={user.name}
+    size={64}
+    className="
     w-9
     h-9
     rounded-full
@@ -440,14 +468,12 @@ className={`absolute top-16 z-[9999] w-[380px] rounded-3xl border shadow-2xl ove
       >
         <div className="p-5 border-b">
           <div className="flex items-center gap-3">
-            <img
-              src={
-                user?.avatar ||
-                "/default-avatar.png"
-              }
-              alt="User"
-              className="w-12 h-12 rounded-full border"
-            />
+<Avatar
+    src={user.avatar}
+    name={user.name}
+    size={64}
+    className="w-12 h-12 rounded-full border"
+/>
 
             <div>
               <p className="font-bold text-sm dark:text-white">

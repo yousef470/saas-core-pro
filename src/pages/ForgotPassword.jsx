@@ -33,7 +33,7 @@ function ForgotPassword() {
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-500 flex items-center justify-center text-white mx-auto mb-4 shadow-lg shadow-indigo-600/30">
             <KeyRound size={22} />
           </div>
-          <h2 className="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
+          <h2 className="text-2xl font-black tracking-normal text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
             {lang === "ar" ? "استعادة كلمة المرور" : "Forgot Password?"}
           </h2>
           <p className="text-xs text-gray-400 mt-2 leading-relaxed">

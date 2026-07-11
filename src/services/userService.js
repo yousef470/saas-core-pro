@@ -10,17 +10,16 @@ export const getUsers = () => {
 
   localStorage.setItem(
     "saas_users",
-    "[]" // لو مش حابب الـ mock يملى الداتا تلقائي أو سيبها mockUsers زي ما تحب
+    JSON.stringify(mockUsers)
   );
 
-  return mockUsers || [];
+  return mockUsers;
 };
 
 // Add User
 export const addUser = (newUser) => {
   const users = getUsers();
   
-  // استخراج أول حرف لعمل صورة رمزية ملونة واحترافية بدلاً من نص عادي يكسر الـ Layout
   const firstLetter = newUser.name ? newUser.name.charAt(0).toUpperCase() : "U";
   const premiumAvatar = `https://ui-avatars.com/api/?name=${firstLetter}&background=6366f1&color=fff&rounded=true&bold=true`;
 
@@ -29,7 +28,7 @@ export const addUser = (newUser) => {
     {
       ...newUser,
       id: Date.now(),
-      avatar: premiumAvatar, // الحرف محول لصورة حقيقية متوافقة مع الـ Layout
+      avatar: premiumAvatar, 
     },
   ];
 

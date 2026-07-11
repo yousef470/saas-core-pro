@@ -1,16 +1,24 @@
 import mockProducts from "../data/mockProducts";
 
 const STORAGE_KEY = "products";
+const STORAGE_VERSION = "v1";
+const VERSION_KEY = "products_version";
 
 export const getProducts = () => {
+  const version = localStorage.getItem(VERSION_KEY);
+
+  if (version !== STORAGE_VERSION) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(mockProducts));
+    localStorage.setItem(VERSION_KEY, STORAGE_VERSION);
+
+    return mockProducts;
+  }
+
   const data = localStorage.getItem(STORAGE_KEY);
 
   if (data) return JSON.parse(data);
 
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(mockProducts)
-  );
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(mockProducts));
 
   return mockProducts;
 };
