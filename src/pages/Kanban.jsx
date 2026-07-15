@@ -69,7 +69,7 @@ const initialData = {
     },
     "col-3": {
       id: "col-3",
-      title: "Done",
+      title: "{t.kanbanPage.done}",
       titleAr: "تم الإنجاز",
       taskIds: ["task-4"],
     },
@@ -79,7 +79,7 @@ const initialData = {
 
 function Kanban() {
   const { user } = useAuth(); // سيُستخدم لإظهار اسم المستخدم في الترحيب
-  const { lang } = useTheme();
+  const { lang, t } = useTheme();
   const [searchTerm, setSearchTerm] = useState("");
   const [data, setData] = useState(() => {
     const saved = localStorage.getItem("kanbanData");
@@ -362,16 +362,16 @@ overflow-x-hidden"
           <div className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 p-8 bg-gradient-to-br from-indigo-500/15 via-transparent to-cyan-500/10 backdrop-blur-xl">
             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
-                <h1 className="text-3xl md:text-4xl font-black tracking-normal flex items-center gap-3">
-                  <Layout className="slate" size={32} />
-                  {lang === "ar"
-                    ? `مهامك، ${user?.name || "بطل"} 👋`
-                    : `Your Tasks, ${user?.name || "Pro"} 👋`}
-                </h1>
+<h1 className="text-3xl md:text-4xl font-black tracking-normal flex items-center gap-3">
+  <Layout className="slate" size={32} />
+  {t.kanbanPage.welcome.replace(
+    "{{name}}",
+    user?.name || t.kanbanPage.welcomeFallback
+  )}
+</h1>
+
                 <p className="mt-3 text-slate-500 dark:text-slate-400 max-w-xl">
-                  {lang === "ar"
-                    ? "نظم مشاريعك وتابع تقدم فريقك لحظة بلحظة بتصميم زجاجي عصري."
-                    : "Manage your project workflows and track team performance with modern glassmorphism."}
+                  {t.kanbanPage.description}
                 </p>
               </div>
 
@@ -395,7 +395,7 @@ overflow-x-hidden"
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder={lang === "ar" ? "بحث..." : "Search..."}
+                    placeholder={t.kanbanPage.searchPlaceholder}
                     className="
 pl-10
 pr-4
@@ -427,7 +427,7 @@ focus:border-indigo-500
                 >
                   <Plus size={20} />
                   <span className="hidden sm:inline">
-                    {lang === "ar" ? "إضافة مهمة" : "Add Task"}
+                    {t.kanbanPage.addTask}
                   </span>
                 </button>
               </div>
@@ -457,7 +457,9 @@ border
 border-indigo-500/20
 "
             >
-              <h3 className="text-sm text-slate-500">Total Tasks</h3>
+              <h3 className="text-sm text-slate-500">
+                {t.kanbanPage.totalTasks}
+              </h3>
 
               <p
                 className="
@@ -482,7 +484,9 @@ border
 border-amber-500/20
 "
             >
-              <h3 className="text-sm text-slate-500">In Progress</h3>
+              <h3 className="text-sm text-slate-500">
+                {t.kanbanPage.inProgress}
+              </h3>
 
               <p
                 className="
@@ -507,7 +511,7 @@ border
 border-emerald-500/20
 "
             >
-              <h3 className="text-sm text-slate-500">Done</h3>
+              <h3 className="text-sm text-slate-500">{t.kanbanPage.done}</h3>
 
               <p
                 className="
@@ -552,7 +556,11 @@ text-emerald-500
                           className={`w-2 h-2 rounded-full ${column.id === "col-1" ? "bg-amber-500" : column.id === "col-2" ? "bg-indigo-500" : "bg-emerald-500"}`}
                         />
                         <h3 className="font-bold text-lg tracking-normal uppercase">
-                          {lang === "ar" ? column.titleAr : column.title}
+                          {column.id === "col-1"
+                            ? t.kanbanPage.todo
+                            : column.id === "col-2"
+                              ? t.kanbanPage.inProgress
+                              : t.kanbanPage.done}
                         </h3>
                         <span className="px-2 py-0.5 rounded-lg bg-slate-200 dark:bg-white/5 text-[10px] font-black opacity-60">
                           {tasks.length}
@@ -629,10 +637,10 @@ ${
 `}
                                     >
                                       {task.status === "todo"
-                                        ? "To Do"
+                                        ? t.kanbanPage.todo
                                         : task.status === "progress"
-                                          ? "In Progress"
-                                          : "Done"}
+                                          ? t.kanbanPage.inProgress
+                                          : t.kanbanPage.done}
                                     </span>
                                     <div className="flex items-center gap-2">
                                       <Clock
@@ -694,7 +702,7 @@ ${
                                         ? new Date(
                                             task.date,
                                           ).toLocaleDateString()
-                                        : "No Date"}
+                                        : t.kanbanPage.noDate}
                                     </div>
                                   </div>
                                 </div>
@@ -715,7 +723,7 @@ ${
                               <Layout size={32} />
 
                               <p className="mt-3 text-sm">
-                                {lang === "ar" ? "لا توجد مهام" : "No Tasks"}
+                                {t.kanbanPage.noTasks}
                               </p>
                             </div>
                           )}
@@ -743,7 +751,7 @@ ${
       transition
     "
                             >
-                              Load More
+                              {t.kanbanPage.loadMore}
                             </button>
                           )}
 
@@ -752,7 +760,7 @@ ${
                             onClick={() => setShowTaskModal(true)}
                             className="w-full py-3 border-2 border-dashed border-slate-200 dark:border-white/5 rounded-2xl text-slate-400 hover:text-indigo-500 hover:border-indigo-500/50 transition-all text-xs font-bold"
                           >
-                            + {lang === "ar" ? "إضافة مهمة" : "New Task"}
+                            + {t.kanbanPage.newTask}
                           </button>
                         </div>
                       )}
@@ -779,13 +787,11 @@ dark:border-white/10
 shadow-2xl
 shadow-black/20 rounded-3xl p-6"
           >
-            <h2 className="text-xl font-bold mb-5">
-              {lang === "ar" ? "إضافة مهمة" : "Add Task"}
-            </h2>
+            <h2 className="text-xl font-bold mb-5">{t.kanbanPage.addTask}</h2>
 
             <div className="space-y-4">
               <input
-                placeholder="Task Title"
+                placeholder={t.kanbanPage.taskTitle}
                 value={newTask.title}
                 onChange={(e) =>
                   setNewTask({
@@ -811,7 +817,7 @@ transition-all
               />
 
               <textarea
-                placeholder="Description"
+                placeholder={t.kanbanPage.description}
                 value={newTask.desc}
                 onChange={(e) =>
                   setNewTask({
@@ -853,9 +859,9 @@ text-slate-900
 dark:text-white
 "
               >
-                <option>Low</option>
-                <option>Medium</option>
-                <option>High</option>
+                <option value="Low">{t.kanbanPage.priorityLow}</option>
+                <option value="Medium">{t.kanbanPage.priorityMedium}</option>
+                <option value="High">{t.kanbanPage.priorityHigh}</option>
               </select>
 
               <select
@@ -880,9 +886,11 @@ text-slate-900
 dark:text-white
 "
               >
-                <option>Dev</option>
-                <option>Design</option>
-                <option>Analytics</option>
+                <option value="Dev">{t.kanbanPage.categoryDev}</option>
+                <option value="Design">{t.kanbanPage.categoryDesign}</option>
+                <option value="Analytics">
+                  {t.kanbanPage.categoryAnalytics}
+                </option>
               </select>
 
               <select
@@ -907,11 +915,9 @@ text-slate-900
 dark:text-white
 "
               >
-                <option value="col-1">To Do</option>
-
-                <option value="col-2">In Progress</option>
-
-                <option value="col-3">Done</option>
+                <option value="col-1">{t.kanbanPage.todo}</option>
+                <option value="col-2">{t.kanbanPage.inProgress}</option>
+                <option value="col-3">{t.kanbanPage.done}</option>
               </select>
 
               <input
@@ -950,14 +956,14 @@ dark:hover:bg-white/5
 transition-all
 rounded-xl"
               >
-                Cancel
+                {t.common.cancel}
               </button>
 
               <button
                 onClick={handleAddTask}
                 className="flex-1 h-11 bg-indigo-600 text-white rounded-xl"
               >
-                Add Task
+                {t.kanbanPage.addTask}
               </button>
             </div>
           </div>
@@ -993,7 +999,7 @@ shadow-black/20
 text-xl font-bold mb-5
 "
             >
-              {lang === "ar" ? "تعديل المهمة" : "Edit Task"}
+              {t.kanbanPage.editTask}
             </h2>
 
             <div className="space-y-4">
@@ -1063,9 +1069,9 @@ text-slate-900
 dark:text-white
 "
               >
-                <option>Low</option>
-                <option>Medium</option>
-                <option>High</option>
+                <option value="Low">{t.kanbanPage.priorityLow}</option>
+                <option value="Medium">{t.kanbanPage.priorityMedium}</option>
+                <option value="High">{t.kanbanPage.priorityHigh}</option>
               </select>
 
               <select
@@ -1090,11 +1096,11 @@ text-slate-900
 dark:text-white
 "
               >
-                <option value="todo">To Do</option>
+                <option value="todo">{t.kanbanPage.todo}</option>
 
-                <option value="progress">In Progress</option>
+                <option value="progress">{t.kanbanPage.inProgress}</option>
 
-                <option value="done">Done</option>
+                <option value="done">{t.kanbanPage.done}</option>
               </select>
 
               <select
@@ -1119,9 +1125,11 @@ text-slate-900
 dark:text-white
 "
               >
-                <option>Dev</option>
-                <option>Design</option>
-                <option>Analytics</option>
+                <option value="Dev">{t.kanbanPage.categoryDev}</option>
+                <option value="Design">{t.kanbanPage.categoryDesign}</option>
+                <option value="Analytics">
+                  {t.kanbanPage.categoryAnalytics}
+                </option>
               </select>
 
               <input
@@ -1167,7 +1175,7 @@ transition-all
 rounded-xl
 "
               >
-                Cancel
+                {t.common.cancel}
               </button>
 
               <button
@@ -1179,7 +1187,7 @@ text-white
 rounded-xl
 "
               >
-                Save
+                {t.common.save}
               </button>
             </div>
           </div>
@@ -1211,10 +1219,10 @@ font-bold
 text-lg
 "
             >
-              {lang === "ar" ? "حذف المهمة" : "Delete Task"}
+              {t.kanbanPage.deleteTask}
             </h2>
 
-            <p className="mt-3">Are you sure?</p>
+            <p className="mt-3">{t.kanbanPage.deleteConfirm}</p>
 
             <div
               className="
@@ -1230,7 +1238,7 @@ border
 rounded-xl
 "
               >
-                Cancel
+                {t.common.cancel}
               </button>
 
               <button
@@ -1250,7 +1258,7 @@ text-white
 rounded-xl
 "
               >
-                Delete
+                {t.common.delete}
               </button>
             </div>
           </div>

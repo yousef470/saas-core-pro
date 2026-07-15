@@ -59,7 +59,7 @@ const getStatusStyles = (status) => {
 };
 
 function Chat() {
-  const { lang } = useTheme();
+  const { lang , t } = useTheme();
   const [activeCategory, setActiveCategory] = useState("team");
   const [searchTerm, setSearchTerm] = useState("");
   const [leadFilter, setLeadFilter] = useState("All");
@@ -175,12 +175,28 @@ function Chat() {
     }, 2000);
   };
 
-  const categories = [
-    { id: "team", label: lang === "ar" ? "الفريق" : "Team", icon: Users },
-    { id: "premium", label: lang === "ar" ? "بريميوم" : "Premium", icon: Crown },
-    { id: "free", label: lang === "ar" ? "مجاني" : "Free", icon: User },
-    { id: "leads", label: `${lang === "ar" ? "العملاء" : "Leads"} (${leadsChats.length})`, icon: Target },
-  ];
+const categories = [
+  {
+    id: "team",
+    label: t.chatPage.categories.team,
+    icon: Users,
+  },
+  {
+    id: "premium",
+    label: t.chatPage.categories.premium,
+    icon: Crown,
+  },
+  {
+    id: "free",
+    label: t.chatPage.categories.free,
+    icon: User,
+  },
+  {
+    id: "leads",
+    label: `${t.chatPage.categories.leads} (${leadsChats.length})`,
+    icon: Target,
+  },
+];
 
   const isRtl = lang === "ar";
 
@@ -196,10 +212,10 @@ function Chat() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div>
             <h1 className="text-4xl font-black tracking-normal bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
-              {isRtl ? "مركز إدارة المحادثات" : "Chat Control Center"}
+              {t.chatPage.title}
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-              {isRtl ? "إدارة التفاعل الفوري مع أعضاء الفريق والـ Leads" : "Real-time communication and lead optimization platform."}
+{t.chatPage.subtitle}
             </p>
           </div>
 
@@ -209,7 +225,7 @@ function Chat() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder={isRtl ? "بحث عن اسم..." : "Search name..."}
+             placeholder={t.chatPage.searchPlaceholder}
               className={`w-full md:w-80 py-2.5 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 focus:outline-none focus:border-indigo-500 text-sm  ${isRtl ? "pr-11 pl-4" : "pl-11 pr-4"}`}
             />
           </div>
@@ -251,12 +267,12 @@ function Chat() {
                 onChange={(e) => setLeadFilter(e.target.value)}
                 className="w-full px-4 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 outline-none cursor-pointer focus:border-indigo-500 text-slate-700 dark:text-slate-300 transition-colors shadow-sm"
               >
-                <option value="All">{isRtl ? "جميع الحالات" : "All Leads"}</option>
-                <option value="New Lead">{isRtl ? "عميل جديد" : "New Lead"}</option>
-                <option value="Contacted">{isRtl ? "تم التواصل" : "Contacted"}</option>
-                <option value="Interested">{isRtl ? "مهتم" : "Interested"}</option>
-                <option value="Customer">{isRtl ? "مشترك / عميل مبيعات" : "Customer"}</option>
-                <option value="Rejected">{isRtl ? "مرفوض" : "Rejected"}</option>
+<option value="All">{t.chatPage.filters.all}</option>
+<option value="New Lead">{t.chatPage.filters.newLead}</option>
+<option value="Contacted">{t.chatPage.filters.contacted}</option>
+<option value="Interested">{t.chatPage.filters.interested}</option>
+<option value="Customer">{t.chatPage.filters.customer}</option>
+<option value="Rejected">{t.chatPage.filters.rejected}</option>
               </select>
             </motion.div>
           )}
@@ -267,7 +283,7 @@ function Chat() {
               {filteredChats.length === 0 ? (
                 <div className="text-center py-16 space-y-2 text-slate-400">
                   <Target size={20} className="mx-auto" />
-                  <h3 className="font-bold text-sm">{isRtl ? "لا توجد نتائج" : "No Records"}</h3>
+                  <h3 className="font-bold text-sm">{t.chatPage.noResults}</h3>
                 </div>
               ) : (
                 filteredChats.map((chat) => {
@@ -335,7 +351,9 @@ function Chat() {
                             <span className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-75" />
                           )}
                         </div>
-                        {activeCategory === "leads" ? "Lead Record" : "Live Chat"}
+                        {activeCategory === "leads"
+  ? t.chatPage.leadRecord
+  : t.chatPage.liveChat}
                       </p>
                     </div>
                   </div>
@@ -347,11 +365,11 @@ function Chat() {
                     <div className="max-w-xl mx-auto space-y-4 py-2">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/2 border border-slate-100 dark:border-white/5">
-                          <span className="text-[10px] text-slate-400 block"><Mail size={12} className="inline mr-1"/> Email</span>
+                          <span className="text-[10px] text-slate-400 block"><Mail size={12} className="inline mr-1"/> {t.chatPage.email}</span>
                           <span className="text-xs font-medium block truncate mt-0.5">{selectedChat.email}</span>
                         </div>
                         <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/2 border border-slate-100 dark:border-white/5">
-                          <span className="text-[10px] text-slate-400 block"><Calendar size={12} className="inline mr-1"/> Created At</span>
+                          <span className="text-[10px] text-slate-400 block"><Calendar size={12} className="inline mr-1"/> {t.chatPage.createdAt}</span>
                           <span className="text-xs font-medium block mt-0.5">
                             {selectedChat.createdAt ? new Date(selectedChat.createdAt).toLocaleString() : "-"}
                           </span>
@@ -360,7 +378,7 @@ function Chat() {
 
                       <div className="p-4 rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/2 flex items-center justify-between">
                         <div>
-                          <label className="text-[10px] font-bold text-slate-400 block mb-0.5">Deal Stage</label>
+                          <label className="text-[10px] font-bold text-slate-400 block mb-0.5">{t.chatPage.dealStage}</label>
                           <span className={`inline-block text-[11px] px-2 py-0.5 rounded font-semibold border ${getStatusStyles(selectedChat.status)}`}>
                             {selectedChat.status}
                           </span>
@@ -376,16 +394,16 @@ function Chat() {
                           }}
                           className="px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 focus:outline-none focus:border-indigo-500 dark:text-white"
                         >
-                          <option value="New Lead">New Lead</option>
-                          <option value="Contacted">Contacted</option>
-                          <option value="Interested">Interested</option>
-                          <option value="Customer">Customer</option>
-                          <option value="Rejected">Rejected</option>
+<option value="New Lead">{t.chatPage.filters.newLead}</option>
+<option value="Contacted">{t.chatPage.filters.contacted}</option>
+<option value="Interested">{t.chatPage.filters.interested}</option>
+<option value="Customer">{t.chatPage.filters.customer}</option>
+<option value="Rejected">{t.chatPage.filters.rejected}</option>
                         </select>
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-400">Message Body</label>
+                        <label className="text-[10px] font-bold text-slate-400">{t.chatPage.messageBody}</label>
                         <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/5 text-xs leading-relaxed">
                           {selectedChat.message}
                         </div>
@@ -394,7 +412,7 @@ function Chat() {
                       <div className="flex justify-end">
                         <button
                           onClick={() => {
-                            if(confirm("Delete this record?")) {
+                            if(confirm(t.chatPage.confirmDelete)) {
                               const updated = contactMessages.filter((lead) => lead.id !== selectedChat.id);
                               setContactMessages(updated);
                               localStorage.setItem("contactMessages", JSON.stringify(updated));
@@ -404,7 +422,7 @@ function Chat() {
                           className="px-3 py-2 rounded-xl bg-rose-600/10 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-600/20 text-xs font-bold flex items-center gap-1.5 transition-all"
                         >
                           <Trash2 size={13} />
-                          <span>Delete Lead</span>
+                          <span>{t.chatPage.deleteLead}</span>
                         </button>
                       </div>
                     </div>
@@ -434,7 +452,7 @@ function Chat() {
                   {isTyping && activeCategory !== "leads" && (
                     <div className="px-2 pb-2">
                       <div className="inline-flex items-center gap-1 text-xs text-slate-400">
-                        <span>typing</span>
+                        <span>{t.chatPage.typing}</span>
                         <div className="flex gap-1">
                           <span className="w-1 h-1 bg-slate-400 rounded-full animate-bounce" />
                           <span className="w-1 h-1 bg-slate-400 rounded-full animate-bounce delay-100" />
@@ -450,7 +468,7 @@ function Chat() {
                         type="text"
                         value={typedMessage}
                         onChange={(e) => setTypedMessage(e.target.value)}
-                        placeholder={isRtl ? "اكتب رسالة هنا..." : "Type your message here..."}
+                        placeholder={t.chatPage.messagePlaceholder}
                         className="flex-1 px-4 py-2.5 text-xs rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 focus:outline-none focus:border-indigo-500 text-slate-800 dark:text-slate-100"
                       />
                       <button
@@ -467,7 +485,7 @@ function Chat() {
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 space-y-2 w-full">
                 <Target size={32} className="text-slate-300 animate-pulse" />
-                <h3 className="font-bold text-xs">{isRtl ? "لم يتم تحديد أي محادثة" : "No Active Chat"}</h3>
+                <h3 className="font-bold text-xs">{t.chatPage.noActiveChat}</h3>
               </div>
             )}
           </AnimatePresence>

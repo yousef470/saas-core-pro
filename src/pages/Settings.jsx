@@ -3,8 +3,7 @@ import useTheme from "../hooks/useTheme";
 import { AuthContext } from "../context/auth-context";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Eye,
-  EyeOff,
+  Eye, EyeOff,
 
 } from "lucide-react";
 import Avatar from "../components/ui/Avatar";
@@ -14,14 +13,13 @@ import timezones from "../data/timezones";
 import jobTitles from "../data/jobTitles";
 
 function Settings() {
-  const { lang, darkMode, toggleDarkMode, toggleLanguage } = useTheme();
+  const { lang, t,darkMode, toggleDarkMode, toggleLanguage } = useTheme();
   const { user, updateProfile, updatePassword, addNotification } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState("profile");
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // الأمان الأول: قراءة البيانات الابتدائية من الـ LocalStorage مباشرة أو الـ user كملاذ أخير
   const getInitialData = () => {
     const savedUsers = localStorage.getItem("saas_users");
     if (savedUsers && user) {
@@ -36,7 +34,6 @@ function Settings() {
 
   const initialUser = getInitialData();
 
-  // فصل الـ States تماماً عن الـ Context لمنع التحديث اللحظي أثناء الكتابة
   const [name, setName] = useState(initialUser.name || "");
   const [email, setEmail] = useState(initialUser.email || "");
   const [phone, setPhone] = useState(initialUser.phone || "");
@@ -56,7 +53,7 @@ function Settings() {
   );
   const [bio, setBio] = useState(initialUser.bio || "");
   
-  // وضع الصيانة
+
   const [maintenanceMode, setMaintenanceMode] = useState(
     JSON.parse(localStorage.getItem("maintenanceMode")) || false
   );
@@ -223,12 +220,10 @@ const [securityModal, setSecurityModal] = useState(false);
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold tracking-normal bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-          {lang === "ar" ? "إعدادات النظام" : "System Settings"}
+           {t.settingsPage.title}
         </h1>
         <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
-          {lang === "ar"
-            ? "تخصيص تفاصيل حسابك، خيارات المنصة، وتفضيلات الأمان."
-            : "Configure account parameters, platform preferences, and security access."}
+           {t.settingsPage.subtitle}
         </p>
       </div>
 
@@ -242,7 +237,7 @@ const [securityModal, setSecurityModal] = useState(false);
   }}
 >
   <p className="text-sm text-slate-500">
-    Quick Actions
+   {t.settingsPage.quickActions}
   </p>
 
   <div className="mt-4 space-y-3">
@@ -252,7 +247,7 @@ const [securityModal, setSecurityModal] = useState(false);
         className="w-full flex items-center justify-between rounded-2xl border border-slate-200 dark:border-white/10 px-4 py-3 hover:border-indigo-500 hover:bg-indigo-500/5 transition"
       >
         <span className="text-sm font-medium">
-          Upload Profile Photo
+          {t.settingsPage.uploadPhoto}
         </span>
 
         <span className="text-red-500 font-bold">+20%</span>
@@ -265,7 +260,7 @@ const [securityModal, setSecurityModal] = useState(false);
         className="w-full flex items-center justify-between rounded-2xl border border-slate-200 dark:border-white/10 px-4 py-3 hover:border-indigo-500 hover:bg-indigo-500/5 transition"
       >
         <span className="text-sm font-medium">
-          Add Phone Number
+         {t.settingsPage.addPhone}
         </span>
 
         <span className="text-red-500 font-bold">+20%</span>
@@ -278,7 +273,7 @@ const [securityModal, setSecurityModal] = useState(false);
         className="w-full flex items-center justify-between rounded-2xl border border-slate-200 dark:border-white/10 px-4 py-3 hover:border-indigo-500 hover:bg-indigo-500/5 transition"
       >
         <span className="text-sm font-medium">
-          Enable 2FA
+         {t.settingsPage.enable2FA}
         </span>
 
         <span className="text-red-500 font-bold">+20%</span>
@@ -291,11 +286,11 @@ const [securityModal, setSecurityModal] = useState(false);
         className="w-full flex items-center justify-between rounded-2xl border border-slate-200 dark:border-white/10 px-4 py-3 hover:border-indigo-500 hover:bg-indigo-500/5 transition"
       >
         <span className="text-sm font-medium">
-          Add Company
+         {t.settingsPage.addCompany}
         </span>
 
         <span className="text-amber-500 font-bold">
-          Recommended
+          {t.settingsPage.recommended}
         </span>
       </button>
     )}
@@ -303,11 +298,11 @@ const [securityModal, setSecurityModal] = useState(false);
     {user?.avatar && phone && twoFA && company && (
       <div className="rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-4 text-center">
         <p className="text-emerald-500 font-bold">
-          🎉 Everything looks great
+          🎉{t.settingsPage.everythingLooksGreat}
         </p>
 
         <p className="text-xs text-slate-500 mt-1">
-          Your account is fully configured.
+          {t.settingsPage.accountConfigured}
         </p>
       </div>
     )}
@@ -315,7 +310,8 @@ const [securityModal, setSecurityModal] = useState(false);
 </div>
 
         <div className="p-5 rounded-3xl border" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
-          <p className="text-sm text-slate-500">Profile Completion</p>
+          <p className="text-sm text-slate-500">{t.settingsPage.profileCompletion}</p>
+          
           <h3 className="text-2xl font-black text-slate-700 dark:text-slate-200 mt-2">{profileCompletion()}%</h3>
           <div className="mt-4 h-3 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
             <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500" style={{ width: `${profileCompletion()}%` }} />
@@ -325,11 +321,11 @@ const [securityModal, setSecurityModal] = useState(false);
 <div className="mt-5 flex items-center justify-between">
     <div>
         <p className="font-semibold text-sm">
-            {completedProfileTasks} / {profileTasks.length} Fields Completed
+            {completedProfileTasks} / {profileTasks.length} {t.settingsPage.fieldsCompleted}
         </p>
 
         <p className="text-xs text-amber-500 mt-1">
-            {missingProfileTasks} Remaining
+            {missingProfileTasks} {t.settingsPage.remaining}
         </p>
 
         {profileTasks
@@ -349,14 +345,14 @@ const [securityModal, setSecurityModal] = useState(false);
         onClick={() => setProfileModal(true)}
         className="text-indigo-500 font-semibold text-sm hover:underline"
     >
-        View →
+       {t.settingsPage.view}
     </button>
 </div>
 
         </div>
 
         <div className="p-5 rounded-3xl border" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
-          <p className="text-sm text-slate-500">Security Score</p>
+          <p className="text-sm text-slate-500">{t.settingsPage.securityScore}</p>
           <h3 className="text-2xl font-black text-emerald-500 mt-2">{securityScore()}%</h3>
           <div className="mt-4 h-3 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
             <div className="h-full bg-gradient-to-r from-emerald-500 to-green-500" style={{ width: `${securityScore()}%` }} />
@@ -367,11 +363,11 @@ const [securityModal, setSecurityModal] = useState(false);
 <div className="mt-5 flex items-center justify-between">
     <div>
         <p className="font-semibold text-sm">
-            {completedSecurityTasks} / {securityTasks.length} Checks
+            {completedSecurityTasks} / {securityTasks.length} {t.settingsPage.checks}
         </p>
 
         <p className="text-xs text-amber-500 mt-1">
-            {missingSecurityTasks} Recommendation
+            {missingSecurityTasks} {t.settingsPage.recommendation}
         </p>
 
         {securityTasks
@@ -391,7 +387,7 @@ const [securityModal, setSecurityModal] = useState(false);
         onClick={() => setSecurityModal(true)}
         className="text-emerald-500 font-semibold text-sm hover:underline"
     >
-        View →
+       {t.settingsPage.view}
     </button>
 </div>
        
@@ -400,7 +396,7 @@ const [securityModal, setSecurityModal] = useState(false);
           <p className={`mt-2 text-sm font-semibold ${
             securityScore() >= 100 ? "text-emerald-500" : securityScore() >= 80 ? "text-indigo-500" : securityScore() >= 60 ? "text-yellow-500" : "text-red-500"
           }`}>
-            {securityScore() >= 100 ? "Excellent Security" : securityScore() >= 80 ? "Good Security" : securityScore() >= 60 ? "Needs Improvement" : "Weak Security"}
+            {securityScore() >= 100 ? t.settingsPage.securityExcellent : securityScore() >= 80 ? t.settingsPage.securityGood : securityScore() >= 60 ? t.settingsPage.securityNeedsImprovement : t.settingsPage.WeakSecurity}
           </p>
         </div>
       </div>
@@ -409,11 +405,11 @@ const [securityModal, setSecurityModal] = useState(false);
 
       {/* Tabs Switcher */}
       <div className="flex gap-2 p-2 rounded-2xl" style={{ background: "var(--bg-card)", border: `1px solid var(--border)` }}>
-        {[
-          { id: "profile", labelAr: "الحساب الشخصي", labelEn: "Profile" },
-          { id: "system", labelAr: "النظام", labelEn: "Platform" },
-          { id: "security", labelAr: "الأمان", labelEn: "Security" },
-        ].map((tab) => (
+ {[
+  { id: "profile", label: t.settingsPage.profileTab },
+  { id: "system", label: t.settingsPage.platformTab },
+  { id: "security", label: t.settingsPage.securityTab },
+].map((tab) => (
           <button
             key={tab.id}
             type="button"
@@ -424,7 +420,7 @@ const [securityModal, setSecurityModal] = useState(false);
                 : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
             }`}
           >
-            {lang === "ar" ? tab.labelAr : tab.labelEn}
+            {tab.label}
           </button>
         ))}
       </div>
@@ -458,22 +454,22 @@ const [securityModal, setSecurityModal] = useState(false);
                 </div>
                 <div className="grid grid-cols-2 gap-3 mt-7 w-full">
                   <div className="rounded-2xl p-4 border text-center" style={{ borderColor: "var(--border)", background: "var(--bg-secondary)" }}>
-                    <p className="text-xs text-slate-500">Plan</p>
-                    <p className="font-semibold mt-1 text-sm">{user?.plan || "Starter"}</p>
+                    <p className="text-xs text-slate-500">{t.settingsPage.plan}</p>
+                    <p className="font-semibold mt-1 text-sm">{user?.plan || t.settingsPage.starter}</p>
                   </div>
                   <div className="rounded-2xl p-4 border text-center" style={{ borderColor: "var(--border)", background: "var(--bg-secondary)" }}>
-                    <p className="text-xs text-slate-500">Status</p>
-                    <p className="font-semibold text-emerald-500 mt-1 text-sm">{user?.status || "Active"}</p>
+                    <p className="text-xs text-slate-500">{t.settingsPage.status}</p>
+                    <p className="font-semibold text-emerald-500 mt-1 text-sm">{user?.status || t.settingsPage.active}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="lg:col-span-2">
-              <h3 className="text-lg font-bold mb-6">{lang === "ar" ? "معلومات الحساب" : "Account Information"}</h3>
+              <h3 className="text-lg font-bold mb-6">{t.settingsPage.accountInformation}</h3>
               <div className="space-y-5">
                 <div>
-                  <label className="text-xs text-slate-500">Full Name</label>
+                  <label className="text-xs text-slate-500">{t.settingsPage.fullName}</label>
                   <input
                     type="text"
                     value={name}
@@ -483,7 +479,7 @@ const [securityModal, setSecurityModal] = useState(false);
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-500">Email Address</label>
+                  <label className="text-xs text-slate-500">{t.settingsPage.emailAddress}</label>
                   <input
                     type="email"
                     autoComplete="off"
@@ -494,7 +490,7 @@ const [securityModal, setSecurityModal] = useState(false);
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-500">Phone Number</label>
+                  <label className="text-xs text-slate-500">{t.settingsPage.phoneNumber}</label>
                   <input
                     type="tel"
                     autoComplete="off"
@@ -505,7 +501,7 @@ const [securityModal, setSecurityModal] = useState(false);
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-500">Company</label>
+                  <label className="text-xs text-slate-500">{t.settingsPage.company}</label>
                   <input
                     value={company}
                     onChange={(e) => setCompany(e.target.value)}
@@ -514,19 +510,19 @@ const [securityModal, setSecurityModal] = useState(false);
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-500">Job Title</label>
+                  <label className="text-xs text-slate-500">{t.settingsPage.jobTitle}</label>
                   <select
                     value={jobTitle}
                     onChange={(e) => setJobTitle(e.target.value)}
                     className="w-full mt-2 h-12 px-4 rounded-xl border bg-transparent outline-none bg-white dark:bg-slate-900"
                     style={{ borderColor: "var(--border)" }}
                   >
-                    <option value="">Select Job Title</option>
+                    <option value="">{t.settingsPage.selectJobTitle}</option>
                     {jobTitles.map((job) => <option key={job} value={job}>{job}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-slate-500">Country</label>
+                  <label className="text-xs text-slate-500">{t.settingsPage.country}</label>
                   <select
                     value={country}
                     onChange={(e) => {
@@ -540,7 +536,7 @@ const [securityModal, setSecurityModal] = useState(false);
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-slate-500">Timezone</label>
+                  <label className="text-xs text-slate-500">{t.settingsPage.timezone}</label>
                   <select
                     value={timezone}
                     onChange={(e) => setTimezone(e.target.value)}
@@ -551,7 +547,7 @@ const [securityModal, setSecurityModal] = useState(false);
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-slate-500">Bio</label>
+                  <label className="text-xs text-slate-500">{t.settingsPage.bio}</label>
                   <textarea
                     rows={4}
                     maxLength={200}
@@ -573,29 +569,33 @@ const [securityModal, setSecurityModal] = useState(false);
         {activeTab === "system" && (
           <div className="space-y-8">
             <div>
-              <h2 className="text-xl font-bold">{lang === "ar" ? "إعدادات المنصة" : "Platform Settings"}</h2>
-              <p className="text-sm text-slate-500 mt-1">{lang === "ar" ? "إدارة تفضيلات المنصة" : "Manage your platform preferences."}</p>
+              <h2 className="text-xl font-bold">
+{t.settingsPage.platformSettingsTitle}
+</h2>
+              <p className="text-sm text-slate-500 mt-1">
+{t.settingsPage.platformSettingsDescription}
+</p>
             </div>
             <div className="grid md:grid-cols-2 gap-5">
               <div className="rounded-3xl border p-6" style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}>
-                <h3 className="font-semibold">Appearance</h3>
-                <p className="text-sm text-slate-500 mt-1">Choose your preferred theme.</p>
+                <h3 className="font-semibold">{t.settingsPage.appearance}</h3>
+                <p className="text-sm text-slate-500 mt-1">{t.settingsPage.appearanceDescription}</p>
                 <div className="grid grid-cols-3 gap-3 mt-6">
                   <button onClick={() => toggleDarkMode(false)} className={`rounded-2xl border p-4 transition ${!darkMode ? "border-indigo-500 bg-indigo-500/10" : ""}`} style={{ borderColor: "var(--border)" }}>
-                    ☀️ <div className="mt-2 text-sm">Light</div>
+                    ☀️ <div className="mt-2 text-sm">{t.settingsPage.light}</div>
                   </button>
                   <button onClick={() => toggleDarkMode(true)} className={`rounded-2xl border p-4 transition ${darkMode ? "border-indigo-500 bg-indigo-500/10" : ""}`} style={{ borderColor: "var(--border)" }}>
-                    🌙 <div className="mt-2 text-sm">Dark</div>
+                    🌙 <div className="mt-2 text-sm">{t.settingsPage.dark}</div>
                   </button>
                   <button className="rounded-2xl border p-4" style={{ borderColor: "var(--border)" }}>
-                    💻 <div className="mt-2 text-sm">System</div>
+                    💻 <div className="mt-2 text-sm">{t.settingsPage.system}</div>
                   </button>
                 </div>
               </div>
 
               <div className="rounded-3xl border p-6" style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}>
-                <h3 className="font-semibold">{lang === "ar" ? "اللغة" : "Language"}</h3>
-                <p className="text-sm text-slate-500 mt-1">Change interface language.</p>
+                <h3 className="font-semibold">{t.settingsPage.language}</h3>
+                <p className="text-sm text-slate-500 mt-1">{t.settingsPage.languageDesc}</p>
                 <select
                   value={lang}
                   onChange={() => toggleLanguage()}
@@ -608,15 +608,15 @@ const [securityModal, setSecurityModal] = useState(false);
               </div>
 
               <div className="rounded-3xl border p-6 md:col-span-2" style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}>
-                <h3 className="font-semibold">Notifications</h3>
-                <p className="text-sm text-slate-500 mt-1">Manage how you receive notifications.</p>
+                <h3 className="font-semibold">{t.settingsPage.notifications}</h3>
+                <p className="text-sm text-slate-500 mt-1">{t.settingsPage.notificationsDesc}</p>
                 <div className="space-y-5 mt-6">
                   {[
-                    { title: "Email Notifications", state: emailNotifications, action: setEmailNotifications },
-                    { title: "Browser Notifications", state: browserNotifications, action: setBrowserNotifications },
-                    { title: "Security Alerts", state: securityAlerts, action: setSecurityAlerts },
-                    { title: "Product Updates", state: productUpdates, action: setProductUpdates },
-                    { title: "Marketing Emails", state: marketingEmails, action: setMarketingEmails },
+                    { title:t.settingsPage.emailNotifications, state: emailNotifications, action: setEmailNotifications },
+                    { title:t.settingsPage.browserNotifications, state: browserNotifications, action: setBrowserNotifications },
+                    { title:t.settingsPage.securityAlerts, state: securityAlerts, action: setSecurityAlerts },
+                    { title:t.settingsPage.productUpdates, state: productUpdates, action: setProductUpdates },
+                    { title:t.settingsPage.marketingEmails, state: marketingEmails, action: setMarketingEmails },
                   ].map((item) => (
                     <div key={item.title} className="flex items-center justify-between">
                       <span>{item.title}</span>
@@ -635,8 +635,8 @@ const [securityModal, setSecurityModal] = useState(false);
               <div className="rounded-3xl border p-6 md:col-span-2" style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}>
                 <div className="flex items-start justify-between gap-5">
                   <div>
-                    <h3 className="font-semibold">{lang === "ar" ? "وضع الصيانة" : "Maintenance Mode"}</h3>
-                    <p className="text-sm text-slate-500 mt-1">Temporarily lock platform access.</p>
+                    <h3 className="font-semibold">{t.settingsPage.maintenanceMode}</h3>
+                    <p className="text-sm text-slate-500 mt-1">{t.settingsPage.maintenanceModeDesc}</p>
                   </div>
                   <button
                     type="button"
@@ -657,14 +657,14 @@ const [securityModal, setSecurityModal] = useState(false);
             <div className="rounded-3xl border p-6" style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}>
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h4 className="font-semibold text-lg">{lang === "ar" ? "تغيير كلمة المرور" : "Change Password"}</h4>
-                  <p className="text-sm text-slate-500 mt-1">{lang === "ar" ? "استخدم كلمة مرور قوية لحماية حسابك." : "Keep your account secure with a strong password."}</p>
+                  <h4 className="font-semibold text-lg">{t.settingsPage.changePassword}</h4>
+                  <p className="text-sm text-slate-500 mt-1">{t.settingsPage.changePasswordDesc}</p>
                 </div>
                 <div className="text-indigo-500 text-3xl">🔒</div>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs text-slate-500">{lang === "ar" ? "كلمة المرور الحالية" : "Current Password"}</label>
+                  <label className="text-xs text-slate-500">{t.settingsPage.currentPassword}</label>
                   <div className="relative">
                     <input
                       type={showCurrentPassword ? "text" : "password"}
@@ -680,7 +680,7 @@ const [securityModal, setSecurityModal] = useState(false);
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-500">{lang === "ar" ? "كلمة المرور الجديدة" : "New Password"}</label>
+                  <label className="text-xs text-slate-500">{t.settingsPage.newPassword}</label>
                   <div className="relative">
                     <input
                       type={showNewPassword ? "text" : "password"}
@@ -698,20 +698,20 @@ const [securityModal, setSecurityModal] = useState(false);
                 {newPassword && (
                   <div className="mt-3">
                     <div className="flex justify-between text-xs mb-2">
-                      <span>Password Strength</span>
-                      <span>{getPasswordStrength() < 50 ? "Weak" : getPasswordStrength() < 100 ? "Medium" : "Strong"}</span>
+                      <span>{t.settingsPage.passwordStrength}</span>
+                      <span>{getPasswordStrength() < 50 ? t.settingsPage.passwordWeak : getPasswordStrength() < 100 ? t.settingsPage.passwordMedium : t.settingsPage.passwordStrong}</span>
                     </div>
                     <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden mb-4">
                       <div className="h-full transition-all" style={{ width: `${getPasswordStrength()}%`, background: getPasswordStrength() < 50 ? "#ef4444" : getPasswordStrength() < 100 ? "#f59e0b" : "#22c55e" }} />
                     </div>
                     <div className="space-y-2 text-sm">
-                      <div className={passwordRules.length ? "text-emerald-500" : "text-slate-500"}>✓ At least 8 characters</div>
-                      <div className={passwordRules.uppercase ? "text-emerald-500" : "text-slate-500"}>✓ One uppercase letter</div>
-                      <div className={passwordRules.number ? "text-emerald-500" : "text-slate-500"}>✓ One number</div>
-                      <div className={passwordRules.special ? "text-emerald-500" : "text-slate-500"}>✓ One special character</div>
+                      <div className={passwordRules.length ? "text-emerald-500" : "text-slate-500"}> ✓ {t.settingsPage.passwordRuleLength}</div>
+                      <div className={passwordRules.uppercase ? "text-emerald-500" : "text-slate-500"}>✓ {t.settingsPage.passwordRuleUppercase}</div>
+                      <div className={passwordRules.number ? "text-emerald-500" : "text-slate-500"}>✓ {t.settingsPage.passwordRuleNumber}</div>
+                      <div className={passwordRules.special ? "text-emerald-500" : "text-slate-500"}>✓ {t.settingsPage.passwordRuleSpecial}</div>
                       {confirmPassword && (
                         <p className={`mt-2 text-sm ${passwordsMatch ? "text-emerald-500" : "text-red-500"}`}>
-                          {passwordsMatch ? "Passwords match" : "Passwords do not match"}
+                          {passwordsMatch ? t.settingsPage.passwordsMatch : t.settingsPage.passwordsNotMatch}
                         </p>
                       )}
                     </div>
@@ -719,7 +719,7 @@ const [securityModal, setSecurityModal] = useState(false);
                 )}
 
                 <div>
-                  <label className="text-xs text-slate-500">{lang === "ar" ? "تأكيد كلمة المرور" : "Confirm Password"}</label>
+                  <label className="text-xs text-slate-500">{t.settingsPage.confirmPassword}</label>
                   <div className="relative">
                     <input
                       type={showConfirmPassword ? "text" : "password"}
@@ -740,7 +740,7 @@ const [securityModal, setSecurityModal] = useState(false);
             <div className="rounded-3xl border p-6" style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}>
               <div className="flex items-start justify-between gap-5">
                 <div>
-                  <h4 className="font-semibold">{lang === "ar" ? "التحقق بخطوتين" : "Two-Factor Authentication"}</h4>
+                  <h4 className="font-semibold">{t.settingsPage.twoFactorAuthentication}</h4>
                 </div>
                 <button
                   type="button"
@@ -753,16 +753,16 @@ const [securityModal, setSecurityModal] = useState(false);
 
               <div className="mt-6 space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span>Status</span>
-                  <span className={twoFA ? "text-emerald-500 font-medium" : "text-slate-500"}>{twoFA ? "Enabled" : "Disabled"}</span>
+                  <span>{t.settingsPage.status}</span>
+                  <span className={twoFA ? "text-emerald-500 font-medium" : "text-slate-500"}>{twoFA ? t.settingsPage.enabled : t.settingsPage.disabled}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Method</span>
-                  <span>Authenticator App</span>
+                  <span>{t.settingsPage.method}</span>
+                  <span>{t.settingsPage.authenticatorApp}</span>
                 </div>
                 <div className="flex justify-between items-center pt-2 border-t" style={{ borderColor: "var(--border)" }}>
-                  <span>Recovery Codes</span>
-                  <button type="button" className="text-indigo-500 font-medium hover:underline">View</button>
+                  <span>{t.settingsPage.recoveryCodes}</span>
+                  <button type="button" className="text-indigo-500 font-medium hover:underline">{t.settingsPage.view}</button>
                 </div>
               </div>
             </div>
@@ -770,46 +770,46 @@ const [securityModal, setSecurityModal] = useState(false);
             {/* Security Score Widget Box */}
             <div className="rounded-3xl border p-6" style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}>
               <div className="flex justify-between items-center mb-4">
-                <h4 className="font-semibold">Security Score Detailed</h4>
+                <h4 className="font-semibold">{t.settingsPage.securityScoreDetailed}</h4>
                 <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-sm font-bold">{securityScore()}%</span>
               </div>
               <div className="h-3 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
                 <div className="h-full bg-indigo-600 transition-all" style={{ width: `${securityScore()}%` }} />
               </div>
               <div className="mt-5 space-y-3 text-sm">
-                <div className="flex justify-between"><span>Profile Photo</span><span>{user?.avatar ? "✅" : "❌"}</span></div>
-                <div className="flex justify-between"><span>Email Verified</span><span>{email ? "✅" : "❌"}</span></div>
-                <div className="flex justify-between"><span>Phone Number</span><span>{phone ? "✅" : "❌"}</span></div>
-                <div className="flex justify-between"><span>Strong Password</span><span>{user?.password ? "✅" : "❌"}</span></div>
-                <div className="flex justify-between"><span>Two Factor</span><span>{twoFA ? "✅" : "❌"}</span></div>
+                <div className="flex justify-between"><span>{t.settingsPage.profilePhoto}</span><span>{user?.avatar ? "✅" : "❌"}</span></div>
+                <div className="flex justify-between"><span>{t.settingsPage.emailVerified}</span><span>{email ? "✅" : "❌"}</span></div>
+                <div className="flex justify-between"><span>{t.settingsPage.phoneNumber}</span><span>{phone ? "✅" : "❌"}</span></div>
+                <div className="flex justify-between"><span>{t.settingsPage.phoneNumber}</span><span>{user?.password ? "✅" : "❌"}</span></div>
+                <div className="flex justify-between"><span>{t.settingsPage.twoFactor}</span><span>{twoFA ? "✅" : "❌"}</span></div>
               </div>
             </div>
 
             {/* Sessions management */}
             <div className="rounded-3xl border p-6" style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}>
-              <h3 className="font-semibold">Current Session</h3>
+              <h3 className="font-semibold">{t.settingsPage.currentSession}</h3>
               <div className="mt-5 space-y-3 text-sm">
-                <div className="flex justify-between"><span>Browser</span><span>Chrome</span></div>
-                <div className="flex justify-between"><span>Device</span><span>Windows 11</span></div>
-                <div className="flex justify-between"><span>IP Address</span><span>192.168.1.12</span></div>
-                <div className="flex justify-between"><span>Location</span><span>Alexandria, Egypt</span></div>
-                <div className="flex justify-between"><span>Last Login</span><span>2 Minutes Ago</span></div>
+                <div className="flex justify-between"><span>{t.settingsPage.browser}</span><span>Chrome</span></div>
+                <div className="flex justify-between"><span>{t.settingsPage.device}</span><span>Windows 11</span></div>
+                <div className="flex justify-between"><span>{t.settingsPage.ipAddress}</span><span>192.168.1.12</span></div>
+                <div className="flex justify-between"><span>{t.settingsPage.location}</span><span>Alexandria, Egypt</span></div>
+                <div className="flex justify-between"><span>{t.settingsPage.lastLogin}</span><span>2 Minutes Ago</span></div>
                 <div className="flex justify-between pt-2 border-t" style={{ borderColor: "var(--border)" }}>
                   <span>Status</span>
-                  <span className="text-emerald-500 font-medium">Current Device</span>
+                  <span className="text-emerald-500 font-medium">{t.settingsPage.currentDevice}</span>
                 </div>
               </div>
             </div>
 
             <div className="rounded-3xl border p-6" style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}>
-              <h3 className="font-semibold">Connected Devices</h3>
+              <h3 className="font-semibold">{t.settingsPage.connectedDevices}</h3>
               <div className="space-y-5 mt-5 text-sm">
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="font-medium">Chrome</p>
                     <p className="text-xs text-slate-500">Windows 11</p>
                   </div>
-                  <button type="button" className="text-red-500 hover:underline">Disconnect</button>
+                  <button type="button" className="text-red-500 hover:underline">{t.settingsPage.connectedDevices}{t.settingsPage.disconnect}</button>
                 </div>
                 <hr style={{ borderColor: "var(--border)" }} />
                 <div className="flex justify-between items-center">
@@ -822,43 +822,43 @@ const [securityModal, setSecurityModal] = useState(false);
               </div>
             </div>
 
-            <div className="rounded-3xl border p-6" style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}>
-              <h3 className="font-semibold">Recent Activity</h3>
+           <div className="rounded-3xl border p-6" style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}>
+              <h3 className="font-semibold">{t.settingsPage.recentActivity}</h3>
               <div className="mt-5 space-y-4 text-sm">
-                <div className="flex justify-between"><span>Password Changed</span><span className="text-slate-500">Today</span></div>
-                <div className="flex justify-between"><span>Profile Updated</span><span className="text-slate-500">Yesterday</span></div>
-                <div className="flex justify-between"><span>Two Factor Enabled</span><span className="text-slate-500">2 days ago</span></div>
+                <div className="flex justify-between"><span>{t.settingsPage.passwordChanged}</span><span className="text-slate-500">{t.settingsPage.today}</span></div>
+                <div className="flex justify-between"><span>{t.settingsPage.profileUpdatedActivity}</span><span className="text-slate-500">{t.settingsPage.yesterday}</span></div>
+                <div className="flex justify-between"><span>{t.settingsPage.twoFactorEnabled}</span><span className="text-slate-500">{t.settingsPage.twoDaysAgo}</span></div>
               </div>
             </div>
 
             <div className="rounded-3xl border p-6" style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}>
-              <h3 className="font-semibold">Security Tips</h3>
+              <h3 className="font-semibold">{t.settingsPage.securityTips}</h3>
               <ul className="mt-5 space-y-3 text-sm text-slate-600 dark:text-slate-300">
-                <li>✅ Enable Two Factor Authentication</li>
-                <li>✅ Use a Strong Password</li>
-                <li>✅ Change Password Every 90 Days</li>
-                <li>✅ Never Share Recovery Codes</li>
+                <li>✅ {t.settingsPage.tipEnable2FA}</li>
+                <li>✅ {t.settingsPage.tipStrongPassword}</li>
+                <li>✅ {t.settingsPage.tipChangePassword}</li>
+                <li>✅ {t.settingsPage.tipRecoveryCodes}</li>
               </ul>
             </div>
 
             {/* Danger Zone */}
             <div className="rounded-3xl border border-red-500/20 p-6 mt-6 bg-red-500/5">
-              <h4 className="font-semibold text-red-500">Danger Zone</h4>
-              <p className="text-sm text-slate-500 mt-2">These actions are permanent and cannot be undone.</p>
+              <h4 className="font-semibold text-red-500">{t.settingsPage.dangerZone}</h4>
+              <p className="text-sm text-slate-500 mt-2">{t.settingsPage.dangerZoneDesc}</p>
               <div className="flex gap-3 mt-5 flex-wrap">
                 <button
                   type="button"
                   onClick={handleLogoutAllSessions}
                   className="px-4 py-2 rounded-xl border border-red-500/20 text-red-500 hover:bg-red-500/10 transition text-sm font-medium"
                 >
-                  Logout All Sessions
+                  {t.settingsPage.logoutAllSessions}
                 </button>
                 <button
                   type="button"
                   onClick={handleDeleteAccount}
                   className="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700 transition text-sm font-medium shadow-md"
                 >
-                  Delete Account
+                  {t.settingsPage.deleteAccount}
                 </button>
               </div>
             </div>
@@ -885,7 +885,7 @@ className="w-full max-w-md rounded-[2rem] bg-white dark:bg-slate-900 border bord
 >
 
 <h2 className="text-xl font-black">
-Profile Completion
+{t.settingsPage.profileCompletionTitle}
 </h2>
 
 <div className="space-y-3">
@@ -918,7 +918,7 @@ onClick={()=>setProfileModal(false)}
 className="w-full h-11 rounded-xl bg-indigo-600 text-white font-bold"
 >
 
-Close
+{t.settingsPage.close}
 
 </button>
 
@@ -947,7 +947,7 @@ className="w-full max-w-md rounded-[2rem] bg-white dark:bg-slate-900 border bord
 
 <h2 className="text-xl font-black">
 
-Security Checklist
+{t.settingsPage.securityChecklist}
 
 </h2>
 
@@ -981,7 +981,7 @@ onClick={()=>setSecurityModal(false)}
 className="w-full h-11 rounded-xl bg-emerald-600 text-white font-bold"
 >
 
-Close
+{t.settingsPage.close}
 
 </button>
 
@@ -1000,7 +1000,7 @@ Close
             onClick={handleSave}
             className="h-12 px-10 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-semibold shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
-            {saved ? (lang === "ar" ? "✓ تم الحفظ" : "✓ Saved Successfully") : (lang === "ar" ? "حفظ التغييرات" : "Save Changes")}
+            {saved ? `✓ ${t.settingsPage.savedSuccessfully}` : t.settingsPage.saveChanges}
           </button>
         </div>
 

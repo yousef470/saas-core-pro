@@ -22,7 +22,7 @@ const defaultEvents = [
 ];
 
 function Calendar() {
-  const { lang } = useTheme();
+ const { lang, t } = useTheme();
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const [events, setEvents] = useState(() => {
@@ -110,15 +110,24 @@ function Calendar() {
     }
   };
 
-  const getEventLabel = (type) => {
-    switch (type) {
-      case "work": return "💼 Work";
-      case "meeting": return "📅 Meeting";
-      case "personal": return "🏠 Personal";
-      case "holiday": return "🎉 Holiday";
-      default: return type;
-    }
-  };
+function getEventLabel(type) {
+  switch (type) {
+    case "work":
+      return t.calendarPage.types.work;
+
+    case "meeting":
+      return t.calendarPage.types.meeting;
+
+    case "personal":
+      return t.calendarPage.types.personal;
+
+    case "holiday":
+      return t.calendarPage.types.holiday;
+
+    default:
+      return type;
+  }
+}
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="pb-10">
@@ -132,7 +141,7 @@ function Calendar() {
             </div>
             <div>
               <h1 className="text-2xl font-black">
-                {lang === "ar" ? "التقويم" : "Calendar"}
+                {t.calendarPage.title}
               </h1>
               <p className="text-sm text-slate-400">
                 {currentDate.toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US", {
@@ -177,26 +186,26 @@ function Calendar() {
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-indigo-500/20 active:scale-95"
           >
             <Plus size={20} />
-            {lang === "ar" ? "حدث جديد" : "New Event"}
+            {t.calendarPage.newEvent}
           </button>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-            <h3 className="text-sm text-slate-400">Total Events</h3>
+            <h3 className="text-sm text-slate-400">{t.calendarPage.stats.total}</h3>
             <p className="text-2xl font-black">{stats.total}</p>
           </div>
           <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-            <h3 className="text-sm text-slate-400">Work</h3>
+            <h3 className="text-sm text-slate-400">{t.calendarPage.stats.work}</h3>
             <p className="text-2xl font-black">{stats.work}</p>
           </div>
           <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-            <h3 className="text-sm text-slate-400">Meetings</h3>
+            <h3 className="text-sm text-slate-400">{t.calendarPage.stats.meetings}</h3>
             <p className="text-2xl font-black">{stats.meeting}</p>
           </div>
           <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-            <h3 className="text-sm text-slate-400">Personal</h3>
+            <h3 className="text-sm text-slate-400">{t.calendarPage.stats.personal}</h3>
             <p className="text-2xl font-black">{stats.personal}</p>
           </div>
         </div>
@@ -204,11 +213,23 @@ function Calendar() {
         {/* View Tabs */}
         <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-2xl p-2 w-fit">
           {[
-            { id: "month", label: "Month" },
-            { id: "week", label: "Week" },
-            { id: "day", label: "Day" },
-            { id: "agenda", label: "Agenda" },
-          ].map((tab) => (
+{
+id:"month",
+label:t.calendarPage.views.month,
+},
+{
+id:"week",
+label:t.calendarPage.views.week,
+},
+{
+id:"day",
+label:t.calendarPage.views.day,
+},
+{
+id:"agenda",
+label:t.calendarPage.views.agenda,
+},
+].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setView(tab.id)}
@@ -269,12 +290,12 @@ function Calendar() {
             {/* Sidebar Events */}
             <div className="space-y-6">
               <h3 className="text-xl font-bold px-2">
-                {lang === "ar" ? `مواعيد ${selectedDate}` : `Events ${selectedDate}`}
+                {t.calendarPage.eventsFor} {selectedDate}
               </h3>
 
               {selectedEvents.length === 0 && (
                 <div className="bg-white/5 border border-white/10 rounded-3xl p-6 text-center text-slate-400">
-                  {lang === "ar" ? "لا توجد أحداث في هذا اليوم" : "No events for this day"}
+                  {t.calendarPage.noEvents}
                 </div>
               )}
 
@@ -310,10 +331,10 @@ function Calendar() {
     {/* عنوان القسم */}
     <div className="flex justify-between items-center border-b border-slate-200 dark:border-white/10 pb-4">
       <h2 className="text-xl font-black tracking-normal">
-        {lang === "ar" ? "عرض الأسبوع الحالي" : "Weekly Schedule"}
+        {t.calendarPage.weeklySchedule}
       </h2>
       <span className="text-xs font-semibold px-3 py-1 bg-slate-200/40 dark:bg-slate-700/30 text-indigo-400 rounded-full border border-indigo-500/20">
-        7 Days View
+       {t.calendarPage.sevenDaysView}
       </span>
     </div>
 
@@ -365,7 +386,7 @@ function Calendar() {
                 <div className="h-full flex flex-col items-center justify-center text-center py-8 opacity-40 group-hover:opacity-60 transition-opacity">
                   <div className="w-1.5 h-1.5 rounded-full bg-slate-400 mb-1" />
                   <span className="text-[10px] font-medium tracking-wide">
-                    {lang === "ar" ? "فارغ" : "No Events"}
+                    {t.calendarPage.noEvents}
                   </span>
                 </div>
               ) : (
@@ -386,7 +407,7 @@ function Calendar() {
               )}
             </div>
 
-            {/* مؤشر توهج سفلي لطيف لليوم الحالي */}
+           
             {isCurrentDay && (
               <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-emerald-500 rounded-full shadow-md shadow-emerald-500" />
             )}
@@ -399,7 +420,7 @@ function Calendar() {
 
         {view === "agenda" && (
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <h2 className="text-2xl font-semibold mb-6">Agenda</h2>
+            <h2 className="text-2xl font-semibold mb-6">{t.calendarPage.agenda}</h2>
             {[...events]
               .sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`))
               .map((event) => (
@@ -417,8 +438,8 @@ function Calendar() {
             {events.length === 0 && (
               <div className="text-center py-16">
                 <CalendarIcon size={48} className="mx-auto mb-4 text-slate-400" />
-                <h3 className="font-bold text-lg">No Events Yet</h3>
-                <p className="text-slate-500 mt-2">Create your first event.</p>
+                <h3 className="font-bold text-lg">{t.calendarPage.noEventsYet}</h3>
+                <p className="text-slate-500 mt-2">{t.calendarPage.createFirstEvent}</p>
               </div>
             )}
           </div>
@@ -428,7 +449,7 @@ function Calendar() {
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
             <h2 className="text-2xl font-semibold mb-6">{selectedDate}</h2>
             <div className="space-y-3">
-              {selectedEvents.length === 0 && <div className="text-slate-400">No events</div>}
+              {selectedEvents.length === 0 && <div className="text-slate-400">{t.calendarPage.noEvents}</div>}
               {selectedEvents.map((event) => (
                 <div key={event.id} className="p-4 rounded-2xl border border-white/10 bg-white/5">
                   <div className="font-bold">{event.title}</div>
@@ -447,7 +468,7 @@ function Calendar() {
       {editingEvent && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl shadow-black/20 rounded-3xl p-6">
-            <h2 className="text-xl font-bold mb-5">Edit Event</h2>
+            <h2 className="text-xl font-bold mb-5">{t.calendarPage.editEvent}</h2>
             <div className="space-y-4">
               <input
                 value={editingEvent.title}
@@ -471,18 +492,24 @@ function Calendar() {
                 onChange={(e) => setEditingEvent({ ...editingEvent, type: e.target.value })}
                 className="w-full h-11 px-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="work">💼 Work</option>
-                <option value="meeting">📅 Meeting</option>
-                <option value="personal">🏠 Personal</option>
-                <option value="holiday">🎉 Holiday</option>
+                <option value="work">💼 {t.calendarPage.stats.work}</option>
+                <option value="meeting">
+📅 {t.calendarPage.types.meeting}
+</option>
+                <option value="personal">
+🏠 {t.calendarPage.types.personal}
+</option>
+                <option value="holiday">
+🎉 {t.calendarPage.types.holiday}
+</option>
               </select>
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setEditingEvent(null)} className="flex-1 h-11 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-                Cancel
+                {t.common.cancel}
               </button>
               <button onClick={handleSaveEdit} className="flex-1 h-11 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-lg shadow-indigo-500/30">
-                Save
+               {t.common.save}
               </button>
             </div>
           </div>
@@ -493,10 +520,10 @@ function Calendar() {
       {showEventModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl shadow-black/20 rounded-3xl p-6">
-            <h2 className="text-xl font-bold mb-5">New Event</h2>
+            <h2 className="text-xl font-bold mb-5">{t.calendarPage.newEvent}</h2>
             <div className="space-y-4">
               <input
-                placeholder="Event Title"
+                placeholder={t.calendarPage.eventTitle}
                 value={newEvent.title}
                 onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                 className="w-full h-11 px-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -518,25 +545,31 @@ function Calendar() {
                 onChange={(e) => setNewEvent({ ...newEvent, type: e.target.value })}
                 className="w-full h-11 px-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="work">💼 Work</option>
-                <option value="meeting">📅 Meeting</option>
-                <option value="personal">🏠 Personal</option>
-                <option value="holiday">🎉 Holiday</option>
+                <option value="work">💼 {t.calendarPage.stats.work}</option>
+                <option value="meeting">
+📅 {t.calendarPage.types.meeting}
+</option>
+                <option value="personal">
+🏠 {t.calendarPage.types.personal}
+</option>
+                <option value="holiday">
+🎉 Holiday
+</option>
               </select>
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setShowEventModal(false)} className="flex-1 h-11 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-                Cancel
+               {t.common.cancel}
               </button>
               <button
                 onClick={() => {
                   if (!newEvent.title.trim() || !newEvent.date || !newEvent.time) {
-                    alert("Please fill all fields");
+                    alert(t.calendarPage.alerts.fillFields);
                     return;
                   }
                   const eventDateTime = new Date(`${newEvent.date}T${newEvent.time}`);
                   if (eventDateTime < new Date()) {
-                    alert("Cannot create event in the past");
+                    alert(t.calendarPage.alerts.pastEvent);
                     return;
                   }
                   const event = {
@@ -552,7 +585,7 @@ function Calendar() {
                 }}
                 className="flex-1 h-11 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-lg shadow-indigo-500/30"
               >
-                Create
+               {t.common.create}
               </button>
             </div>
           </div>
@@ -563,13 +596,13 @@ function Calendar() {
       {deleteEvent && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl p-6 shadow-2xl">
-            <h2 className="text-xl font-bold mb-3">Delete Event</h2>
+            <h2 className="text-xl font-bold mb-3">{t.calendarPage.deleteEvent}</h2>
             <p className="text-slate-500 mb-6">
-              Are you sure you want to delete <strong>{deleteEvent.title}</strong>?
+              {t.calendarPage.confirmDelete} <strong>{deleteEvent.title}</strong>?
             </p>
             <div className="flex gap-3">
               <button onClick={() => setDeleteEvent(null)} className="flex-1 h-11 rounded-xl border border-slate-300 dark:border-slate-700">
-                Cancel
+               {t.common.cancel}
               </button>
               <button
                 onClick={() => {
@@ -578,7 +611,7 @@ function Calendar() {
                 }}
                 className="flex-1 h-11 bg-red-600 hover:bg-red-700 text-white rounded-xl"
               >
-                Delete
+                {t.common.delete}
               </button>
             </div>
           </div>

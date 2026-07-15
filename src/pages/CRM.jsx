@@ -8,9 +8,9 @@ import {
   FiSearch,
   FiMoreVertical,
 } from "react-icons/fi";
-import { getCustomers } from "../services/crmservice"; 
+import { getCustomers } from "../services/crmservice";
 function CRM() {
-  const { lang } = useTheme();
+  const { t } = useTheme();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [planFilter, setPlanFilter] = useState("all");
@@ -18,82 +18,74 @@ function CRM() {
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [openMenu, setOpenMenu] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-const getNextBillingDate = () => {
+  const getNextBillingDate = () => {
+    const date = new Date();
 
-const date = new Date();
+    date.setMonth(date.getMonth() + 1);
 
-date.setMonth(date.getMonth()+1);
-
-return date.toISOString();
-
-};
+    return date.toISOString();
+  };
   const customersPerPage = 6;
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-const [customers, setCustomers] = useState(() => {
-  let savedData = getCustomers();
+  const [customers, setCustomers] = useState(() => {
+    let savedData = getCustomers();
 
-  if (savedData.length === 0) {
-    const now = new Date();
+    if (savedData.length === 0) {
+      const now = new Date();
 
-    const defaultCustomer = [
-      {
-        id: 1,
-        name: "Ahmed Ali",
-        email: "ahmed@example.com",
-        phone: "+20 100 123 4567",
-        company: "Tech Corp",
-        avatar: "https://i.pravatar.cc/150?img=1",
-        plan: "Enterprise",
-        status: "active",
-        revenue: 199,
-        notes: "",
+      const defaultCustomer = [
+        {
+          id: 1,
+          name: "Ahmed Ali",
+          email: "ahmed@example.com",
+          phone: "+20 100 123 4567",
+          company: "Tech Corp",
+          avatar: "https://i.pravatar.cc/150?img=1",
+          plan: "Enterprise",
+          status: "active",
+          revenue: 199,
+          notes: "",
 
-        date: now.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        }),
+          date: now.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          }),
 
+          createdAt: now.toISOString(),
+          month: now.toLocaleString("en-US", { month: "short" }),
+          year: now.getFullYear(),
+        },
+      ];
+
+      localStorage.setItem("crm_customers", JSON.stringify(defaultCustomer));
+
+      return defaultCustomer;
+    }
+
+    // Migration للعملاء القدامى
+    const migrated = savedData.map((customer) => {
+      if (customer.createdAt) return customer;
+
+      const now = new Date();
+
+      return {
+        ...customer,
         createdAt: now.toISOString(),
-        month: now.toLocaleString("en-US", { month: "short" }),
+        month: now.toLocaleString("en-US", {
+          month: "short",
+        }),
         year: now.getFullYear(),
-      },
-    ];
+      };
+    });
 
-    localStorage.setItem(
-      "crm_customers",
-      JSON.stringify(defaultCustomer)
-    );
+    console.log(migrated);
 
-    return defaultCustomer;
-  }
+    localStorage.setItem("crm_customers", JSON.stringify(migrated));
 
-  // Migration للعملاء القدامى
-  const migrated = savedData.map((customer) => {
-    if (customer.createdAt) return customer;
-
-    const now = new Date();
-
-    return {
-      ...customer,
-      createdAt: now.toISOString(),
-      month: now.toLocaleString("en-US", {
-        month: "short",
-      }),
-      year: now.getFullYear(),
-    };
+    return migrated;
   });
-
-console.log(migrated);
-  
-  localStorage.setItem(
-    "crm_customers",
-    JSON.stringify(migrated)
-  );
-
-  return migrated;
-});
 
   const [formData, setFormData] = useState({
     name: "",
@@ -107,7 +99,6 @@ console.log(migrated);
 
   // الـ State الخاص بمودال التعديل
   const [editFormData, setEditFormData] = useState(null);
-
 
   const getRevenueByPlan = (plan) => {
     switch (plan) {
@@ -127,52 +118,49 @@ console.log(migrated);
     localStorage.setItem("crm_customers", JSON.stringify(customers));
   }, [customers]);
 
-
-
   const handleAddUser = (e) => {
     e.preventDefault();
     if (!formData.name || !formData.email) return;
 
-const now = new Date();
+    const now = new Date();
 
-const newUser = {
-  ...formData,
-  id: Date.now(),
-  avatar: `https://i.pravatar.cc/150?u=${Date.now()}`,
-  phone: formData.phone || "-",
-  company: formData.company || "-",
+    const newUser = {
+      ...formData,
+      id: Date.now(),
+      avatar: `https://i.pravatar.cc/150?u=${Date.now()}`,
+      phone: formData.phone || "-",
+      company: formData.company || "-",
 
-revenue: getRevenueByPlan(formData.plan),
+      revenue: getRevenueByPlan(formData.plan),
 
-subscriptionPrice: getRevenueByPlan(formData.plan),
+      subscriptionPrice: getRevenueByPlan(formData.plan),
 
-subscriptionStatus: "paid",
+      subscriptionStatus: "paid",
 
-nextBillingDate:getNextBillingDate(),
+      nextBillingDate: getNextBillingDate(),
 
-paymentMethod: "Visa",
+      paymentMethod: "Visa",
 
-invoiceId:
-`INV-${Math.floor(Math.random()*999999)}`,
+      invoiceId: `INV-${Math.floor(Math.random() * 999999)}`,
 
-notes: "",
+      notes: "",
 
-  // هيستخدم في صفحة CRM
-  date: now.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }),
+      // هيستخدم في صفحة CRM
+      date: now.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
 
-  // الجديد
-  createdAt: now.toISOString(),
+      // الجديد
+      createdAt: now.toISOString(),
 
-  month: now.toLocaleString("en-US", {
-    month: "short",
-  }),
+      month: now.toLocaleString("en-US", {
+        month: "short",
+      }),
 
-  year: now.getFullYear(),
-};
+      year: now.getFullYear(),
+    };
 
     setCustomers([newUser, ...customers]);
     setFormData({
@@ -182,11 +170,10 @@ notes: "",
       company: "",
       plan: "Pro",
       status: "active",
-      paymentMethod:"Visa",
+      paymentMethod: "Visa",
     });
     setIsModalOpen(false);
   };
-
 
   const handleEditSubmit = (e) => {
     e.preventDefault();
@@ -223,12 +210,9 @@ notes: "",
   const enterpriseCustomers = customers.filter(
     (c) => c.plan === "Enterprise",
   ).length;
-const totalRevenue = customers
-  .filter((c) => c.status === "active")
-  .reduce((sum, c) => sum + Number(c.revenue || 0), 0);
-
-
-
+  const totalRevenue = customers
+    .filter((c) => c.status === "active")
+    .reduce((sum, c) => sum + Number(c.revenue || 0), 0);
 
   const filteredCustomers = customers.filter((customer) => {
     const matchesSearch =
@@ -258,18 +242,16 @@ const totalRevenue = customers
   const updateCustomer = (updatedCustomer) => {
     updatedCustomer.revenue = getRevenueByPlan(updatedCustomer.plan);
 
-updatedCustomer.subscriptionPrice =
-getRevenueByPlan(updatedCustomer.plan);
+    updatedCustomer.subscriptionPrice = getRevenueByPlan(updatedCustomer.plan);
 
-updatedCustomer.nextBillingDate =
-getNextBillingDate();
+    updatedCustomer.nextBillingDate = getNextBillingDate();
     setCustomers((prev) =>
       prev.map((customer) =>
         customer.id === updatedCustomer.id ? updatedCustomer : customer,
       ),
     );
     setEditingCustomer(null);
-    setEditFormData(null); // تصفير الفورم بعد الحفظ بنجاح
+    setEditFormData(null);
   };
 
   const exportCSV = () => {
@@ -296,6 +278,19 @@ getNextBillingDate();
     return () => window.removeEventListener("click", closeMenu);
   }, []);
 
+  const getPlanName = (plan) => {
+    switch (plan) {
+      case "Starter":
+        return t.crmPage.starter;
+      case "Pro":
+        return t.crmPage.pro;
+      case "Enterprise":
+        return t.crmPage.enterprise;
+      default:
+        return plan;
+    }
+  };
+
   return (
     <div className=" animate-fade-in pb-10">
       <div className="space-y-6">
@@ -303,12 +298,10 @@ getNextBillingDate();
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold tracking-normal bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-              {lang === "ar" ? "إدارة مجتمع العملاء" : "Customer Ecosystem"}
+              {t.crmPage.title}
             </h1>
             <p className="text-sm mt-1 text-slate-500 dark:text-slate-400">
-              {lang === "ar"
-                ? "التحكم الكامل في الاشتراكات، الحالات، والتدفق المالي."
-                : "Full control over subscriptions and revenue metrics."}
+              {t.crmPage.subtitle}
             </p>
           </div>
         </div>
@@ -319,7 +312,7 @@ getNextBillingDate();
           <div className="h-full p-6 rounded-3xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
             <div className="flex items-center justify-between">
               <p className="text-xs uppercase tracking-wider text-slate-500">
-                Total Customers
+                {t.crmPage.totalCustomers}
               </p>
               <div className="p-2 rounded-xl bg-slate-200/40 dark:bg-slate-700/30">
                 <FiUsers className="slate text-lg" />
@@ -331,7 +324,7 @@ getNextBillingDate();
             <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
             <div className="mt-4 flex items-center justify-between text-sm">
               <span className="text-emerald-500 font-medium">+12%</span>
-              <span className="text-slate-500">this month</span>
+              <span className="text-slate-500">{t.crmPage.thisMonth}</span>
             </div>
           </div>
 
@@ -339,7 +332,7 @@ getNextBillingDate();
           <div className="h-full p-6 rounded-3xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
             <div className="flex items-center justify-between">
               <p className="text-xs uppercase tracking-wider text-slate-500">
-                Active Customers
+                {t.crmPage.activeCustomers}
               </p>
               <div className="p-2 rounded-xl bg-emerald-500/10">
                 <FiActivity className="text-emerald-500 text-lg" />
@@ -350,8 +343,10 @@ getNextBillingDate();
             </h3>
             <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
             <div className="mt-4 flex items-center justify-between text-sm">
-              <span className="text-emerald-500 font-medium">Active</span>
-              <span className="text-slate-500">customers</span>
+              <span className="text-emerald-500 font-medium">
+                {t.crmPage.active}
+              </span>
+              <span className="text-slate-500">{t.crmPage.customers}</span>
             </div>
           </div>
 
@@ -359,7 +354,7 @@ getNextBillingDate();
           <div className="h-full p-6 rounded-3xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
             <div className="flex items-center justify-between">
               <p className="text-xs uppercase tracking-wider text-slate-500">
-                Enterprise
+                {t.crmPage.enterprise}
               </p>
               <div className="p-2 rounded-xl bg-purple-500/10">
                 <FiBriefcase className="text-purple-500 text-lg" />
@@ -370,8 +365,10 @@ getNextBillingDate();
             </h3>
             <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
             <div className="mt-4 flex items-center justify-between text-sm">
-              <span className="text-purple-500 font-medium">Premium</span>
-              <span className="text-slate-500">accounts</span>
+              <span className="text-purple-500 font-medium">
+                {t.crmPage.premium}
+              </span>
+              <span className="text-slate-500">{t.crmPage.accounts}</span>
             </div>
           </div>
 
@@ -379,7 +376,7 @@ getNextBillingDate();
           <div className="h-full p-6 rounded-3xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
             <div className="flex items-center justify-between">
               <p className="text-xs uppercase tracking-wider text-slate-500">
-                Revenue
+                {t.crmPage.revenue}
               </p>
               <div className="p-2 rounded-xl bg-amber-500/10">
                 <FiDollarSign className="text-amber-500 text-lg" />
@@ -391,7 +388,7 @@ getNextBillingDate();
             <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
             <div className="mt-4 flex items-center justify-between text-sm">
               <span className="text-emerald-500 font-medium">+8.5%</span>
-              <span className="text-slate-500">growth</span>
+              <span className="text-slate-500">{t.crmPage.growth}</span>
             </div>
           </div>
         </div>
@@ -403,9 +400,7 @@ getNextBillingDate();
             <div className="relative w-full lg:max-w-md">
               <input
                 type="text"
-                placeholder={
-                  lang === "ar" ? "ابحث عن عميل..." : "Search customers..."
-                }
+                placeholder={t.crmPage.searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full h-12 pl-11 pr-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500"
@@ -425,7 +420,13 @@ getNextBillingDate();
                       : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                   }`}
                 >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                  {status === "all"
+                    ? t.crmPage.all
+                    : status === "active"
+                      ? t.crmPage.active
+                      : status === "pending"
+                        ? t.crmPage.pending
+                        : t.crmPage.canceled}
                 </button>
               ))}
 
@@ -434,13 +435,11 @@ getNextBillingDate();
                 onChange={(e) => setPlanFilter(e.target.value)}
                 className="h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-sm"
               >
-                <option value="all">All Plans</option>
-                <option value="Starter">Starter</option>
-                <option value="Pro">Pro</option>
-                <option value="Enterprise">Enterprise</option>
+                <option value="all">{t.crmPage.allPlans}</option>
+                <option value="Starter">{t.crmPage.starter}</option>
+                <option value="Pro">{t.crmPage.pro}</option>
+                <option value="Enterprise">{t.crmPage.enterprise}</option>
               </select>
-
-
             </div>
           </div>
         </div>
@@ -449,11 +448,11 @@ getNextBillingDate();
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-              Customers
+              {t.crmPage.customers}
             </h3>
-            <p className="text-sm text-slate-500">
-              {filteredCustomers.length} Customers Found
-            </p>
+<p className="text-sm text-slate-500">
+  {filteredCustomers.length} {t.crmPage.customersFound}
+</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -461,7 +460,7 @@ getNextBillingDate();
               onClick={exportCSV}
               className="h-11 px-5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
             >
-              Export CSV
+              {t.crmPage.exportCSV}
             </button>
 
             <button
@@ -481,7 +480,7 @@ getNextBillingDate();
                   d="M12 4v16m8-8H4"
                 />
               </svg>
-              Add New User
+              {t.crmPage.addCustomer}
             </button>
           </div>
         </div>
@@ -489,9 +488,9 @@ getNextBillingDate();
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {currentCustomers.length === 0 ? (
             <div className="col-span-full p-16 text-center rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900">
-              <h3 className="text-xl font-semibold">No Customers Found</h3>
+              <h3 className="text-xl font-semibold">{t.crmPage.noCustomers}</h3>
               <p className="mt-2 text-slate-500">
-                Try changing filters or add a new customer.
+                {t.crmPage.noCustomersSubtitle}
               </p>
             </div>
           ) : (
@@ -532,19 +531,19 @@ getNextBillingDate();
                 {/* Company Details */}
                 <div className="mt-5 space-y-2 text-sm">
                   <p>
-                    <span className="text-slate-500">Company:</span>{" "}
+                    <span className="text-slate-500">{t.crmPage.company}</span>{" "}
                     {customer.company}
                   </p>
                   <p>
-                    <span className="text-slate-500">Phone:</span>{" "}
+                    <span className="text-slate-500">{t.crmPage.phone}</span>{" "}
                     {customer.phone}
                   </p>
                   <p>
-                    <span className="text-slate-500">Revenue:</span> $
-                    {customer.revenue}
+                    <span className="text-slate-500">{t.crmPage.revenue}</span>{" "}
+                    ${customer.revenue}
                   </p>
                   <p>
-                    <span className="text-slate-500">Joined:</span>{" "}
+                    <span className="text-slate-500">{t.crmPage.joined}</span>{" "}
                     {customer.date}
                   </p>
                 </div>
@@ -554,7 +553,7 @@ getNextBillingDate();
                   <span
                     className={`px-3 py-1 rounded-full text-xs ${getPlanStyle(customer.plan)}`}
                   >
-                    {customer.plan}
+                    {getPlanName(customer.plan)}
                   </span>
                   <span
                     className={`px-3 py-1 rounded-full text-xs ${getStatusStyle(customer.status)}`}
@@ -562,8 +561,6 @@ getNextBillingDate();
                     {customer.status}
                   </span>
                 </div>
-                
-
 
                 {openMenu === customer.id && (
                   <div className="absolute top-14 right-4 z-50 w-44 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden">
@@ -574,7 +571,7 @@ getNextBillingDate();
                       }}
                       className="w-full px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-slate-800"
                     >
-                      View
+                      {t.crmPage.view}
                     </button>
 
                     <button
@@ -585,7 +582,7 @@ getNextBillingDate();
                       }}
                       className="w-full px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-slate-800"
                     >
-                      Edit
+                      {t.crmPage.edit}
                     </button>
                     <button
                       onClick={() => {
@@ -594,7 +591,7 @@ getNextBillingDate();
                       }}
                       className="w-full px-4 py-3 text-left text-red-500 hover:bg-red-500/10"
                     >
-                      Delete
+                      {t.crmPage.delete}
                     </button>
                   </div>
                 )}
@@ -612,7 +609,7 @@ getNextBillingDate();
             onClick={() => setCurrentPage(currentPage - 1)}
             className="px-4 py-2 rounded-xl border disabled:opacity-40"
           >
-            Prev
+            {t.previous}
           </button>
 
           {[...Array(totalPages)].map((_, i) => (
@@ -634,7 +631,7 @@ getNextBillingDate();
             onClick={() => setCurrentPage(currentPage + 1)}
             className="px-4 py-2 rounded-xl border disabled:opacity-40"
           >
-            Next
+            {t.next}
           </button>
         </div>
       )}
@@ -643,14 +640,12 @@ getNextBillingDate();
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl w-full max-w-sm border border-slate-200 dark:border-slate-800 shadow-2xl">
-            <h2 className="text-lg font-bold mb-4">
-              {lang === "ar" ? "إضافة مستخدم" : "Add User"}
-            </h2>
+            <h2 className="text-lg font-bold mb-4">{t.crm.addCustomer}</h2>
             <form onSubmit={handleAddUser} className="space-y-3">
               <input
                 required
                 value={formData.name}
-                placeholder="Name"
+                placeholder={t.crmPage.name}
                 className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent"
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
@@ -660,14 +655,14 @@ getNextBillingDate();
                 required
                 value={formData.email}
                 type="email"
-                placeholder="Email"
+                placeholder={t.crmPage.email}
                 className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent"
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
               />
               <input
-                placeholder="Phone"
+                placeholder={t.crmPage.phone}
                 value={formData.phone}
                 className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                 onChange={(e) =>
@@ -675,7 +670,7 @@ getNextBillingDate();
                 }
               />
               <input
-                placeholder="Company"
+                placeholder={t.crmPage.company}
                 value={formData.company}
                 className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                 onChange={(e) =>
@@ -689,27 +684,25 @@ getNextBillingDate();
                   setFormData({ ...formData, plan: e.target.value })
                 }
               >
-                <option value="Starter">Starter</option>
-                <option value="Pro">Pro</option>
-                <option value="Enterprise">Enterprise</option>
+                <option value="Starter">{t.crmPage.starter}</option>
+                <option value="Pro">{t.crmPage.pro}</option>
+                <option value="Enterprise">{t.crmPage.enterprise}</option>
               </select>
               <select
-value={formData.paymentMethod}
-onChange={(e)=>
-setFormData({
-...formData,
-paymentMethod:e.target.value
-})
-}
-className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
->
-
-<option value="Visa">Visa</option>
-<option value="MasterCard">MasterCard</option>
-<option value="PayPal">PayPal</option>
-<option value="Stripe">Stripe</option>
-
-</select>
+                value={formData.paymentMethod}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    paymentMethod: e.target.value,
+                  })
+                }
+                className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+              >
+                <option value="Visa">Visa</option>
+                <option value="MasterCard">MasterCard</option>
+                <option value="PayPal">PayPal</option>
+                <option value="Stripe">Stripe</option>
+              </select>
               <select
                 className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                 value={formData.status}
@@ -717,9 +710,9 @@ className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 b
                   setFormData({ ...formData, status: e.target.value })
                 }
               >
-                <option value="active">Active</option>
-                <option value="pending">Pending</option>
-                <option value="canceled">Canceled</option>
+                <option value="active">{t.crmPage.active}</option>
+                <option value="pending">{t.crmPage.pending}</option>
+                <option value="canceled">{t.crmPage.canceled}</option>
               </select>
               <div className="flex gap-2 pt-4">
                 <button
@@ -727,13 +720,13 @@ className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 b
                   onClick={() => setIsModalOpen(false)}
                   className="flex-1 py-2.5 rounded-xl border"
                 >
-                  {lang === "ar" ? "إلغاء" : "Cancel"}
+                  {t.cancel}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white"
                 >
-                  {lang === "ar" ? "حفظ" : "Save"}
+                  {t.save}
                 </button>
               </div>
             </form>
@@ -745,11 +738,11 @@ className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 b
       {editingCustomer && editFormData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="w-full max-w-md p-6 rounded-2xl bg-white dark:bg-slate-900">
-            <h2 className="text-xl font-bold mb-5">Edit Customer</h2>
+            <h2 className="text-xl font-bold mb-5">{t.crm.editCustomer}</h2>
 
             <form onSubmit={handleEditSubmit} className="space-y-3">
               <input
-                placeholder="name"
+                placeholder={t.crmPage.name}
                 value={editFormData.name}
                 onChange={(e) =>
                   setEditFormData({ ...editFormData, name: e.target.value })
@@ -758,7 +751,7 @@ className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 b
               />
 
               <input
-                placeholder="Email"
+                placeholder={t.crmPage.email}
                 value={editFormData.email}
                 onChange={(e) =>
                   setEditFormData({ ...editFormData, email: e.target.value })
@@ -767,7 +760,7 @@ className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 b
               />
 
               <input
-                placeholder="phone"
+                placeholder={t.crmPage.phone}
                 value={editFormData.phone}
                 onChange={(e) =>
                   setEditFormData({ ...editFormData, phone: e.target.value })
@@ -776,7 +769,7 @@ className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 b
               />
 
               <input
-                placeholder="company"
+                placeholder={t.crmPage.company}
                 value={editFormData.company}
                 onChange={(e) =>
                   setEditFormData({ ...editFormData, company: e.target.value })
@@ -791,29 +784,26 @@ className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 b
                 }
                 className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               >
-                <option value="Starter">Starter</option>
-                <option value="Pro">Pro</option>
-                <option value="Enterprise">Enterprise</option>
+                <option value="Starter">{t.crmPage.starter}</option>
+                <option value="Pro">{t.crmPage.pro}</option>
+                <option value="Enterprise">{t.crmPage.enterprise}</option>
               </select>
 
               <select
-value={editFormData.paymentMethod}
-onChange={(e)=>
-setEditFormData({
-...editFormData,
-paymentMethod:e.target.value
-})
-}
-className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
->
-
-<option>Visa</option>
-<option>MasterCard</option>
-<option>PayPal</option>
-<option>Stripe</option>
-
-</select>
-
+                value={editFormData.paymentMethod}
+                onChange={(e) =>
+                  setEditFormData({
+                    ...editFormData,
+                    paymentMethod: e.target.value,
+                  })
+                }
+                className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+              >
+                <option>Visa</option>
+                <option>MasterCard</option>
+                <option>PayPal</option>
+                <option>Stripe</option>
+              </select>
 
               <select
                 value={editFormData.status}
@@ -822,9 +812,9 @@ className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 b
                 }
                 className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               >
-                <option value="active">Active</option>
-                <option value="pending">Pending</option>
-                <option value="canceled">Canceled</option>
+                <option value="active">{t.crmPage.active}</option>
+                <option value="pending">{t.crmPage.pending}</option>
+                <option value="canceled">{t.crmPage.canceled}</option>
               </select>
 
               <textarea
@@ -833,7 +823,7 @@ className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 b
                   setEditFormData({ ...editFormData, notes: e.target.value })
                 }
                 rows="4"
-                placeholder="Customer Notes"
+                placeholder={t.crmPage.notes}
                 className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               />
 
@@ -846,14 +836,14 @@ className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 b
                   }}
                   className="flex-1 py-2 rounded-xl border"
                 >
-                  Cancel
+                  {t.crmPage.cancel}
                 </button>
 
                 <button
                   type="submit"
                   className="flex-1 py-2 rounded-xl bg-indigo-600 text-white"
                 >
-                  Save
+                  {t.crmPage.save}
                 </button>
               </div>
             </form>
@@ -866,7 +856,7 @@ className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 b
         <div className="fixed inset-0 z-50 flex justify-end bg-black/30">
           <div className="w-full max-w-md h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 p-6 overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold">Customer Details</h2>
+              <h2 className="text-xl font-bold">{t.crm.customerDetails}</h2>
               <button
                 onClick={() => setSelectedCustomer(null)}
                 className="w-9 h-9 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -883,76 +873,52 @@ className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 b
 
             <div className="mt-6 space-y-4">
               <div>
-                <p className="text-xs text-slate-500">Name</p>
+                <p className="text-xs text-slate-500">{t.crmPage.name}</p>
                 <p>{selectedCustomer.name}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">Email</p>
+                <p className="text-xs text-slate-500">{t.crmPage.email}</p>
                 <p>{selectedCustomer.email}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">Phone</p>
+                <p className="text-xs text-slate-500">{t.crmPage.phone}</p>
                 <p>{selectedCustomer.phone}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">Company</p>
+                <p className="text-xs text-slate-500">{t.crmPage.company}</p>
                 <p>{selectedCustomer.company}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">Plan</p>
+                <p className="text-xs text-slate-500">{t.crmPage.plan}</p>
                 <p>{selectedCustomer.plan}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">Revenue</p>
+                <p className="text-xs text-slate-500">{t.crmPage.revenue}</p>
                 <p>${selectedCustomer.revenue}</p>
               </div>
 
               <div>
+                <p className="text-xs text-slate-500">
+                  {t.crmPage.paymentMethod}
+                </p>
 
-<p className="text-xs text-slate-500">
-
-Payment Method
-
-</p>
-
-<p>{selectedCustomer.paymentMethod}</p>
-
-</div>
-<div>
-
-<p className="text-xs text-slate-500">
-
-Subscription
-
-</p>
-
-<p>{selectedCustomer.subscriptionStatus}</p>
-</div>
-
-<div>
-
-<p className="text-xs text-slate-500">
-
-Invoice
-
-</p>
-
-<p>{selectedCustomer.invoiceId}</p>
-
-</div>
-<div>
-
-<p className="text-xs text-slate-500">
-
-Invoice
-
-</p>
-
-<p>{selectedCustomer.invoiceId}</p>
-
-</div>
+                <p>{selectedCustomer.paymentMethod}</p>
+              </div>
               <div>
-                <p className="text-xs text-slate-500">Notes</p>
+                <p className="text-xs text-slate-500">
+                  {t.crmPage.subscription}
+                </p>
+
+                <p>{selectedCustomer.subscriptionStatus}</p>
+              </div>
+
+              <div>
+                <p className="text-xs text-slate-500">{t.crmPage.invoice}</p>
+
+                <p>{selectedCustomer.invoiceId}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">{t.crmPage.notes}</p>
                 <p className="whitespace-pre-wrap">
                   {selectedCustomer.notes || "No notes"}
                 </p>

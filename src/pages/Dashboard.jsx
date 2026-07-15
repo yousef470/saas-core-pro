@@ -77,7 +77,7 @@ const GoalBar = ({
 
 function Dashboard() {
   const { user } = useAuth();
-  const { lang } = useTheme();
+  const { lang, t } = useTheme();
 
   const customers = getCustomers();
   const orders = getOrders();
@@ -106,27 +106,15 @@ const customerGoal = Math.min(
   Math.round((totalCustomers / goals.customers) * 100),
   100,
 );
-
-
-
 const totalOrders = orders.length;
-
-
-
 const ordersGoal = Math.min(
   Math.round((totalOrders / goals.orders) * 100),
   100
 );
 
- 
-
-
-
-
-
   const stats = [
     {
-      title: "Customers",
+      title: t.dashboardPage.customers,
       value: totalCustomers,
       change: "+12%",
       isPositive: true,
@@ -135,7 +123,7 @@ const ordersGoal = Math.min(
         "text-slate-600 dark:text-slate-300 bg-slate-200/40 dark:bg-slate-700/30",
     },
     {
-      title: "Active Customers",
+      title: t.dashboardPage.activeCustomers,
       value: activeCustomers,
       change: "+8%",
       isPositive: true,
@@ -144,7 +132,7 @@ const ordersGoal = Math.min(
     },
 
     {
-      title: "Revenue",
+      title: t.dashboardPage.revenue,
       value: `$${totalRevenue}`,
       change: "+12.5%",
       isPositive: true,
@@ -309,14 +297,14 @@ const ordersGoal = Math.min(
             }}
           >
             <div className="mb-6">
-              <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
-                Revenue Overview
-              </h2>
+<h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
+  {t.dashboardPage.revenueOverview}
+</h2>
               <p
                 className="text-xs sm:text-sm mt-0.5"
                 style={{ color: "var(--text-muted)" }}
               >
-                Monthly revenue performance
+                {t.dashboardPage.revenueSubtitle}
               </p>
             </div>
 
@@ -401,13 +389,13 @@ const ordersGoal = Math.min(
           >
             <div className="mb-4">
               <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
-                Subscription Plans
+                {t.dashboardPage.subscriptionPlans}
               </h2>
               <p
                 className="text-xs sm:text-sm mt-0.5"
                 style={{ color: "var(--text-muted)" }}
               >
-                User distribution
+                {t.dashboardPage.subscriptionSubtitle}
               </p>
             </div>
 
@@ -458,7 +446,7 @@ const ordersGoal = Math.min(
                       dy="20"
                       className="text-[10px] sm:text-xs fill-slate-400 font-medium"
                     >
-                      subscriptions
+                      {t.dashboardPage.subscriptions}
                     </tspan>
                   </text>
                 </PieChart>
@@ -497,7 +485,7 @@ const ordersGoal = Math.min(
             }}
           >
             <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-5">
-              Team Members
+              {t.dashboardPage.teamMembers}
             </h2>
 
             <div className="space-y-4">
@@ -537,13 +525,13 @@ const ordersGoal = Math.min(
             }}
           >
             <h2 className="text-lg sm:text-xl font-bold mb-5">
-              Activity Timeline
+              {t.dashboardPage.activityTimeline}
             </h2>
 
             <div className="space-y-6 relative pl-1">
               {activities.length === 0 && (
                 <div className="text-center py-10 text-slate-500 text-sm">
-                  No activity yet
+                  {t.dashboardPage.noActivity}
                 </div>
               )}
 
@@ -594,13 +582,13 @@ const ordersGoal = Math.min(
   <div className="flex items-center justify-between mb-6">
     <div>
       <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
-        Goals
+        {t.dashboardPage.goals}
       </h2>
       <p
         className="text-xs mt-0.5"
         style={{ color: "var(--text-muted)" }}
       >
-        Monthly business targets
+        {t.dashboardPage.goalsSubtitle}
       </p>
     </div>
 
@@ -613,7 +601,7 @@ const ordersGoal = Math.min(
 
   {/* Customers */}
   <GoalBar
-    title="Customers"
+    title={t.dashboardPage.customersGoal}
     current={totalCustomers}
     target={goals.customers}
     percent={customerGoal}
@@ -622,7 +610,7 @@ const ordersGoal = Math.min(
 
   {/* Subscriptions */}
   <GoalBar
-    title="Subscriptions"
+    title={t.dashboardPage.subscriptionsGoal}
     current={`$${totalRevenue}`}
     target={`$${goals.subscriptions}`}
     percent={subscriptionGoal}
@@ -631,7 +619,7 @@ const ordersGoal = Math.min(
 
   {/* Orders */}
   <GoalBar
-    title="Orders"
+    title={t.dashboardPage.ordersGoal}
     current={totalOrders}
     target={goals.orders}
     percent={ordersGoal}
@@ -640,7 +628,7 @@ const ordersGoal = Math.min(
 
   {/* Product Sales */}
   <GoalBar
-    title="Product Sales"
+    title={t.dashboardPage.productSalesGoal}
     current={`$${totalSales}`}
     target={`$${goals.sales}`}
     percent={salesGoal}
@@ -661,7 +649,7 @@ const ordersGoal = Math.min(
             }}
           >
             <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-5">
-              Recent Payments
+              {t.dashboardPage.recentPayments}
             </h2>
 
             <div className="space-y-2.5 max-h-[280px] overflow-y-auto pr-0.5 scrollbar-none">
@@ -680,7 +668,7 @@ const ordersGoal = Math.min(
                         {item.user}
                       </p>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                        Subscription Payment
+                        {t.dashboardPage.subscriptionPayment}
                       </p>
                     </div>
                   </div>

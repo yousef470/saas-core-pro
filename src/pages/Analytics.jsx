@@ -27,7 +27,7 @@ import {
 import { PieChart, Pie, Cell } from "recharts";
 
 function SalesAnalytics() {
-  const { lang } = useTheme();
+  const { lang, t } = useTheme();
 
   const [selectedPlan, setSelectedPlan] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
@@ -53,37 +53,37 @@ function SalesAnalytics() {
 
   const performanceCards = [
     {
-      title: lang === "ar" ? "إجمالي الإيرادات" : "Total Revenue",
+      title: t.salesAnalyticsPage.totalRevenue,
       value: `$${totalRevenue}`,
       icon: <DollarSign size={20} className="text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]" />,
       gradient: "from-emerald-500/10 to-transparent",
     },
     {
-      title: lang === "ar" ? "العملاء" : "Customers",
+      title: t.salesAnalyticsPage.customers,
       value: totalCustomers,
       icon: <Users size={20} className="text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]" />,
       gradient: "from-blue-500/10 to-transparent",
     },
     {
-      title: lang === "ar" ? "العملاء النشطون" : "Active Users",
+      title: t.salesAnalyticsPage.activeUsers,
       value: activeCustomers,
       icon: <Activity size={20} className="text-indigo-400 drop-shadow-[0_0_8px_rgba(99,102,241,0.3)]" />,
       gradient: "from-indigo-500/10 to-transparent",
     },
     {
-      title: lang === "ar" ? "الخطط المستخدمة" : "Active Plans",
+      title: t.salesAnalyticsPage.activePlans,
       value: activePlans,
       icon: <Building2 size={20} className="text-violet-400 drop-shadow-[0_0_8px_rgba(139,92,246,0.3)]" />,
       gradient: "from-violet-500/10 to-transparent",
     },
     {
-      title: lang === "ar" ? "متوسط الإيراد" : "Avg Revenue",
+      title: t.salesAnalyticsPage.avgRevenue,
       value: `$${avgRevenue}`,
       icon: <TrendingUp size={20} className="text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.3)]" />,
       gradient: "from-cyan-500/10 to-transparent",
     },
     {
-      title: lang === "ar" ? "نمو المنصة" : "Growth",
+      title: t.salesAnalyticsPage.growth,
       value: `${revenueGrowth}%`,
       icon: <BarChart3 size={20} className="text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]" />,
       gradient: "from-amber-500/10 to-transparent",
@@ -92,15 +92,15 @@ function SalesAnalytics() {
 
   const revenueData = [
     {
-      name: "Starter",
+      name: t.salesAnalyticsPage.starter,
       revenue: filteredCustomers.filter((c) => c.plan === "Starter").reduce((sum, c) => sum + Number(c.revenue || 0), 0),
     },
     {
-      name: "Pro",
+      name: t.salesAnalyticsPage.starter,
       revenue: filteredCustomers.filter((c) => c.plan === "Pro").reduce((sum, c) => sum + Number(c.revenue || 0), 0),
     },
     {
-      name: "Enterprise",
+      name: t.salesAnalyticsPage.enterprise,
       revenue: filteredCustomers.filter((c) => c.plan === "Enterprise").reduce((sum, c) => sum + Number(c.revenue || 0), 0),
     },
   ];
@@ -129,9 +129,9 @@ function SalesAnalytics() {
     .sort((a, b) => b.revenueNumber - a.revenueNumber);
 
   const pieData = [
-    { name: "Starter", value: filteredCustomers.filter((c) => c.plan === "Starter").length },
-    { name: "Pro", value: filteredCustomers.filter((c) => c.plan === "Pro").length },
-    { name: "Enterprise", value: filteredCustomers.filter((c) => c.plan === "Enterprise").length },
+    { name: t.salesAnalyticsPage.starter, value: filteredCustomers.filter((c) => c.plan === "Starter").length },
+    { name:t.salesAnalyticsPage.pro, value: filteredCustomers.filter((c) => c.plan === "Pro").length },
+    { name: t.salesAnalyticsPage.enterprise, value: filteredCustomers.filter((c) => c.plan === "Enterprise").length },
   ];
 
   const totalPlans = pieData.reduce((sum, item) => sum + item.value, 0);
@@ -141,20 +141,20 @@ function SalesAnalytics() {
   const totalCanceled = filteredCustomers.filter((c) => c.status === "canceled").length;
 
   const insights = [
-    { title: lang === "ar" ? "معدل النشاط" : "Active Rate", value: `${activeRate}%`, icon: <Gauge size={18} />, color: "text-emerald-400" },
-    { title: lang === "ar" ? "أفضل خطة" : "Best Plan", value: bestPlan?.name || "-", icon: <Crown size={18} />, color: "text-indigo-400" },
-    { title: lang === "ar" ? "قيد الانتظار" : "Pending", value: totalPending, icon: <Clock3 size={18} />, color: "text-amber-400" },
-    { title: lang === "ar" ? "ملغية" : "Canceled", value: totalCanceled, icon: <XCircle size={18} />, color: "text-rose-400" },
+    { title: t.salesAnalyticsPage.activeRate, value: `${activeRate}%`, icon: <Gauge size={18} />, color: "text-emerald-400" },
+    { title: t.salesAnalyticsPage.bestPlan, value: bestPlan?.name || "-", icon: <Crown size={18} />, color: "text-indigo-400" },
+    { title: t.salesAnalyticsPage.pendingUsers, value: totalPending, icon: <Clock3 size={18} />, color: "text-amber-400" },
+    { title:t.salesAnalyticsPage.canceledUsers, value: totalCanceled, icon: <XCircle size={18} />, color: "text-rose-400" },
   ];
 
   if (customers.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-center backdrop-blur-md bg-white/10 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800/50 rounded-3xl">
         <h2 className="text-2xl font-semibold mb-3 bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-          {lang === "ar" ? "لا توجد بيانات حالياً" : "No Analytics Data Yet"}
+{t.salesAnalyticsPage.noData}
         </h2>
         <p className="text-slate-400 text-sm">
-          {lang === "ar" ? "أضف عملاء من CRM لرؤية التحليلات" : "Add customers from CRM to see analytics."}
+{t.salesAnalyticsPage.noDataSubtitle}
         </p>
       </div>
     );
@@ -171,10 +171,10 @@ function SalesAnalytics() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-700 dark:from-white dark:via-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
-            {lang === "ar" ? "التحليلات المالية والمبيعات" : "Financial Analytics"}
+            {t.salesAnalyticsPage.title}
           </h1>
           <p className="text-sm mt-1 text-slate-500 dark:text-slate-400">
-            {lang === "ar" ? "تتبع نمو الإيرادات، خطط الاشتراكات، والصحة المالية لمنصتك." : "Track revenue trajectories, cohort retention, and platform fiscal health."}
+{t.salesAnalyticsPage.subtitle}
           </p>
         </div>
 
@@ -191,17 +191,17 @@ function SalesAnalytics() {
               >
                 {isPlan ? (
                   <>
-                    <option value="all">All Plans</option>
-                    <option value="Starter">Starter</option>
-                    <option value="Pro">Pro</option>
-                    <option value="Enterprise">Enterprise</option>
+                    <option value="all">{t.salesAnalyticsPage.allPlans}</option>
+                    <option value="Starter">{t.salesAnalyticsPage.starter}</option>
+                    <option value="Pro">{t.salesAnalyticsPage.pro}</option>
+                    <option value="Enterprise">{t.salesAnalyticsPage.enterprise}</option>
                   </>
                 ) : (
                   <>
-                    <option value="all">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="pending">Pending</option>
-                    <option value="canceled">Canceled</option>
+                  <option value="all">{t.salesAnalyticsPage.allStatus}</option>
+                    <option value="active">{t.salesAnalyticsPage.active}</option>
+                    <option value="pending">{t.salesAnalyticsPage.pending}</option>
+                    <option value="canceled">{t.salesAnalyticsPage.canceled}</option>
                   </>
                 )}
               </select>
@@ -216,9 +216,9 @@ function SalesAnalytics() {
       <div className="backdrop-blur-md bg-white/40 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800/50 rounded-3xl p-6 space-y-6 shadow-sm">
         <div>
           <h2 className="text-lg font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-            {lang === "ar" ? "ملخص الأداء" : "Performance Overview"}
+           {t.salesAnalyticsPage.performanceOverview}
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">Key Performance Indicators</p>
+          <p className="text-xs text-slate-400 mt-0.5">{t.salesAnalyticsPage.performanceSubtitle}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -253,10 +253,10 @@ function SalesAnalytics() {
         <div className="p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 backdrop-blur-md bg-white/40 dark:bg-slate-900/40 shadow-sm flex flex-col justify-between">
           <div className="mb-6">
             <h3 className="font-bold text-base text-slate-800 dark:text-slate-200">
-              {lang === "ar" ? "صافي تدفق الإيرادات" : "Revenue By Plan"}
+              {t.salesAnalyticsPage.revenueByPlan}
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
-              {lang === "ar" ? "معدل الصعود المالي حسب الخطة" : "Compounding revenue distribution"}
+              {t.salesAnalyticsPage.revenueByPlanSubtitle}
             </p>
           </div>
 
@@ -291,9 +291,9 @@ function SalesAnalytics() {
         <div className="p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 backdrop-blur-md bg-white/40 dark:bg-slate-900/40 shadow-sm flex flex-col justify-between">
           <div>
             <h3 className="font-bold text-base text-slate-800 dark:text-slate-200 mb-1">
-              {lang === "ar" ? "توزيع الخطط" : "Plan Distribution"}
+              {t.salesAnalyticsPage.planDistribution}
             </h3>
-            <p className="text-xs text-slate-400 mb-6">User shares per tier</p>
+            <p className="text-xs text-slate-400 mb-6">{t.salesAnalyticsPage.planDistributionSubtitle}</p>
           </div>
 
           <div className="relative flex justify-center items-center h-64">
@@ -328,7 +328,7 @@ function SalesAnalytics() {
             {/* النص الداخلي الفاخر في الدونات شارت */}
             <div className="absolute flex flex-col items-center justify-center pointer-events-none">
               <span className="text-3xl font-extrabold tracking-tight text-slate-950 dark:text-white">{totalPlans}</span>
-              <span className="text-[10px] tracking-wider uppercase text-slate-400 font-medium">Total Users</span>
+              <span className="text-[10px] tracking-wider uppercase text-slate-400 font-medium">{t.salesAnalyticsPage.totalUsers}</span>
             </div>
           </div>
         </div>
@@ -337,10 +337,10 @@ function SalesAnalytics() {
         <div className="p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 backdrop-blur-md bg-white/40 dark:bg-slate-900/40 shadow-sm flex flex-col justify-between">
           <div className="mb-6">
             <h3 className="font-bold text-base text-slate-800 dark:text-slate-200">
-              {lang === "ar" ? "حالة الاشتراكات" : "Customer Status"}
+              {t.salesAnalyticsPage.customerStatus}
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
-              {lang === "ar" ? "تحليل حالة العملاء الحالية" : "Retention vs acquisition analysis"}
+{t.salesAnalyticsPage.customerStatusSubtitle}
             </p>
           </div>
 
@@ -396,9 +396,9 @@ function SalesAnalytics() {
       <div className="backdrop-blur-md bg-white/40 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800/50 rounded-3xl overflow-hidden shadow-sm">
         <div className="p-6 border-b border-slate-200/40 dark:border-slate-800/40">
           <h3 className="font-bold text-lg text-slate-900 dark:text-white">
-            {lang === "ar" ? "أفضل الخطط أداءً" : "Top Performing Plans"}
+           {t.salesAnalyticsPage.topPlans}
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">Performance breakdown by subscription tier</p>
+          <p className="text-xs text-slate-400 mt-0.5">{t.salesAnalyticsPage.topPlansSubtitle}</p>
         </div>
 
         {/* شاشات الـ Desktop */}
@@ -406,10 +406,14 @@ function SalesAnalytics() {
           <table className={`w-full text-sm ${lang === "ar" ? "text-right" : "text-left"}`}>
             <thead>
               <tr className="text-xs text-slate-400 font-semibold" style={{ background: "rgba(99,102,241,.03)" }}>
-                <th className="p-4 uppercase tracking-wider">{lang === "ar" ? "الخطة" : "Plan"}</th>
-                <th className="p-4 uppercase tracking-wider">{lang === "ar" ? "العملاء" : "Customers"}</th>
-                <th className="p-4 uppercase tracking-wider">{lang === "ar" ? "الإيراد" : "Revenue"}</th>
-                <th className="p-4 uppercase tracking-wider">{lang === "ar" ? "الحصة السوقية" : "Share"}</th>
+                <th className="p-4 uppercase tracking-wider">
+                  {t.salesAnalyticsPage.plan}</th>
+                <th className="p-4 uppercase tracking-wider">
+                   {t.salesAnalyticsPage.customers}</th>
+                <th className="p-4 uppercase tracking-wider">
+                   {t.salesAnalyticsPage.customers}</th>
+                <th className="p-4 uppercase tracking-wider">
+                  {t.salesAnalyticsPage.share}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200/30 dark:divide-slate-800/30">
@@ -417,10 +421,16 @@ function SalesAnalytics() {
                 <tr key={index} className="hover:bg-white/40 dark:hover:bg-slate-800/20 transition-colors">
                   <td className="p-4 font-medium">
                     <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 inline-flex items-center border border-slate-200/40 dark:border-slate-700/40">
-                      {plan.name}
+                      {
+plan.name === "Starter"
+  ? t.salesAnalyticsPage.starter
+  : plan.name === "Pro"
+  ? t.salesAnalyticsPage.pro
+  : t.salesAnalyticsPage.enterprise
+}
                       {index === 0 && (
                         <span className={`${lang === "ar" ? "mr-2" : "ml-2"} px-1.5 py-0.5 text-[9px] font-black rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20`}>
-                          LEADER
+                          {t.salesAnalyticsPage.leader}
                         </span>
                       )}
                     </span>
@@ -446,21 +456,27 @@ function SalesAnalytics() {
           {topPlans.map((plan, index) => (
             <div key={index} className="p-5 space-y-3 text-sm bg-white/20 dark:bg-transparent">
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-400 font-medium">{lang === "ar" ? "الخطة" : "Plan"}</span>
+                <span className="text-xs text-slate-400 font-medium">{t.salesAnalyticsPage.plan}</span>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50">
-                  {plan.name}
+                  {
+plan.name === "Starter"
+  ? t.salesAnalyticsPage.starter
+  : plan.name === "Pro"
+  ? t.salesAnalyticsPage.pro
+  : t.salesAnalyticsPage.enterprise
+}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-400 font-medium">{lang === "ar" ? "العملاء" : "Customers"}</span>
+                <span className="text-xs text-slate-400 font-medium">{t.salesAnalyticsPage.customers}</span>
                 <span className="font-semibold text-slate-700 dark:text-slate-300">{plan.sales}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-400 font-medium">{lang === "ar" ? "الإيراد" : "Revenue"}</span>
+                <span className="text-xs text-slate-400 font-medium">{t.salesAnalyticsPage.revenue}</span>
                 <span className="font-bold text-indigo-500">{plan.revenue}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-400 font-medium">{lang === "ar" ? "الحصة" : "Share"}</span>
+                <span className="text-xs text-slate-400 font-medium">{t.salesAnalyticsPage.share}</span>
                 <div className="flex items-center gap-2">
                   <div className="w-20 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                     <div className="h-full bg-indigo-500" style={{ width: plan.share }} />

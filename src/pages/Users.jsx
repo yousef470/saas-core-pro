@@ -293,8 +293,8 @@ function Users() {
         {/* ========================================= HEADER ========================================= */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-semibold">{t.usersPage?.title || "Users & Payroll Management"}</h1>
-            <p className="text-slate-500 text-sm">Manage team members, access roles, and financial payrolls.</p>
+            <h1 className="text-2xl font-semibold"> {t.usersPage.title}</h1>
+            <p className="text-slate-500 text-sm">{t.usersPage.subtitle}</p>
           </div>
         </div>
 
@@ -304,7 +304,7 @@ function Users() {
           <div className="p-6 rounded-3xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-slate-500">Total Users</p>
+                <p className="text-sm text-slate-500">{t.usersPage.totalUsers}</p>
                 <h3 className="text-3xl font-semibold mt-2">{users?.length || 0}</h3>
               </div>
               <div className="w-12 h-12 rounded-2xl bg-slate-200/40 dark:bg-slate-700/30 text-indigo-600 flex items-center justify-center">
@@ -321,7 +321,7 @@ function Users() {
           <div className="p-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-slate-500">Active Users</p>
+                <p className="text-sm text-slate-500">{t.usersPage.activeUsers}</p>
                 <h3 className="text-3xl font-semibold mt-2">{users?.filter((u) => u.status === "Active").length || 0}</h3>
               </div>
               <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
@@ -338,7 +338,7 @@ function Users() {
           <div className="p-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-slate-500">Total Monthly Payroll</p>
+                <p className="text-sm text-slate-500">{t.usersPage.totalPayroll}</p>
                 <h3 className="text-3xl font-semibold mt-2 text-indigo-600 dark:text-indigo-400">${totalPayroll.toLocaleString()}</h3>
               </div>
               <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
@@ -347,7 +347,7 @@ function Users() {
             </div>
             <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
             <div className="mt-5">
-              <span className="px-2 py-1 rounded-full text-xs bg-indigo-500/10 text-indigo-600">Active payroll costs</span>
+              <span className="px-2 py-1 rounded-full text-xs bg-indigo-500/10 text-indigo-600">{t.usersPage.activePayroll}</span>
             </div>
           </div>
 
@@ -355,7 +355,7 @@ function Users() {
           <div className="p-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-slate-500">Suspended Users</p>
+                <p className="text-sm text-slate-500">{t.usersPage.suspendedUsers}</p>
                 <h3 className="text-3xl font-semibold mt-2">{users?.filter((u) => u.status === "Suspended").length || 0}</h3>
               </div>
               <div className="w-12 h-12 rounded-2xl bg-red-500/10 text-red-600 flex items-center justify-center">
@@ -364,7 +364,7 @@ function Users() {
             </div>
             <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
             <div className="mt-5">
-              <span className="px-2 py-1 rounded-full text-xs bg-red-500/10 text-red-600">No payroll active</span>
+              <span className="px-2 py-1 rounded-full text-xs bg-red-500/10 text-red-600">{t.usersPage.noPayrollActive}</span>
             </div>
           </div>
         </div>
@@ -374,7 +374,7 @@ function Users() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3.5 text-slate-400" size={18} />
             <input
-              placeholder={t.usersPage?.search || "Search users..."}
+              placeholder={t.usersPage.search}
               className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 outline-none"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -386,10 +386,10 @@ function Users() {
               onChange={(e) => setRoleFilter(e.target.value)}
               className="px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
             >
-              <option value="All">{t.usersPage?.filterRole || "All Roles"}</option>
-              <option value="Admin">Admin</option>
-              <option value="Editor">Editor</option>
-              <option value="User">User</option>
+             <option value="All">{t.usersPage.allRoles}</option>
+              <option value="Admin">{t.usersPage.admin}</option>
+              <option value="Editor">{t.usersPage.editor}</option>
+              <option value="User">{t.usersPage.user}</option>
             </select>
 
             <select
@@ -397,30 +397,30 @@ function Users() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
             >
-              <option value="All">{t.usersPage?.filterStatus || "All Status"}</option>
-              <option value="Active">Active</option>
-              <option value="Suspended">Suspended</option>
+            <option value="All">{t.usersPage.allStatus}</option>
+              <option value="Active">{t.usersPage.active}</option>
+              <option value="Suspended">{t.usersPage.suspended}</option>
             </select>
           </div>
         </div>
 
         {/* ========================================= USERS GRID ========================================= */}
         <div className="flex items-center justify-between mt-8">
-          <h1 className="text-3xl font-semibold tracking-normal">Users Directory</h1>
+          <h1 className="text-3xl font-semibold tracking-normal">{t.usersPage.usersDirectory}</h1>
           <button
             onClick={() => setShowAddModal(true)}
             className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition-all"
           >
             <Plus size={18} />
-            Add User
+             {t.usersPage.addUser}
           </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {currentUsers.length === 0 ? (
             <div className="col-span-full p-10 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 text-center">
-              <h3 className="text-lg font-semibold">No users found</h3>
-              <p className="text-slate-500 mt-2">Try changing search or filters</p>
+              <h3 className="text-lg font-semibold">{t.usersPage.noUsers}</h3>
+              <p className="text-slate-500 mt-2">{t.usersPage.noUsersSubtitle}</p>
             </div>
           ) : (
             currentUsers.map((u) => {
@@ -485,7 +485,7 @@ function Users() {
                           }}
                           className="w-full text-left px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-sm"
                         >
-                          Details
+                          {t.usersPage.details}
                         </button>
                         <button
                           onClick={() => {
@@ -494,7 +494,7 @@ function Users() {
                           }}
                           className="w-full text-left px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-sm"
                         >
-                          Edit Info
+                          {t.usersPage.editInfo}
                         </button>
                         {/* الخيار المالي الجديد لإدارة تفاصيل الراتب */}
                         <button
@@ -509,7 +509,7 @@ function Users() {
                           }}
                           className="w-full text-left px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-indigo-600 dark:text-indigo-400 transition font-medium text-sm"
                         >
-                          Manage Salary
+                          {t.usersPage.manageSalary}
                         </button>
                         <button
                           onClick={() => {
@@ -518,7 +518,7 @@ function Users() {
                           }}
                           className="w-full text-left px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-sm"
                         >
-                          Reset Password
+                          {t.usersPage.resetPassword}
                         </button>
                         <button
                           onClick={() => {
@@ -527,7 +527,7 @@ function Users() {
                           }}
                           className="w-full text-left px-4 py-2.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition text-sm"
                         >
-                          Delete
+                          {t.usersPage.delete}
                         </button>
                       </div>
                     )}
@@ -546,7 +546,7 @@ function Users() {
               onClick={() => setCurrentPage((p) => p - 1)}
               className="px-4 py-2 border rounded-xl disabled:opacity-30 dark:border-slate-800"
             >
-              Prev
+              {t.usersPage.previous}
             </button>
             <span className="text-sm font-bold">
               {currentPage} / {totalPages}
@@ -556,7 +556,7 @@ function Users() {
               onClick={() => setCurrentPage((p) => p + 1)}
               className="px-4 py-2 border rounded-xl disabled:opacity-30 dark:border-slate-800"
             >
-              Next
+              {t.usersPage.next}
             </button>
           </div>
         )}
@@ -572,22 +572,22 @@ function Users() {
             {/* ADD USER MODAL */}
             {showAddModal && (
               <>
-                <h2 className="text-lg font-bold mb-4">Add New User</h2>
+                <h2 className="text-lg font-bold mb-4">{t.usersPage.addUserTitle}</h2>
                 <input
-                  placeholder="Name"
+                 placeholder={t.usersPage.name}
                   value={newUser.name}
                   className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all"
                   onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
                 />
                 <input
-                  placeholder="Email"
+                  placeholder={t.usersPage.email}
                   value={newUser.email}
                   className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all"
                   onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                 />
                 <input
                   type="password"
-                  placeholder="Password"
+                  placeholder={t.usersPage.password}
                   value={newUser.password}
                   className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all"
                   onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
@@ -597,17 +597,18 @@ function Users() {
                   onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
                   className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none transition-all"
                 >
-                  <option value="Admin">Admin</option>
-                  <option value="Editor">Editor</option>
-                  <option value="User">User</option>
+              <option value="Admin">{t.usersPage.admin}</option>
+              <option value="Editor">{t.usersPage.editor}</option>
+              <option value="User">{t.usersPage.user}</option>
+                               
                 </select>
                 <select
                   value={newUser.status}
                   onChange={(e) => setNewUser({ ...newUser, status: e.target.value })}
                   className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none transition-all"
                 >
-                  <option value="Active">Active</option>
-                  <option value="Suspended">Suspended</option>
+              <option value="Active">{t.usersPage.active}</option>
+              <option value="Suspended">{t.usersPage.suspended}</option>
                 </select>
                 <div className="flex gap-3 mt-5">
                   <button
@@ -617,13 +618,13 @@ function Users() {
                     }}
                     className="flex-1 h-12 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                   >
-                    Cancel
+                   {t.usersPage.cancel}
                   </button>
                   <button
                     onClick={handleAddUser}
                     className="flex-1 h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition"
                   >
-                    Save User
+                    {t.usersPage.saveUser}
                   </button>
                 </div>
               </>
@@ -632,15 +633,15 @@ function Users() {
             {/* EDIT USER MODAL */}
             {editingUser && (
               <>
-                <h2 className="text-lg font-bold mb-4">Edit User</h2>
+                <h2 className="text-lg font-bold mb-4">{t.usersPage.editUser}</h2>
                 <input
-                  placeholder="Name"
+                  placeholder={t.usersPage.name}
                   className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all"
                   value={editingUser.name}
                   onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
                 />
                 <input
-                  placeholder="Email"
+                 placeholder={t.usersPage.email}
                   className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all"
                   value={editingUser.email}
                   onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
@@ -650,24 +651,24 @@ function Users() {
                   onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
                   className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none transition-all"
                 >
-                  <option value="Admin">Admin</option>
-                  <option value="Editor">Editor</option>
-                  <option value="User">User</option>
+              <option value="Admin">{t.usersPage.admin}</option>
+              <option value="Editor">{t.usersPage.editor}</option>
+              <option value="User">{t.usersPage.user}</option>
                 </select>
                 <select
                   value={editingUser.status}
                   onChange={(e) => setEditingUser({ ...editingUser, status: e.target.value })}
                   className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none transition-all"
                 >
-                  <option value="Active">Active</option>
-                  <option value="Suspended">Suspended</option>
+              <option value="Active">{t.usersPage.active}</option>
+              <option value="Suspended">{t.usersPage.suspended}</option>
                 </select>
                 <div className="flex gap-3 mt-5">
                   <button onClick={() => setEditingUser(null)} className="flex-1 h-12 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
-                    Cancel
+                   {t.usersPage.cancel}
                   </button>
                   <button onClick={handleEditUser} className="flex-1 h-12 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition">
-                    Save Changes
+                     {t.usersPage.saveChanges}
                   </button>
                 </div>
               </>
@@ -678,13 +679,13 @@ function Users() {
               <>
                 <div className="flex items-center gap-2 mb-2">
                   <DollarSign className="text-indigo-600 dark:text-indigo-400" size={22} />
-                  <h2 className="text-xl font-bold">Payroll Configuration</h2>
+                  <h2 className="text-xl font-bold">{t.usersPage.payrollConfiguration}</h2>
                 </div>
-                <p className="text-sm text-slate-500 mb-4">Set salary parameters for <span className="font-semibold text-slate-700 dark:text-slate-200">{salaryUser.name}</span></p>
+                <p className="text-sm text-slate-500 mb-4"> {t.usersPage.payrollFor} <span className="font-semibold text-slate-700 dark:text-slate-200">{salaryUser.name}</span></p>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs font-medium text-slate-400 block mb-1">Base Salary ($)</label>
+                    <label className="text-xs font-medium text-slate-400 block mb-1"> {t.usersPage.baseSalary} ($)</label>
                     <input
                       type="number"
                       value={salaryData.baseSalary}
@@ -693,7 +694,7 @@ function Users() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-slate-400 block mb-1">Allowances / Bonuses ($)</label>
+                    <label className="text-xs font-medium text-slate-400 block mb-1"> {t.usersPage.allowances}($)</label>
                     <input
                       type="number"
                       value={salaryData.allowances}
@@ -702,7 +703,7 @@ function Users() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-slate-400 block mb-1">Deductions / Taxes ($)</label>
+                    <label className="text-xs font-medium text-slate-400 block mb-1">{t.usersPage.deductions}($)</label>
                     <input
                       type="number"
                       value={salaryData.deductions}
@@ -713,7 +714,7 @@ function Users() {
                 </div>
 
                 <div className="mt-4 p-4 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 flex justify-between items-center">
-                  <span className="text-sm font-medium text-indigo-900 dark:text-indigo-300">Estimated Net Salary:</span>
+                  <span className="text-sm font-medium text-indigo-900 dark:text-indigo-300"> {t.usersPage.estimatedNetSalary}</span>
                   <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
                     ${(Number(salaryData.baseSalary) + Number(salaryData.allowances) - Number(salaryData.deductions))}
                   </span>
@@ -721,10 +722,10 @@ function Users() {
 
                 <div className="flex gap-3 mt-6">
                   <button onClick={() => setSalaryUser(null)} className="flex-1 h-12 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
-                    Cancel
+                    {t.usersPage.cancel}
                   </button>
                   <button onClick={handleUpdateSalary} className="flex-1 h-12 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition">
-                    Save Payroll
+                     {t.usersPage.savePayroll}
                   </button>
                 </div>
               </>
@@ -733,17 +734,17 @@ function Users() {
             {/* DELETE USER MODAL */}
             {userToDelete && (
               <>
-                <h2 className="text-lg font-bold text-red-600">Delete User</h2>
+                <h2 className="text-lg font-bold text-red-600">{t.usersPage.deleteUser} </h2>
                 <p className="my-4 text-slate-600 dark:text-slate-400">
-                  Are you sure you want to delete
+                  {t.usersPage.deleteQuestion}
                   <span className="font-bold text-red-500 mx-1">{userToDelete.name}</span>?
                 </p>
                 <div className="flex gap-2">
                   <button onClick={() => setUserToDelete(null)} className="flex-1 py-2 border rounded-xl dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
-                    Cancel
+                    {t.usersPage.cancel}
                   </button>
                   <button onClick={handleDeleteUser} className="flex-1 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition">
-                    Confirm
+                    {t.usersPage.confirmDelete}
                   </button>
                 </div>
               </>
@@ -752,18 +753,20 @@ function Users() {
             {/* RESET PASSWORD */}
             {resetPasswordUser && (
               <>
-                <h2 className="text-xl font-bold mb-4">Reset Password</h2>
-                <p className="text-sm text-slate-500 mb-4">Change password for <span className="font-bold">{resetPasswordUser.name}</span></p>
+                <h2 className="text-xl font-bold mb-4">{t.usersPage.resetPassword}</h2>
+
+                <p className="text-sm text-slate-500 mb-4"> {t.usersPage.resetPasswordFor} <span className="font-bold">{resetPasswordUser.name}</span></p>
+
                 <input
                   type="password"
-                  placeholder="New Password"
+                  placeholder={t.usersPage.newPassword}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="w-full h-12 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80"
                 />
                 <div className="flex gap-3 mt-5">
-                  <button onClick={() => { setResetPasswordUser(null); setNewPassword(""); }} className="flex-1 h-12 rounded-xl border border-slate-200 dark:border-slate-700">Cancel</button>
-                  <button onClick={handleResetPassword} className="flex-1 h-12 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">Save</button>
+                  <button onClick={() => { setResetPasswordUser(null); setNewPassword(""); }} className="flex-1 h-12 rounded-xl border border-slate-200 dark:border-slate-700"> {t.usersPage.cancel}</button>
+                  <button onClick={handleResetPassword} className="flex-1 h-12 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"> {t.usersPage.save}</button>
                 </div>
               </>
             )}
@@ -771,7 +774,7 @@ function Users() {
             {/* USER DETAILS MODAL (Glassmorphic) */}
             {selectedUser && (
               <>
-                <h2 className="text-xl font-bold mb-4">User Details</h2>
+                <h2 className="text-xl font-bold mb-4">{t.usersPage.userDetails}</h2>
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl">
                     <Avatar src={selectedUser.avatar} name={selectedUser.name} size={44} />
@@ -782,39 +785,39 @@ function Users() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 border border-slate-100 dark:border-slate-800 rounded-2xl">
-                      <p className="text-xs text-slate-400">Role</p>
+                      <p className="text-xs text-slate-400"> {t.usersPage.role}</p>
                       <p className="font-medium text-sm mt-0.5">{roleLabel[selectedUser.role] || selectedUser.role}</p>
                     </div>
                     <div className="p-3 border border-slate-100 dark:border-slate-800 rounded-2xl">
-                      <p className="text-xs text-slate-400">Status</p>
+                      <p className="text-xs text-slate-400"> {t.usersPage.status}</p>
                       <p className="font-medium text-sm mt-0.5">{statusLabel[selectedUser.status] || selectedUser.status}</p>
                     </div>
                   </div>
 
                   {/* الجزء المالي المطور داخل تفاصيل الموظف */}
                   <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 space-y-2">
-                    <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-2">Financial Statement</p>
+                    <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-2"> {t.usersPage.financialStatement}</p>
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-500">Base Salary:</span>
+                      <span className="text-slate-500"> {t.usersPage.baseSalary}</span>
                       <span className="font-medium">${selectedUser.baseSalary || 0}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-500 flex items-center gap-1"><TrendingUp size={14} className="text-emerald-500" /> Allowances:</span>
+                      <span className="text-slate-500 flex items-center gap-1"><TrendingUp size={14} className="text-emerald-500" />  {t.usersPage.allowances}</span>
                       <span className="font-medium text-emerald-600">+${selectedUser.allowances || 0}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-500 flex items-center gap-1"><TrendingDown size={14} className="text-red-500" /> Deductions:</span>
+                      <span className="text-slate-500 flex items-center gap-1"><TrendingDown size={14} className="text-red-500" />  {t.usersPage.deductions}</span>
                       <span className="font-medium text-red-500">-${selectedUser.deductions || 0}</span>
                     </div>
                     <div className="h-px bg-slate-200 dark:bg-slate-800 my-2" />
                     <div className="flex justify-between text-sm font-bold">
-                      <span className="text-slate-700 dark:text-slate-300">Net Take-Home:</span>
+                      <span className="text-slate-700 dark:text-slate-300"> {t.usersPage.netTakeHome}</span>
                       <span className="text-indigo-600 dark:text-indigo-400">${(selectedUser.baseSalary || 0) + (selectedUser.allowances || 0) - (selectedUser.deductions || 0)}</span>
                     </div>
                   </div>
                 </div>
                 <button onClick={() => setSelectedUser(null)} className="w-full mt-5 h-11 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition">
-                  Close
+                  {t.usersPage.close}
                 </button>
               </>
             )}
