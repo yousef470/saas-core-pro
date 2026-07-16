@@ -136,7 +136,11 @@ function SalesAnalytics() {
 
   const totalPlans = pieData.reduce((sum, item) => sum + item.value, 0);
   const activeRate = totalCustomers > 0 ? Math.round((activeCustomers / totalCustomers) * 100) : 0;
-  const bestPlan = [...topPlans].sort((a, b) => Number(b.revenue.replace("$", "")) - Number(a.revenue.replace("$", "")))[0];
+const bestPlan = [...topPlans].sort((a, b) => {
+  const revB = b.revenue !== undefined && b.revenue !== null ? String(b.revenue) : "0";
+  const revA = a.revenue !== undefined && a.revenue !== null ? String(a.revenue) : "0";
+  return (Number(revB.replace("$", "")) || 0) - (Number(revA.replace("$", "")) || 0);
+})[0];
   const totalPending = filteredCustomers.filter((c) => c.status === "pending").length;
   const totalCanceled = filteredCustomers.filter((c) => c.status === "canceled").length;
 

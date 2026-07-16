@@ -366,7 +366,7 @@ function Orders() {
                 className="px-4 h-10 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-xs font-bold hover:border-indigo-500 transition-all"
               >
                 {selectedOrders.length === currentOrders.length
-                  ? t.ordersPage.bulk.unselectPage
+                  ? t.ordersPage.empty.title
                   : t.ordersPage.actions.selectCurrentPage}
               </button>
 

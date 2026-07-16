@@ -55,20 +55,20 @@ function Products() {
   });
 
   // الترتيب
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sortBy === "price") {
-      return (
-        Number(b.price.replace("$", "")) - Number(a.price.replace("$", ""))
-      );
-    }
-    if (sortBy === "status") {
-      return a.status.localeCompare(b.status);
-    }
-    if (sortBy === "stock") {
-      return b.stock - a.stock;
-    }
-    return a.name.localeCompare(b.name);
-  });
+const sortedProducts = [...filteredProducts].sort((a, b) => {
+  if (sortBy === "price") {
+    const priceB = b.price !== undefined && b.price !== null ? String(b.price) : "0";
+    const priceA = a.price !== undefined && a.price !== null ? String(a.price) : "0";
+    return (Number(priceB.replace("$", "")) || 0) - (Number(priceA.replace("$", "")) || 0);
+  }
+  if (sortBy === "status") {
+    return (a.status || "").localeCompare(b.status || "");
+  }
+  if (sortBy === "stock") {
+    return (b.stock || 0) - (a.stock || 0);
+  }
+  return (a.name || "").localeCompare(b.name || "");
+});
 
   // التقسيم لصفحات
   const indexOfLast = currentPage * itemsPerPage;
@@ -136,11 +136,13 @@ function Products() {
     showToastMessage("Product Updated Successfully");
   };
 
-  const revenue = products.reduce(
-    (total, product) =>
-      total + Number(product.price.replace("$", "")) * product.stock,
-    0
-  );
+const revenue = products.reduce(
+  (total, product) => {
+    const priceStr = product.price !== undefined && product.price !== null ? String(product.price) : "0";
+    return total + (Number(priceStr.replace("$", "")) || 0) * (product.stock || 0);
+  },
+  0
+);
 
   const handleExport = () => {
     const headers = "ID,Name,Category,Price,Stock,Status,Updated\n";

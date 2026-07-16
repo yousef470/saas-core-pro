@@ -89,7 +89,9 @@ function Dashboard() {
 const totalSales = getOrders()
   .filter((o) => o.status === "Completed")
   .reduce((sum, order) => {
-    return sum + Number(order.total.replace("$", ""));
+  
+    const totalStr = order.total !== undefined && order.total !== null ? String(order.total) : "0";
+    return sum + (Number(totalStr.replace("$", "")) || 0);
   }, 0);
 
 const salesGoal = Math.min(
