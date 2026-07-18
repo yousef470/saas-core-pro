@@ -57,6 +57,32 @@ common: {
    create: "Create",
 },
 
+navbar: {
+    notifications: {
+      title: "Notifications",
+      allCaughtUp: "You're all caught up",
+      unreadCountLabel: "unread notifications",
+      markAllRead: "Mark all read",
+      noNotifications: "No notifications",
+      allCaughtUpDescription: "You're all caught up.",
+      clearAll: "Clear All Notifications"
+    },
+    userMenu: {
+      guest: "Guest",
+      proPlan: "Pro Plan",
+      guestUser: "Guest User",
+      profile: "Profile",
+      settings: "Settings",
+      logout: "Logout"
+    },
+    time: {
+      justNow: "Just now",
+      minAgo: "min ago",
+      hoursAgo: "h ago",
+      daysAgo: "d ago"
+    }
+  },
+
 dashboardPage: {
   heroTitle: "Welcome back",
   heroSubtitle: "Track your revenue, analytics, and customer growth in real-time.",
@@ -393,6 +419,12 @@ billingPage: {
   saveCard: "Save Card",
   saveChanges: "Save Changes",
   cancel: "Cancel",
+
+  unifiedAuditLog: "Unified Financial Audit Log",
+  crmSubscription: "CRM Subscription",
+  productSale: "Product Sale",
+  staffPayroll: "Staff Payroll",
+
 },
 
 

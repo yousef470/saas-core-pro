@@ -115,6 +115,7 @@ const sortedProducts = [...filteredProducts].sort((a, b) => {
   const handleDeleteProduct = (id) => {
     setProducts(deleteProduct(id));
     showToastMessage("Product Deleted Successfully");
+     setProductToDelete(null);
   };
 
   // حل مشكلة الدالة غير المعرفة بنجاح وإضافة const

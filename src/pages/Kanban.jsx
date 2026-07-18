@@ -859,9 +859,9 @@ text-slate-900
 dark:text-white
 "
               >
-                <option value="Low">{t.kanbanPage.priorityLow}</option>
-                <option value="Medium">{t.kanbanPage.priorityMedium}</option>
-                <option value="High">{t.kanbanPage.priorityHigh}</option>
+                <option value="Low">{t.kanbanPage.low}</option>
+                <option value="Medium">{t.kanbanPage.medium}</option>
+                <option value="High">{t.kanbanPage.high}</option>
               </select>
 
               <select
@@ -886,10 +886,10 @@ text-slate-900
 dark:text-white
 "
               >
-                <option value="Dev">{t.kanbanPage.categoryDev}</option>
-                <option value="Design">{t.kanbanPage.categoryDesign}</option>
+                <option value="Dev">{t.kanbanPage.dev}</option>
+                <option value="Design">{t.kanbanPage.design}</option>
                 <option value="Analytics">
-                  {t.kanbanPage.categoryAnalytics}
+                  {t.kanbanPage.analytics}
                 </option>
               </select>
 
@@ -1069,9 +1069,9 @@ text-slate-900
 dark:text-white
 "
               >
-                <option value="Low">{t.kanbanPage.priorityLow}</option>
-                <option value="Medium">{t.kanbanPage.priorityMedium}</option>
-                <option value="High">{t.kanbanPage.priorityHigh}</option>
+                <option value="Low">{t.kanbanPage.low}</option>
+                <option value="Medium">{t.kanbanPage.medium}</option>
+                <option value="High">{t.kanbanPage.high}</option>
               </select>
 
               <select
@@ -1125,10 +1125,10 @@ text-slate-900
 dark:text-white
 "
               >
-                <option value="Dev">{t.kanbanPage.categoryDev}</option>
-                <option value="Design">{t.kanbanPage.categoryDesign}</option>
+                <option value="Dev">{t.kanbanPage.dev}</option>
+                <option value="Design">{t.kanbanPage.design}</option>
                 <option value="Analytics">
-                  {t.kanbanPage.categoryAnalytics}
+                  {t.kanbanPage.analytics}
                 </option>
               </select>
 

@@ -1,0 +1,1 @@
+Modern React Admin Dashboard Template built with React, Vite, Tailwind CSS and Framer Motion. Includes authentication pages, CRM, analytics, products, orders, users, billing, chat, responsive layouts, dark mode, RTL support, reusable components, and clean architecture for startups, agencies, freelancers and SaaS projects.

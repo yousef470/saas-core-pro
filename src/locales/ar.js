@@ -57,6 +57,32 @@ common: {
   delete: "حذف",
 },
 
+navbar: {
+    notifications: {
+      title: "الإشعارات",
+      allCaughtUp: "أنت مطلع على كل شيء",
+      unreadCountLabel: "إشعارات غير مقروءة",
+      markAllRead: "تحديد الكل كمقروء",
+      noNotifications: "لا توجد إشعارات",
+      allCaughtUpDescription: "أنت مطلع على كل شيء تماماً.",
+      clearAll: "مسح جميع الإشعارات"
+    },
+    userMenu: {
+      guest: "زائر",
+      proPlan: "الباقة الاحترافية",
+      guestUser: "مستخدم زائر",
+      profile: "الملف الشخصي",
+      settings: "الإعدادات",
+      logout: "تسجيل الخروج"
+    },
+    time: {
+      justNow: "الآن",
+      minAgo: "دقائق مضت",
+      hoursAgo: "ساعة مضت",
+      daysAgo: "أيام مضت"
+    }
+  },
+
 dashboardPage: {
   heroTitle: "مرحباً بعودتك",
   heroSubtitle: "تابع أداء مشروعك وتحليلات المستخدمين والإيرادات لحظة بلحظة.",
@@ -428,6 +454,10 @@ billingPage: {
   saveCard: "حفظ الكارت",
   saveChanges: "حفظ التغييرات",
   cancel: "إلغاء",
+  unifiedAuditLog: "سجل المعاملات والتدفقات المالية الموحد",
+  crmSubscription: "اشتراك CRM",
+  productSale: "بيع منتج",
+  staffPayroll: "راتب موظف",
 },
 
 

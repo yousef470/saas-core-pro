@@ -41,11 +41,18 @@ function Billing() {
     const savedCard = localStorage.getItem("saas_merchant_card");
     return savedCard
       ? JSON.parse(savedCard)
-      : { number: "4242", expiry: "12/28" };
+      : { number: "4242 4242 4242 4242", expiry: "12/28" };
   });
 
   const [inputNumber, setInputNumber] = useState("");
   const [inputExpiry, setInputExpiry] = useState("");
+
+  // فتح المودال مع تحميل البيانات الحالية للكارت لتعديلها
+  const handleOpenModal = () => {
+    setInputNumber(cardInfo.number);
+    setInputExpiry(cardInfo.expiry);
+    setIsModalOpen(true);
+  };
 
   const handleCardNumberChange = (e) => {
     let value = e.target.value.replace(/\D/g, "");
@@ -65,8 +72,7 @@ function Billing() {
     e.preventDefault();
     if (!inputNumber || !inputExpiry) return;
 
-    const lastFour = inputNumber.replace(/\s+/g, "").slice(-4) || "4242";
-    const newCard = { number: lastFour, expiry: inputExpiry };
+    const newCard = { number: inputNumber, expiry: inputExpiry };
 
     setCardInfo(newCard);
     localStorage.setItem("saas_merchant_card", JSON.stringify(newCard));
@@ -127,7 +133,7 @@ function Billing() {
   const subscriptionInvoices = (crmStats.customers || []).map((c) => ({
     id: c.invoiceId || `INV-SUB-${c.id}`,
     customer: c.name,
-    type: lang === "ar" ? "اشتراك CRM" : "CRM Subscription",
+    type: t.billingPage.crmSubscription,
     date: c.date || "May 1, 2026",
     rawDate: c.createdAt ? new Date(c.createdAt) : new Date(),
     amount: c.revenue || 0,
@@ -143,7 +149,7 @@ function Billing() {
   const orderInvoices = allOrders.map((o) => ({
     id: o.id || `ORD-${o.orderNumber}`,
     customer: o.customer || "Walk-in Customer",
-    type: lang === "ar" ? "بيع منتج" : "Product Sale",
+    type: t.billingPage.productSale,
     date: o.date || "May 1, 2026",
     rawDate: new Date(o.date || new Date()),
     amount: cleanAmount(o.total),
@@ -166,7 +172,7 @@ function Billing() {
       return {
         id: `PAY-${u.id}-${new Date().getMonth() + 1}`,
         customer: u.name,
-        type: lang === "ar" ? "راتب موظف" : "Staff Payroll",
+        type: t.billingPage.staffPayroll,
         date: new Date().toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US", {
           month: "short",
           day: "numeric",
@@ -201,6 +207,14 @@ function Billing() {
     window.dispatchEvent(new Event("goalsUpdated"));
   };
 
+  // دالة صغيرة لإخفاء أرقام الكارت عدا آخر 4 أرقام بشكل جمالي
+  const formatCardDisplay = (num) => {
+    const clean = num.replace(/\s+/g, "");
+    if (clean.length <= 4) return clean;
+    const lastFour = clean.slice(-4);
+    return `•••• •••• •••• ${lastFour}`;
+  };
+
   return (
     <motion.div
       variants={containerVariants}
@@ -222,12 +236,12 @@ function Billing() {
             className="text-sm mt-1.5 font-medium"
             style={{ color: "var(--text-muted)" }}
           >
-            {t.billingPage.headerDescription}
+            {t.billingPage.subtitle}
           </p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-emerald-500 text-xs font-semibold backdrop-blur-md">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          {t.billingPage.liveSynced}
+          {t.billingPage.realtimeDynamic}
         </div>
       </motion.div>
 
@@ -240,7 +254,7 @@ function Billing() {
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl" />
           <h2 className="text-lg font-bold mb-6 tracking-wide text-slate-800 dark:text-slate-100">
-            {t.billingPage.summaryTitle}
+            {t.billingPage.ecosystemSummary}
           </h2>
 
           <div className="space-y-6">
@@ -264,7 +278,7 @@ function Billing() {
                   {activeStaffOnly.length}
                 </h3>
                 <span className="text-[11px] text-indigo-400/80 font-normal">
-                  {t.billingPage.staffExcludedOwner}
+                  {t.billingPage.staffExcludingOwner}
                 </span>
               </div>
             </div>
@@ -297,16 +311,14 @@ function Billing() {
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl" />
           <h2 className="text-lg font-bold mb-6 tracking-wide text-slate-800 dark:text-slate-100">
-            {t.billingPage.payoutTitle}
+            {t.billingPage.payoutSettlement}
           </h2>
-          {/* استبدال كارت الحساب القديم بهذا التصميم الفاخر */}
+          
           <div className="relative overflow-hidden w-full h-48 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 text-white border border-white/10 shadow-xl group">
-            {/* تأثير ضوئي عند الحركية */}
             <div className="absolute -right-10 -top-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-all duration-500" />
 
             <div className="flex justify-between items-start h-full flex-col">
               <div className="flex justify-between items-center w-full">
-                {/* محاكاة رقاقة الكارت الذكية */}
                 <div className="w-10 h-8 rounded-md bg-gradient-to-r from-amber-400/80 to-amber-200/60 opacity-80" />
                 <span className="text-[10px] uppercase font-bold tracking-widest bg-white/10 px-2 py-0.5 rounded backdrop-blur-sm">
                   {t.billingPage.merchantAccount}
@@ -318,7 +330,7 @@ function Billing() {
                   {t.billingPage.cardNumber}
                 </p>
                 <h3 className="text-2xl font-mono tracking-widest mt-1 font-bold">
-                  •••• •••• •••• {cardInfo.number}
+                  {formatCardDisplay(cardInfo.number)}
                 </h3>
               </div>
 
@@ -332,10 +344,10 @@ function Billing() {
                   </p>
                 </div>
                 <button
-                  onClick={() => setIsModalOpen(true)}
+                  onClick={handleOpenModal}
                   className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold underline underline-offset-4 cursor-pointer transition"
                 >
-                  {t.billingPage.manageCard}
+                  {t.billingPage.manage}
                 </button>
               </div>
             </div>
@@ -343,6 +355,7 @@ function Billing() {
         </div>
       </motion.div>
 
+      {/* Business Goals Section */}
       <div
         className="rounded-3xl border p-6 md:col-span-2 shadow-sm transition-all duration-300"
         style={{
@@ -360,7 +373,6 @@ function Billing() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-5">
-          {/* Customers Goal */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-slate-400 dark:text-slate-500 px-1">
               {t.billingPage.customersGoal}
@@ -379,7 +391,6 @@ function Billing() {
             />
           </div>
 
-          {/* Revenue Goal */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-slate-400 dark:text-slate-500 px-1">
               {t.billingPage.revenueGoal}
@@ -398,7 +409,6 @@ function Billing() {
             />
           </div>
 
-          {/* Orders Goal */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-slate-400 dark:text-slate-500 px-1">
               {t.billingPage.ordersGoal}
@@ -417,7 +427,6 @@ function Billing() {
             />
           </div>
 
-          {/* Product Sales Goal */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-slate-400 dark:text-slate-500 px-1">
               {t.billingPage.productSalesGoal}
@@ -446,6 +455,7 @@ function Billing() {
           </button>
         </div>
       </div>
+
       {/* Dynamic Metrics Financial Cards Grid */}
       <motion.div
         variants={itemVariants}
@@ -463,7 +473,7 @@ function Billing() {
           </h3>
           <div className="mt-3 flex items-center gap-1 text-[11px] font-medium text-emerald-500">
             <span>✔</span>
-            <span>{t.billingPage.liveSubscriptions}</span>
+            <span>{t.billingPage.liveSubs}</span>
           </div>
         </div>
 
@@ -479,7 +489,7 @@ function Billing() {
           </h3>
           <div className="mt-3 flex items-center gap-1 text-[11px] font-medium text-indigo-500">
             <span>✔</span>
-            <span>{t.billingPage.completedOrders}</span>
+            <span>{t.billingPage.ordersDone}</span>
           </div>
         </div>
 
@@ -536,7 +546,7 @@ function Billing() {
         </div>
       </motion.div>
 
-      {/* Dynamic Billing History Log Table */}
+      {/* Dynamic Billing History Log Table & Cards */}
       <motion.div
         variants={itemVariants}
         className="rounded-[24px] border backdrop-blur-xl overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.01)]"
@@ -544,13 +554,11 @@ function Billing() {
       >
         <div className="p-6 pb-2">
           <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">
-            {lang === "ar"
-              ? "سجل المعاملات والتدفقات المالية الموحد"
-              : "Unified Financial Audit Log"}
+            {t.billingPage.unifiedAuditLog}
           </h2>
         </div>
 
-        {/* Desktop View Table */}
+        {/* 1. Desktop View Table */}
         <div className="hidden md:block overflow-x-auto">
           <table
             className={`w-full text-sm ${lang === "ar" ? "text-right" : "text-left"}`}
@@ -559,7 +567,7 @@ function Billing() {
               <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs bg-slate-500/[0.02]">
                 <th className="py-4 px-6">{t.billingPage.date}</th>
                 <th className="py-4 px-4">{t.billingPage.referenceId}</th>
-                <th className="py-4 px-4">{t.billingPage.customer}</th>
+                <th className="py-4 px-4">{t.billingPage.entityCustomer}</th>
                 <th className="py-4 px-4">{t.billingPage.classification}</th>
                 <th className="py-4 px-4">{t.billingPage.amount}</th>
                 <th className="py-4 px-6 text-center">
@@ -613,6 +621,54 @@ function Billing() {
             </tbody>
           </table>
         </div>
+
+        {/* 2. Mobile View Cards */}
+        <div className="block md:hidden p-4 space-y-4">
+          {dynamicInvoices.slice(0, 12).map((invoice, index) => (
+            <div 
+              key={index}
+              className="p-4 rounded-2xl border flex flex-col gap-3 bg-slate-500/[0.01] hover:bg-slate-500/[0.02] transition-colors"
+              style={{ borderColor: "var(--border)" }}
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                    {invoice.customer}
+                  </h4>
+                  <span className="text-[10px] font-mono text-slate-400 block mt-0.5">
+                    {invoice.id}
+                  </span>
+                </div>
+                <span
+                  className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                    invoice.txType === "Expense"
+                      ? "bg-rose-500/10 text-rose-500"
+                      : "bg-indigo-500/10 text-indigo-500"
+                  }`}
+                >
+                  {invoice.txType === "Expense" ? t.billingPage.expense : t.billingPage.income}
+                </span>
+              </div>
+
+              <div className="h-[1px] w-full bg-slate-100 dark:bg-white/5" />
+
+              <div className="flex justify-between items-center">
+                <div className="flex flex-col">
+                  <span className="text-[11px] text-slate-400 font-normal">
+                    {invoice.date}
+                  </span>
+                  <span className={`text-lg font-black mt-0.5 ${invoice.txType === "Expense" ? "text-rose-500" : "text-slate-900 dark:text-white"}`}>
+                    {invoice.txType === "Expense" ? "-" : "+"}${invoice.amount.toLocaleString()}
+                  </span>
+                </div>
+                
+                <span className={`px-3 py-1 rounded-full text-xs font-bold min-w-[75px] text-center ${getStatusStyle(invoice.status)}`}>
+                  {invoice.status}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </motion.div>
 
       {/* Premium Glassmorphism Modal for Changing Bank Account Card */}
@@ -643,7 +699,7 @@ function Billing() {
                 {t.billingPage.updateCard}
               </h3>
               <p className="text-xs text-slate-400 mb-5">
-                {t.billingPage.cardDescription}
+                {t.billingPage.updateCardDesc}
               </p>
 
               <form onSubmit={handleSaveCard} className="space-y-4">
