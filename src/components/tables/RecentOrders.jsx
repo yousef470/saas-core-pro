@@ -40,7 +40,7 @@ function RecentOrders() {
           borderColor: "var(--border)",
         }}
       >
-        <h2 className="text-2xl font-bold">
+        <h2 className="text-2xl font-semibold">
           {rtl
             ? "أحدث الطلبات"
             : "Recent Orders"}

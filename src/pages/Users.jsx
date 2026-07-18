@@ -1,17 +1,10 @@
-import { useState, useEffect } from "react";
-import { useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { AuthContext } from "../context/auth-context";
-
-
 import { motion } from "framer-motion";
 import useTheme from "../hooks/useTheme";
-import { Plus, Search } from "lucide-react";
-import { Users as UsersIcon, UserCheck, Shield, UserX } from "lucide-react";
-
-
-import { MoreVertical } from "lucide-react";
-
+import { Plus, Search, MoreVertical, Users as UsersIcon, UserCheck,  UserX, DollarSign, TrendingUp, TrendingDown } from "lucide-react";
 import toast from "react-hot-toast";
+import Avatar from "../components/ui/Avatar";
 
 function Users() {
   const { t } = useTheme();
@@ -19,388 +12,370 @@ function Users() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
- const { users, setUsers } = useContext(AuthContext);
+
+  const [resetPasswordUser, setResetPasswordUser] = useState(null);
+  const [newPassword, setNewPassword] = useState("");
+  
+  // جلب البيانات من الـ Context
+  const { users, setUsers, user } = useContext(AuthContext);
+  
+  const menuRef = useRef(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [userToDelete, setUserToDelete] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [openMenu, setOpenMenu] = useState(null);
+  
+  // حالات جديدة خاصة بإدارة الرواتب
+  const [salaryUser, setSalaryUser] = useState(null);
+  const [salaryData, setSalaryData] = useState({ baseSalary: 0, allowances: 0, deductions: 0 });
+
+  // حالة جديدة لتحديد اتجاه فتح المنيو (أسفل أو أعلى) لكل كارت
+  const [menuDirection, setMenuDirection] = useState("down"); 
 
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
+    password: "",
     role: "User",
     status: "Active",
   });
+
   const roleLabel = {
-    Owner: t.usersPage.owner,
-    Admin: t.usersPage.admin,
-    Editor: t.usersPage.editor,
-    User: t.usersPage.user,
+    Owner: t.usersPage?.owner || "Owner",
+    Admin: t.usersPage?.admin || "Admin",
+    Editor: t.usersPage?.editor || "Editor",
+    User: t.usersPage?.user || "User",
   };
-  const [openMenu, setOpenMenu] = useState(null);
 
   const statusLabel = {
-    Active: t.usersPage.active,
-    Suspended: t.usersPage.suspended,
+    Active: t.usersPage?.active || "Active",
+    Suspended: t.usersPage?.suspended || "Suspended",
   };
 
   const isRTL = document.documentElement.dir === "rtl";
 
-useEffect(() => {
-  localStorage.setItem(
-    "saas_users",
-    JSON.stringify(users)
-  );
-}, [users]);
+  // حساب الإحصائيات المالية الكلية للـ Dashboard
+  const totalPayroll = (users || []).reduce((acc, curr) => {
+    if (curr.status === "Active") {
+      const base = Number(curr.baseSalary || 0);
+      const allow = Number(curr.allowances || 0);
+      const deduct = Number(curr.deductions || 0);
+      return acc + (base + allow - deduct);
+    }
+    return acc;
+  }, 0);
 
-  const filteredUsers = users.filter((user) => {
+  // إصلاح مشكلة الحفظ عند الـ Refresh
+  useEffect(() => {
+    if (users && users.length > 0) {
+      localStorage.setItem("saas_users", JSON.stringify(users));
+    }
+  }, [users]);
+
+  // إغلاق قائمة الأكشنز عند الضغط خارجها
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpenMenu(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // الفلترة
+  const filteredUsers = (users || []).filter((u) => {
     const searchMatch =
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const roleMatch = roleFilter === "All" || user.role === roleFilter;
-
-    const statusMatch = statusFilter === "All" || user.status === statusFilter;
-
+      u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const roleMatch = roleFilter === "All" || u.role === roleFilter;
+    const statusMatch = statusFilter === "All" || u.status === statusFilter;
     return searchMatch && roleMatch && statusMatch;
   });
+
+  // الـ Pagination
   const usersPerPage = 8;
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
   const currentUsers = filteredUsers.slice(
     (currentPage - 1) * usersPerPage,
-    currentPage * usersPerPage,
+    currentPage * usersPerPage
   );
 
   const isValidEmail = (email) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
+  // إضافة مستخدم جديد مع الحقول المالية الافتراضية
   const handleAddUser = () => {
     if (!newUser.name.trim()) {
       toast.error("Name is required");
       return;
     }
-
     if (!isValidEmail(newUser.email)) {
       toast.error("Please enter a valid email");
       return;
     }
-    const user = {
-      id: Date.now(),
-      ...newUser,
-      avatar: newUser.name.charAt(0).toUpperCase(),
+    if (!newUser.password || newUser.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    const createdUser = {
+      id: crypto.randomUUID(),
+      name: newUser.name,
+      email: newUser.email,
+      password: newUser.password,
+      role: newUser.role,
+      status: newUser.status,
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(newUser.name)}&background=6366f1&color=fff`,
+      
+      // الحقول المالية الجديدة المضافة افتراضياً
+      baseSalary: 0,
+      allowances: 0,
+      deductions: 0,
+
+      phone: "",
+      language: "en",
+      theme: "light",
+      twoFactor: false,
+      emailNotifications: true,
+      notifications: [],
+      activityLog: [
+        {
+          id: crypto.randomUUID(),
+          action: "Account Created",
+          description: "User account created by admin",
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      createdAt: new Date().toISOString(),
     };
-    const updatedUsers = [...users, user];
 
-setUsers(updatedUsers);
-
-localStorage.setItem(
-  "saas_users",
-  JSON.stringify(updatedUsers)
-);
+    const updatedUsers = [...users, createdUser];
+    setUsers(updatedUsers);
+    localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
+    
     toast.success("User added successfully");
     setShowAddModal(false);
-    setNewUser({ name: "", email: "", role: "User", status: "Active" });
+    setNewUser({ name: "", email: "", password: "", role: "User", status: "Active" });
   };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className=" p-4"
-    >
-      <div className="space-y-6">
-        {/* =========================================
-    HEADER
-========================================= */}
-        <div>
-          <h1 className="text-2xl font-bold">{t.usersPage.title}</h1>
+  // التعديل على مستخدم الحالي
+  const handleEditUser = () => {
+    if (editingUser.role === "Owner") {
+      toast.error("Owner account cannot be modified");
+      return;
+    }
+    if (!editingUser.name.trim()) {
+      toast.error("Name is required");
+      return;
+    }
+    if (!isValidEmail(editingUser.email)) {
+      toast.error("Please enter a valid email");
+      return;
+    }
 
-          <p className="text-slate-500 text-sm">
-            Manage team members and roles.
-          </p>
+    const updatedUsers = users.map((u) => (u.id === editingUser.id ? editingUser : u));
+    setUsers(updatedUsers);
+    localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
+    toast.success("User updated successfully");
+    setEditingUser(null);
+  };
+
+  // تحديث الرواتب والبيانات المالية للموظف
+  const handleUpdateSalary = () => {
+    const updatedUsers = users.map((u) => 
+      u.id === salaryUser.id 
+        ? { 
+            ...u, 
+            baseSalary: Number(salaryData.baseSalary), 
+            allowances: Number(salaryData.allowances), 
+            deductions: Number(salaryData.deductions),
+            activityLog: [
+              {
+                id: crypto.randomUUID(),
+                action: "Financials Updated",
+                description: `Salary updated: Base=${salaryData.baseSalary}, Allowances=${salaryData.allowances}, Deductions=${salaryData.deductions}`,
+                createdAt: new Date().toISOString(),
+              },
+              ...(u.activityLog || [])
+            ]
+          } 
+        : u
+    );
+    setUsers(updatedUsers);
+    localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
+    toast.success("Financial records updated successfully");
+    setSalaryUser(null);
+  };
+
+  // حذف مستخدم
+  const handleDeleteUser = () => {
+    if (userToDelete.role === "Owner" && user.role !== "Owner") {
+      toast.error("Only Owner can delete Owner");
+      return;
+    }
+    const updatedUsers = users.filter((u) => u.id !== userToDelete.id);
+    setUsers(updatedUsers);
+    localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
+    toast.success("User deleted successfully");
+    setUserToDelete(null);
+  };
+
+  const handleMenuToggle = (e, userId) => {
+    e.stopPropagation();
+    if (openMenu === userId) {
+      setOpenMenu(null);
+      return;
+    }
+    const buttonRect = e.currentTarget.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - buttonRect.bottom;
+    if (spaceBelow < 220) { // زيادة المسافة لأن المنيو أصبح أكبر بخيار إضافي
+      setMenuDirection("up");
+    } else {
+      setMenuDirection("down");
+    }
+    setOpenMenu(userId);
+  };
+
+  const handleResetPassword = () => {
+    if (!newPassword || newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    const updatedUsers = users.map((u) =>
+      u.id === resetPasswordUser.id
+        ? {
+            ...u,
+            password: newPassword,
+            activityLog: [
+              {
+                id: crypto.randomUUID(),
+                action: "Password Reset",
+                description: "Password reset by admin",
+                createdAt: new Date().toISOString(),
+              },
+              ...(u.activityLog || []),
+            ],
+          }
+        : u
+    );
+    setUsers(updatedUsers);
+    localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
+    toast.success("Password updated");
+    setResetPasswordUser(null);
+    setNewPassword("");
+  };
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-[50vh] text-slate-500 font-medium">
+        Loading user context...
+      </div>
+    );
+  }
+
+  if (user.role !== "Owner" && user.role !== "Admin") {
+    return (
+      <div className="flex items-center justify-center h-[70vh]">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold text-red-500">Access Denied</h2>
+          <p className="text-slate-500 mt-2">Only Owners and Admins can access this page.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4">
+      <div className="space-y-6">
+        {/* ========================================= HEADER ========================================= */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold"> {t.usersPage.title}</h1>
+            <p className="text-slate-500 text-sm">{t.usersPage.subtitle}</p>
+          </div>
         </div>
 
-        {/* =========================================
-    STATS CARDS
-========================================= */}
-
-
-
-         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <div
-            className="
-      h-full
-      p-6
-      rounded-3xl
-      border
-      bg-white
-      dark:bg-slate-900
-      border-slate-200
-      dark:border-slate-800
-      shadow-sm
-      hover:shadow-xl
-      hover:-translate-y-1
-      transition-all
-"
-          >
+        {/* ========================================= STATS CARDS ========================================= */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+          {/* Total Users */}
+          <div className="p-6 rounded-3xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-slate-500">Total Users</p>
-
-                <h3 className="text-3xl font-bold mt-2">{users.length}</h3>
+                <p className="text-sm text-slate-500">{t.usersPage.totalUsers}</p>
+                <h3 className="text-3xl font-semibold mt-2">{users?.length || 0}</h3>
               </div>
-
-              <div
-                className="
-      w-12
-      h-12
-      rounded-2xl
-      bg-indigo-500/10
-      text-indigo-600
-      flex
-      items-center
-      justify-center
-      "
-              >
+              <div className="w-12 h-12 rounded-2xl bg-slate-200/40 dark:bg-slate-700/30 text-indigo-600 flex items-center justify-center">
                 <UsersIcon size={22} />
               </div>
             </div>
-    <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
+            <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
             <div className="mt-5">
-              <span
-                className="
-      px-2
-      py-1
-      rounded-full
-      text-xs
-      bg-emerald-500/10
-      text-emerald-600
-      "
-              >
-                +12% this month
-              </span>
-
-             
+              <span className="px-2 py-1 rounded-full text-xs bg-emerald-500/10 text-emerald-600">+12% this month</span>
             </div>
           </div>
 
           {/* Active Users */}
-
-          <div
-            className="
-relative
-overflow-hidden
-rounded-3xl
-border
-border-slate-200
-dark:border-slate-800
-bg-white
-dark:bg-slate-900
-p-5
-shadow-sm
-hover:shadow-xl
-hover:-translate-y-1
-transition-all
-"
-          >
+          <div className="p-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-slate-500">Active Users</p>
-
-                <h3 className="text-3xl font-bold mt-2">
-                  {users.filter((u) => u.status === "Active").length}
-                </h3>
+                <p className="text-sm text-slate-500">{t.usersPage.activeUsers}</p>
+                <h3 className="text-3xl font-semibold mt-2">{users?.filter((u) => u.status === "Active").length || 0}</h3>
               </div>
-              <div
-                className="
-      w-12
-      h-12
-      rounded-2xl
-      bg-emerald-500/10
-      text-emerald-600
-      flex
-
-      items-center
-      justify-center
-      "
-              >
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
                 <UserCheck size={22} />
               </div>
             </div>
-    <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
+            <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
             <div className="mt-5">
-              <span
-                className="
-      px-2
-      py-1
-      rounded-full
-      text-xs
-      bg-emerald-500/10
-      text-emerald-600
-      "
-              >
-                +10% this month
-              </span>
-
-           
+              <span className="px-2 py-1 rounded-full text-xs bg-emerald-500/10 text-emerald-600">+10% this month</span>
             </div>
           </div>
 
-             
-
-          {/* Admins */}
-
-          <div
-            className="
-relative
-overflow-hidden
-rounded-3xl
-border
-border-slate-200
-dark:border-slate-800
-bg-white
-dark:bg-slate-900
-p-5
-shadow-sm
-hover:shadow-xl
-hover:-translate-y-1
-transition-all
-"
-          >
+          {/* الكارت الجديد: إجمالي الرواتب الكلية النشطة */}
+          <div className="p-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-slate-500">Admins</p>
-
-                <h3 className="text-3xl font-bold mt-2">
-                  {users.filter((u) => u.role === "Admin").length}
-                </h3>
+                <p className="text-sm text-slate-500">{t.usersPage.totalPayroll}</p>
+                <h3 className="text-3xl font-semibold mt-2 text-indigo-600 dark:text-indigo-400">${totalPayroll.toLocaleString()}</h3>
               </div>
-
-              <div
-                className="
-      w-12
-      h-12
-      rounded-2xl
-      bg-violet-500/10
-      text-violet-600
-      flex
-      items-center
-      justify-center
-      "
-              >
-                <Shield size={22} />
+              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
+                <DollarSign size={22} />
               </div>
             </div>
-                <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
-
+            <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
             <div className="mt-5">
-              <span
-                className="
-      px-2
-      py-1
-      rounded-full
-      text-xs
-      bg-violet-500/10
-      text-violet-600
-      "
-              >
-                +8% this month
-              </span>
-
+              <span className="px-2 py-1 rounded-full text-xs bg-indigo-500/10 text-indigo-600">{t.usersPage.activePayroll}</span>
             </div>
           </div>
 
           {/* Suspended Users */}
-
-          <div
-            className="
-relative
-overflow-hidden
-rounded-3xl
-border
-border-slate-200
-dark:border-slate-800
-bg-white
-dark:bg-slate-900
-p-5
-shadow-sm
-hover:shadow-xl
-hover:-translate-y-1
-transition-all
-"
-          >
+          <div className="p-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-slate-500">Suspended Users</p>
-
-                <h3 className="text-3xl font-bold mt-2">
-                  {users.filter((u) => u.status === "Suspended").length}
-                </h3>
+                <p className="text-sm text-slate-500">{t.usersPage.suspendedUsers}</p>
+                <h3 className="text-3xl font-semibold mt-2">{users?.filter((u) => u.status === "Suspended").length || 0}</h3>
               </div>
-
-              <div
-                className="
-      w-12
-      h-12
-      rounded-2xl
-      bg-red-500/10
-      text-red-600
-      flex
-      items-center
-      justify-center
-      "
-              >
+              <div className="w-12 h-12 rounded-2xl bg-red-500/10 text-red-600 flex items-center justify-center">
                 <UserX size={22} />
               </div>
             </div>
-
-                <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
-
+            <div className="mt-4 h-px bg-slate-200 dark:bg-slate-800" />
             <div className="mt-5">
-              <span
-                className="
-      px-2
-      py-1
-      rounded-full
-      text-xs
-      bg-red-500/10
-      text-red-600
-      "
-              >
-                +12% this month
-              </span>
-
-           
+              <span className="px-2 py-1 rounded-full text-xs bg-red-500/10 text-red-600">{t.usersPage.noPayrollActive}</span>
             </div>
           </div>
         </div>
 
-                {/* =========================================
-    SEARCH & FILTERS
-========================================= */}
-
+        {/* ========================================= SEARCH & FILTERS ========================================= */}
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="relative flex-1">
-            <Search
-              className="absolute left-3 top-3.5 text-slate-400"
-              size={18}
-            />
+            <Search className="absolute left-3 top-3.5 text-slate-400" size={18} />
             <input
               placeholder={t.usersPage.search}
-              className="
-  w-full
-  pl-10
-  pr-4
-  py-3
-  rounded-2xl
-  border
-  border-slate-200
-  dark:border-slate-800
-  bg-white
-  dark:bg-slate-900
-  outline-none
-  "
+              className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 outline-none"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -409,293 +384,169 @@ transition-all
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="
-    px-4
-    py-3
-    rounded-xl
-    border
-     border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900
-    "
+              className="px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
             >
-              <option value="All">{t.usersPage.filterRole}</option>
-
-              <option value="Owner">{t.usersPage.owner}</option>
+             <option value="All">{t.usersPage.allRoles}</option>
               <option value="Admin">{t.usersPage.admin}</option>
-
               <option value="Editor">{t.usersPage.editor}</option>
-
               <option value="User">{t.usersPage.user}</option>
             </select>
 
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="
-    px-4
-    py-3
-    rounded-xl
-    border
-     border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900
-    "
+              className="px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
             >
-              <option value="All">{t.usersPage.filterStatus}</option>
-
-              <option value="Active">{t.usersPage.Active}</option>
-
+            <option value="All">{t.usersPage.allStatus}</option>
+              <option value="Active">{t.usersPage.active}</option>
               <option value="Suspended">{t.usersPage.suspended}</option>
             </select>
           </div>
         </div>
 
-
-        {/* =========================================
-    USERS GRID
-========================================= */}
-
+        {/* ========================================= USERS GRID ========================================= */}
         <div className="flex items-center justify-between mt-8">
-          <h1 className="text-3xl font-bold tracking-tight">Users</h1>
-
+          <h1 className="text-3xl font-semibold tracking-normal">{t.usersPage.usersDirectory}</h1>
           <button
             onClick={() => setShowAddModal(true)}
-            className="
-    flex
-    items-center
-    gap-2
-    bg-indigo-600
-    text-white
-    px-5
-    py-2.5
-    rounded-xl
-    hover:bg-indigo-700
-    "
+            className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition-all"
           >
             <Plus size={18} />
-            Add User
+             {t.usersPage.addUser}
           </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {currentUsers.length === 0 ? (
-            <div
-              className="
-    col-span-full
-    p-10
-    rounded-3xl
-    border
-    border-dashed
-    border-slate-300
-    dark:border-slate-700
-    text-center
-    "
-            >
-              <h3 className="text-lg font-semibold">No users found</h3>
-
-              <p className="text-slate-500 mt-2">
-                Try changing search or filters
-              </p>
+            <div className="col-span-full p-10 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 text-center">
+              <h3 className="text-lg font-semibold">{t.usersPage.noUsers}</h3>
+              <p className="text-slate-500 mt-2">{t.usersPage.noUsersSubtitle}</p>
             </div>
           ) : (
-            currentUsers.map((user) => (
-              <div
-                key={user.id}
-                className="
-group
-relative
-overflow-visible
-p-6
-rounded-3xl
-border
-border-slate-200
-dark:border-slate-800
-bg-white
-dark:bg-slate-900
-shadow-sm
-hover:shadow-2xl
-hover:-translate-y-1
-transition-all
-duration-300
-"
-              >
+            currentUsers.map((u) => {
+              const netSalary = (u.baseSalary || 0) + (u.allowances || 0) - (u.deductions || 0);
+              return (
                 <div
-                  className="
-absolute
-top-0
-right-0
-w-24
-h-24
-bg-indigo-500/10
-rounded-full
-blur-2xl
-"
-                />
-                <div className="flex items-center justify-between">
-                  <div
-                    className="
-w-14
-h-14
-rounded-2xl
-bg-gradient-to-br
-from-indigo-500
-to-violet-600
-text-white
-flex
-items-center
-justify-center
-font-bold
-shadow-lg
-"
-                  >
-                    {user.avatar}
+                  key={u.id}
+                  className={`group relative p-6 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 ${
+                    openMenu === u.id ? "z-[40]" : "z-10 hover:z-[30]"
+                  }`}
+                >
+                  <div className="absolute top-0 right-0 w-24 h-24 zinc rounded-full blur-2xl" />
+                  <div className="flex items-center gap-4">
+                    <Avatar src={u.avatar} name={u.name} size={64} />
+                    <div>
+                      <h3 className="font-semibold text-lg">{u.name}</h3>
+                      <p className="text-sm text-slate-500 mt-1">{u.email}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">{user.name}</h3>
-                    <p className="text-sm text-slate-500 mt-1">{user.email}</p>
+
+                  <div className="mt-4 flex flex-wrap gap-2 items-center justify-between border-t border-slate-100 dark:border-slate-800/60 pt-4">
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-3 py-1 rounded-full bg-slate-200/40 dark:bg-slate-700/30 text-indigo-600 dark:text-indigo-400 text-xs font-medium">
+                        {roleLabel[u.role] || u.role}
+                      </span>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          u.status === "Active" ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"
+                        }`}
+                      >
+                        {statusLabel[u.status] || u.status}
+                      </span>
+                    </div>
+                    {/* ويدجت صغيرة تظهر صافي الراتب بداخل الكارت */}
+                    <div className="text-right">
+                      <span className="text-[11px] block text-slate-400 uppercase tracking-wider">Net Salary</span>
+                      <span className="text-sm font-bold text-slate-700 dark:text-slate-200">${netSalary}</span>
+                    </div>
                   </div>
-                </div>
 
-                <div className="mt-4 flex items-center justify-between">
-                  <span
-                    className="
-px-3
-py-1
-rounded-full
-bg-indigo-500/10
-text-indigo-600
-dark:text-indigo-400
-text-xs
-font-medium
-"
-                  >
-                    {roleLabel[user.role]}
-                  </span>
-                </div>
-
-                <div className="mt-4 flex items-center justify-between">
-                  <span
-                    className={`
-
-px-3
-py-1
-rounded-full
-text-xs
-font-semibold
-
-${
-  user.status === "Active"
-    ? "bg-emerald-500/10 text-emerald-600"
-    : "bg-red-500/10 text-red-600"
-}
-
-`}
-                  >
-                    {statusLabel[user.status]}
-                  </span>
-
-                  <div className="relative ">
+                  <div className="mt-4 flex items-center justify-end relative">
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-
-                        setOpenMenu(openMenu === user.id ? null : user.id);
-                      }}
-                      className="
-    p-2
-    rounded-xl
-    hover:bg-slate-100
-    dark:hover:bg-slate-800
-    "
+                      onClick={(e) => handleMenuToggle(e, u.id)}
+                      className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                     >
                       <MoreVertical size={18} />
                     </button>
 
-                    {openMenu === user.id && (
+                    {openMenu === u.id && (
                       <div
-                        className={`
-absolute
-${isRTL ? "left-0" : "right-0"}
-bottom-full mt-2
-z-50
-w-44
-rounded-2xl
-border
-border-slate-200
-dark:border-slate-700
-bg-white
-dark:bg-slate-900
-shadow-xl
-overflow-hidden
-`}
+                        ref={menuRef}
+                        className={`absolute ${
+                          isRTL ? "left-0" : "right-0"
+                        } ${
+                          menuDirection === "up" ? "bottom-full mb-2" : "top-full mt-2"
+                        } z-[100] w-48 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl overflow-hidden`}
                       >
                         <button
                           onClick={() => {
-                            setSelectedUser(user);
+                            setSelectedUser(u);
                             setOpenMenu(null);
                           }}
-                          className="
-        w-full
-        text-left
-        px-4
-        py-3
-        hover:bg-slate-100
-        dark:hover:bg-slate-800
-        "
+                          className="w-full text-left px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-sm"
                         >
-                          Details
+                          {t.usersPage.details}
                         </button>
-
                         <button
                           onClick={() => {
-                            setEditingUser(user);
+                            setEditingUser({ ...u });
                             setOpenMenu(null);
                           }}
-                          className="
-        w-full
-        text-left
-        px-4
-        py-3
-        hover:bg-slate-100
-        dark:hover:bg-slate-800
-        "
+                          className="w-full text-left px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-sm"
                         >
-                          Edit
+                          {t.usersPage.editInfo}
                         </button>
-
+                        {/* الخيار المالي الجديد لإدارة تفاصيل الراتب */}
                         <button
                           onClick={() => {
-                            setUserToDelete(user);
+                            setSalaryUser(u);
+                            setSalaryData({
+                              baseSalary: u.baseSalary || 0,
+                              allowances: u.allowances || 0,
+                              deductions: u.deductions || 0,
+                            });
                             setOpenMenu(null);
                           }}
-                          className="
-        w-full
-        text-left
-        px-4
-        py-3
-        text-red-600
-        hover:bg-red-50
-        "
+                          className="w-full text-left px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-indigo-600 dark:text-indigo-400 transition font-medium text-sm"
                         >
-                          Delete
+                          {t.usersPage.manageSalary}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setResetPasswordUser(u);
+                            setOpenMenu(null);
+                          }}
+                          className="w-full text-left px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-sm"
+                        >
+                          {t.usersPage.resetPassword}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setUserToDelete(u);
+                            setOpenMenu(null);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition text-sm"
+                        >
+                          {t.usersPage.delete}
                         </button>
                       </div>
                     )}
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
-        {/* =========================================
-    PAGINATION
-========================================= */}
+        {/* ========================================= PAGINATION ========================================= */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-4 mt-6">
             <button
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => p - 1)}
-              className="px-4 py-3 border rounded-xl disabled:opacity-30"
+              className="px-4 py-2 border rounded-xl disabled:opacity-30 dark:border-slate-800"
             >
-              Prev
+              {t.usersPage.previous}
             </button>
             <span className="text-sm font-bold">
               {currentPage} / {totalPages}
@@ -703,509 +554,274 @@ overflow-hidden
             <button
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((p) => p + 1)}
-              className="px-4 py-2 border rounded-xl disabled:opacity-30"
+              className="px-4 py-2 border rounded-xl disabled:opacity-30 dark:border-slate-800"
             >
-              Next
+              {t.usersPage.next}
             </button>
           </div>
         )}
       </div>
 
-      {/* =========================================
-    MODALS
-========================================= */}
-
-      {/* =========================================
-    USER ADD MODAL 
-========================================= */}
-
-      {(showAddModal || editingUser || userToDelete) && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50">
+      {/* ========================================= MODALS ========================================= */}
+      {(showAddModal || editingUser || userToDelete || salaryUser || resetPasswordUser || selectedUser) && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div
-            className="
- w-full
- max-w-md
- rounded-3xl
- border
- border-slate-200
- dark:border-slate-800
- bg-white
- dark:bg-slate-900
- p-6
- shadow-xl
- "
+            className="w-full max-w-md rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* ADD USER MODAL */}
             {showAddModal && (
               <>
-                <h2 className="text-lg font-bold mb-4">Add User</h2>
+                <h2 className="text-lg font-bold mb-4">{t.usersPage.addUserTitle}</h2>
                 <input
-                  placeholder="Name"
-                  className="
-w-full
-h-12
-px-4
-mb-3
-rounded-2xl
-border
-border-slate-200
-dark:border-slate-700
-bg-slate-50
-dark:bg-slate-800/80
-text-slate-900
-dark:text-white
-placeholder:text-slate-400
-focus:outline-none
-focus:border-indigo-500
-focus:ring-4
-focus:ring-indigo-500/20
-transition-all
-"
-                  onChange={(e) =>
-                    setNewUser({ ...newUser, name: e.target.value })
-                  }
+                 placeholder={t.usersPage.name}
+                  value={newUser.name}
+                  className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all"
+                  onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
                 />
                 <input
-                  placeholder="Email"
-                  className="
-w-full
-h-12
-px-4
-mb-3
-rounded-2xl
-border
-border-slate-200
-dark:border-slate-700
-bg-slate-50
-dark:bg-slate-800/80
-text-slate-900
-dark:text-white
-placeholder:text-slate-400
-focus:outline-none
-focus:border-indigo-500
-focus:ring-4
-focus:ring-indigo-500/20
-transition-all
-"
-                  onChange={(e) =>
-                    setNewUser({ ...newUser, email: e.target.value })
-                  }
+                  placeholder={t.usersPage.email}
+                  value={newUser.email}
+                  className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all"
+                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                />
+                <input
+                  type="password"
+                  placeholder={t.usersPage.password}
+                  value={newUser.password}
+                  className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all"
+                  onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
                 />
                 <select
                   value={newUser.role}
-                  onChange={(e) =>
-                    setNewUser({
-                      ...newUser,
-                      role: e.target.value,
-                    })
-                  }
-                  className="
-w-full
-h-12
-px-4
-mb-3
-rounded-2xl
-border
-border-slate-200
-dark:border-slate-700
-bg-slate-50
-dark:bg-slate-800/80
-text-slate-900
-dark:text-white
-placeholder:text-slate-400
-focus:outline-none
-focus:border-indigo-500
-focus:ring-4
-focus:ring-indigo-500/20
-transition-all
-
-  "
+                  onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                  className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none transition-all"
                 >
-                  <option>Owner</option>
-                  <option>Admin</option>
-                  <option>Editor</option>
-                  <option>User</option>
+              <option value="Admin">{t.usersPage.admin}</option>
+              <option value="Editor">{t.usersPage.editor}</option>
+              <option value="User">{t.usersPage.user}</option>
+                               
                 </select>
-
                 <select
                   value={newUser.status}
-                  onChange={(e) =>
-                    setNewUser({
-                      ...newUser,
-                      status: e.target.value,
-                    })
-                  }
-                  className="
-w-full
-h-12
-px-4
-mb-3
-rounded-2xl
-border
-border-slate-200
-dark:border-slate-700
-bg-slate-50
-dark:bg-slate-800/80
-text-slate-900
-dark:text-white
-placeholder:text-slate-400
-focus:outline-none
-focus:border-indigo-500
-focus:ring-4
-focus:ring-indigo-500/20
-transition-all
-"
+                  onChange={(e) => setNewUser({ ...newUser, status: e.target.value })}
+                  className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none transition-all"
                 >
-                  <option>Active</option>
-                  <option>Suspended</option>
+              <option value="Active">{t.usersPage.active}</option>
+              <option value="Suspended">{t.usersPage.suspended}</option>
                 </select>
-
                 <div className="flex gap-3 mt-5">
                   <button
-                    onClick={() => setShowAddModal(false)}
-                    className="
-    flex-1
-    h-12
-    rounded-xl
-    border
-    border-slate-200
-    dark:border-slate-700
-    hover:bg-slate-100
-    dark:hover:bg-slate-800
-    transition
-    "
+                    onClick={() => {
+                      setShowAddModal(false);
+                      setNewUser({ name: "", email: "", password: "", role: "User", status: "Active" });
+                    }}
+                    className="flex-1 h-12 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                   >
-                    Cancel
+                   {t.usersPage.cancel}
                   </button>
-
                   <button
                     onClick={handleAddUser}
-                    className="
-    flex-1
-    h-12
-    rounded-xl
-    bg-indigo-600
-    hover:bg-indigo-700
-    text-white
-    font-medium
-    transition
-    "
+                    className="flex-1 h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition"
                   >
-                    Save User
+                    {t.usersPage.saveUser}
                   </button>
                 </div>
               </>
             )}
 
-            {/* ======================================
-    USER EDIT MODAL
-========================================= */}
-
+            {/* EDIT USER MODAL */}
             {editingUser && (
               <>
-                <h2 className="text-lg font-bold mb-4">Edit User</h2>
+                <h2 className="text-lg font-bold mb-4">{t.usersPage.editUser}</h2>
                 <input
-                  placeholder="Name"
-                  className="
-w-full
-h-12
-px-4
-mb-3
-rounded-2xl
-border
-border-slate-200
-dark:border-slate-700
-bg-slate-50
-dark:bg-slate-800/80
-text-slate-900
-dark:text-white
-placeholder:text-slate-400
-focus:outline-none
-focus:border-indigo-500
-focus:ring-4
-focus:ring-indigo-500/20
-transition-all
-"
+                  placeholder={t.usersPage.name}
+                  className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all"
                   value={editingUser.name}
-                  onChange={(e) =>
-                    setEditingUser({
-                      ...editingUser,
-                      name: e.target.value,
-                    })
-                  }
+                  onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
                 />
                 <input
-                  placeholder="Email"
-                  className="
-w-full
-h-12
-px-4
-mb-3
-rounded-2xl
-border
-border-slate-200
-dark:border-slate-700
-bg-slate-50
-dark:bg-slate-800/80
-text-slate-900
-dark:text-white
-placeholder:text-slate-400
-focus:outline-none
-focus:border-indigo-500
-focus:ring-4
-focus:ring-indigo-500/20
-transition-all
-"
+                 placeholder={t.usersPage.email}
+                  className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all"
                   value={editingUser.email}
-                  onChange={(e) =>
-                    setEditingUser({
-                      ...editingUser,
-                      email: e.target.value,
-                    })
-                  }
+                  onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
                 />
                 <select
                   value={editingUser.role}
-                  onChange={(e) =>
-                    setEditingUser({
-                      ...editingUser,
-                      role: e.target.value,
-                    })
-                  }
-                  className="
-w-full
-h-12
-px-4
-mb-3
-rounded-2xl
-border
-border-slate-200
-dark:border-slate-700
-bg-slate-50
-dark:bg-slate-800/80
-text-slate-900
-dark:text-white
-placeholder:text-slate-400
-focus:outline-none
-focus:border-indigo-500
-focus:ring-4
-focus:ring-indigo-500/20
-transition-all
-
-  "
+                  onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
+                  className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none transition-all"
                 >
-                  <option>Owner</option>
-                  <option>Admin</option>
-                  <option>Editor</option>
-                  <option>User</option>
+              <option value="Admin">{t.usersPage.admin}</option>
+              <option value="Editor">{t.usersPage.editor}</option>
+              <option value="User">{t.usersPage.user}</option>
                 </select>
-
                 <select
                   value={editingUser.status}
-                  onChange={(e) =>
-                    setEditingUser({
-                      ...editingUser,
-                      status: e.target.value,
-                    })
-                  }
-                  className="
-w-full
-h-12
-px-4
-mb-3
-rounded-2xl
-border
-border-slate-200
-dark:border-slate-700
-bg-slate-50
-dark:bg-slate-800/80
-text-slate-900
-dark:text-white
-placeholder:text-slate-400
-focus:outline-none
-focus:border-indigo-500
-focus:ring-4
-focus:ring-indigo-500/20
-transition-all
-"
+                  onChange={(e) => setEditingUser({ ...editingUser, status: e.target.value })}
+                  className="w-full h-12 px-4 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none transition-all"
                 >
-                  <option>Active</option>
-                  <option>Suspended</option>
+              <option value="Active">{t.usersPage.active}</option>
+              <option value="Suspended">{t.usersPage.suspended}</option>
                 </select>
-
                 <div className="flex gap-3 mt-5">
-                  <button
-                    onClick={() => setEditingUser(null)}
-                    className="
-    flex-1
-    h-12
-    rounded-xl
-    border
-    border-slate-200
-    dark:border-slate-700
-    "
-                  >
-                    Cancel
+                  <button onClick={() => setEditingUser(null)} className="flex-1 h-12 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                   {t.usersPage.cancel}
                   </button>
-
-                  <button
-                    onClick={() => {
-                      if (!editingUser.name.trim()) {
-                        toast.error("Name is required");
-                        return;
-                      }
-
-                      if (!isValidEmail(editingUser.email)) {
-                        toast.error("Please enter a valid email");
-                        return;
-                      }
-
-                      const updatedUsers = users.map((u) =>
-  u.id === editingUser.id ? editingUser : u
-);
-
-setUsers(updatedUsers);
-
-localStorage.setItem(
-  "saas_users",
-  JSON.stringify(updatedUsers)
-);
-                      toast.success("User updated successfully");
-                      setEditingUser(null);
-                    }}
-                    className="
-    flex-1
-    h-12
-    rounded-xl
-    bg-indigo-600
-    text-white
-    "
-                  >
-                    Save Changes
+                  <button onClick={handleEditUser} className="flex-1 h-12 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition">
+                     {t.usersPage.saveChanges}
                   </button>
                 </div>
               </>
             )}
 
-            {/* ====================================
-    USER DELETE MODAL
-========================================= */}
+            {/* مودال إدارة الرواتب المخصص المنفصل (SALARY MODAL) */}
+            {salaryUser && (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <DollarSign className="text-indigo-600 dark:text-indigo-400" size={22} />
+                  <h2 className="text-xl font-bold">{t.usersPage.payrollConfiguration}</h2>
+                </div>
+                <p className="text-sm text-slate-500 mb-4"> {t.usersPage.payrollFor} <span className="font-semibold text-slate-700 dark:text-slate-200">{salaryUser.name}</span></p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-slate-400 block mb-1"> {t.usersPage.baseSalary} ($)</label>
+                    <input
+                      type="number"
+                      value={salaryData.baseSalary}
+                      className="w-full h-12 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 font-medium"
+                      onChange={(e) => setSalaryData({ ...salaryData, baseSalary: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-slate-400 block mb-1"> {t.usersPage.allowances}($)</label>
+                    <input
+                      type="number"
+                      value={salaryData.allowances}
+                      className="w-full h-12 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-emerald-600 font-medium"
+                      onChange={(e) => setSalaryData({ ...salaryData, allowances: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-slate-400 block mb-1">{t.usersPage.deductions}($)</label>
+                    <input
+                      type="number"
+                      value={salaryData.deductions}
+                      className="w-full h-12 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-red-500 font-medium"
+                      onChange={(e) => setSalaryData({ ...salaryData, deductions: e.target.value })}
+                    />
+                  </div>
+                </div>
 
+                <div className="mt-4 p-4 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 flex justify-between items-center">
+                  <span className="text-sm font-medium text-indigo-900 dark:text-indigo-300"> {t.usersPage.estimatedNetSalary}</span>
+                  <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
+                    ${(Number(salaryData.baseSalary) + Number(salaryData.allowances) - Number(salaryData.deductions))}
+                  </span>
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <button onClick={() => setSalaryUser(null)} className="flex-1 h-12 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                    {t.usersPage.cancel}
+                  </button>
+                  <button onClick={handleUpdateSalary} className="flex-1 h-12 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition">
+                     {t.usersPage.savePayroll}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* DELETE USER MODAL */}
             {userToDelete && (
               <>
-                <h2 className="text-lg font-bold text-red-600">Delete User</h2>
+                <h2 className="text-lg font-bold text-red-600">{t.usersPage.deleteUser} </h2>
                 <p className="my-4 text-slate-600 dark:text-slate-400">
-                  Are you sure you want to delete
-                  <span className="font-bold text-red-500 mx-1">
-                    {userToDelete.name}
-                  </span>
-                  ?
+                  {t.usersPage.deleteQuestion}
+                  <span className="font-bold text-red-500 mx-1">{userToDelete.name}</span>?
                 </p>
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => setUserToDelete(null)}
-                    className="flex-1 py-2 border rounded-xl"
-                  >
-                    Cancel
+                  <button onClick={() => setUserToDelete(null)} className="flex-1 py-2 border rounded-xl dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                    {t.usersPage.cancel}
                   </button>
-                  <button
-                    onClick={() => {
-                      const updatedUsers = users.filter(
-  (u) => u.id !== userToDelete.id
-);
-
-setUsers(updatedUsers);
-
-localStorage.setItem(
-  "saas_users",
-  JSON.stringify(updatedUsers)
-);
-                      toast.success("User deleted successfully");
-                      setUserToDelete(null);
-                    }}
-                    className="flex-1 py-2 bg-red-600 text-white rounded-xl"
-                  >
-                    Confirm
+                  <button onClick={handleDeleteUser} className="flex-1 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition">
+                    {t.usersPage.confirmDelete}
                   </button>
                 </div>
               </>
             )}
-          </div>
-        </div>
-      )}
 
-      {/* =========================================
-    USER DETAILS MODAL
-========================================= */}
-      {selectedUser && (
-        <div
-          className="
-  fixed
-  top-0
-  left-0
-  w-screen
-  h-screen
-  z-[99999]
-  bg-black/50
-  backdrop-blur-sm
-  flex
-  items-center
-  justify-center
-  "
-        >
-          <div
-            className="
-bg-white
-dark:bg-slate-900
-p-6
-rounded-3xl
-w-full
-max-w-md
-"
-          >
-            <h2 className="text-xl font-bold mb-5">User Details</h2>
+            {/* RESET PASSWORD */}
+            {resetPasswordUser && (
+              <>
+                <h2 className="text-xl font-bold mb-4">{t.usersPage.resetPassword}</h2>
 
-            <div className="space-y-4 mt-5">
-              <div>
-                <p className="text-xs text-slate-500">Name</p>
+                <p className="text-sm text-slate-500 mb-4"> {t.usersPage.resetPasswordFor} <span className="font-bold">{resetPasswordUser.name}</span></p>
 
-                <p className="font-medium">{selectedUser.name}</p>
-              </div>
+                <input
+                  type="password"
+                  placeholder={t.usersPage.newPassword}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full h-12 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80"
+                />
+                <div className="flex gap-3 mt-5">
+                  <button onClick={() => { setResetPasswordUser(null); setNewPassword(""); }} className="flex-1 h-12 rounded-xl border border-slate-200 dark:border-slate-700"> {t.usersPage.cancel}</button>
+                  <button onClick={handleResetPassword} className="flex-1 h-12 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"> {t.usersPage.save}</button>
+                </div>
+              </>
+            )}
 
-              <div>
-                <p className="text-xs text-slate-500">Email</p>
+            {/* USER DETAILS MODAL (Glassmorphic) */}
+            {selectedUser && (
+              <>
+                <h2 className="text-xl font-bold mb-4">{t.usersPage.userDetails}</h2>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl">
+                    <Avatar src={selectedUser.avatar} name={selectedUser.name} size={44} />
+                    <div>
+                      <p className="font-semibold">{selectedUser.name}</p>
+                      <p className="text-xs text-slate-500">{selectedUser.email}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 border border-slate-100 dark:border-slate-800 rounded-2xl">
+                      <p className="text-xs text-slate-400"> {t.usersPage.role}</p>
+                      <p className="font-medium text-sm mt-0.5">{roleLabel[selectedUser.role] || selectedUser.role}</p>
+                    </div>
+                    <div className="p-3 border border-slate-100 dark:border-slate-800 rounded-2xl">
+                      <p className="text-xs text-slate-400"> {t.usersPage.status}</p>
+                      <p className="font-medium text-sm mt-0.5">{statusLabel[selectedUser.status] || selectedUser.status}</p>
+                    </div>
+                  </div>
 
-                <p className="font-medium">{selectedUser.email}</p>
-              </div>
+                  {/* الجزء المالي المطور داخل تفاصيل الموظف */}
+                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 space-y-2">
+                    <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-2"> {t.usersPage.financialStatement}</p>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500"> {t.usersPage.baseSalary}</span>
+                      <span className="font-medium">${selectedUser.baseSalary || 0}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500 flex items-center gap-1"><TrendingUp size={14} className="text-emerald-500" />  {t.usersPage.allowances}</span>
+                      <span className="font-medium text-emerald-600">+${selectedUser.allowances || 0}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500 flex items-center gap-1"><TrendingDown size={14} className="text-red-500" />  {t.usersPage.deductions}</span>
+                      <span className="font-medium text-red-500">-${selectedUser.deductions || 0}</span>
+                    </div>
+                    <div className="h-px bg-slate-200 dark:bg-slate-800 my-2" />
+                    <div className="flex justify-between text-sm font-bold">
+                      <span className="text-slate-700 dark:text-slate-300"> {t.usersPage.netTakeHome}</span>
+                      <span className="text-indigo-600 dark:text-indigo-400">${(selectedUser.baseSalary || 0) + (selectedUser.allowances || 0) - (selectedUser.deductions || 0)}</span>
+                    </div>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedUser(null)} className="w-full mt-5 h-11 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition">
+                  {t.usersPage.close}
+                </button>
+              </>
+            )}
 
-              <div>
-                <p className="text-xs text-slate-500">Role</p>
-
-                <p className="font-medium">{roleLabel[selectedUser.role]}</p>
-              </div>
-
-              <div>
-                <p className="text-xs text-slate-500">Status</p>
-
-                <p className="font-medium">
-                  {statusLabel[selectedUser.status]}
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setSelectedUser(null)}
-              className="
-    w-full
-    mt-5
-    h-11
-    rounded-xl
-    bg-indigo-600
-    text-white
-    "
-            >
-              Close
-            </button>
           </div>
         </div>
       )}

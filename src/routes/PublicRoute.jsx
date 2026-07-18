@@ -14,7 +14,7 @@ function PublicRoute({ children }) {
   if (isAuthenticated) {
     return (
       <Navigate
-        to="/dashboard"
+        to="/"
         replace
       />
     );

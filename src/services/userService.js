@@ -19,13 +19,16 @@ export const getUsers = () => {
 // Add User
 export const addUser = (newUser) => {
   const users = getUsers();
+  
+  const firstLetter = newUser.name ? newUser.name.charAt(0).toUpperCase() : "U";
+  const premiumAvatar = `https://ui-avatars.com/api/?name=${firstLetter}&background=6366f1&color=fff&rounded=true&bold=true`;
 
   const updatedUsers = [
     ...users,
     {
       ...newUser,
       id: Date.now(),
-      avatar: newUser.name.charAt(0).toUpperCase(),
+      avatar: premiumAvatar, 
     },
   ];
 

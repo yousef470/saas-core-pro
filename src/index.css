@@ -33,6 +33,7 @@ html.dark {
 
 /* تطبيق الخلفية والنصوص على الموقع بالكامل تلقائياً */
 body {
+  font-family:"Plus Jakarta Sans",sans-serif;
   background-color: var(--bg-main);
   color: var(--text-main);
   transition: background-color 0.3s, border-color 0.3s;

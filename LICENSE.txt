@@ -1,0 +1,17 @@
+Commercial License
+
+Copyright (c) 2026 Yousef Ahmed
+
+This template is licensed for personal and commercial use.
+
+You are allowed to:
+
+✔ Build client projects
+✔ Modify the source code
+✔ Use in commercial products
+
+You are NOT allowed to:
+
+✖ Resell this template as your own.
+✖ Redistribute the source code.
+✖ Upload the template to another marketplace.

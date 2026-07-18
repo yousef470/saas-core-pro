@@ -1,4 +1,4 @@
-import { useState    } from "react";
+import { useState } from "react";
 import { AuthContext } from "./auth-context";
 import mockUsers from "../data/mockUsers";
 
@@ -9,7 +9,6 @@ function AuthProvider({ children }) {
     if (savedUsers) {
       try {
         const parsed = JSON.parse(savedUsers);
-        // إذا كانت المصفوفة المخزنة فارغة وكان ملف mockUsers يحتوي على بيانات، نستخدم الـ mock
         if (parsed.length === 0 && mockUsers && mockUsers.length > 0) {
           localStorage.setItem("saas_users", JSON.stringify(mockUsers));
           return mockUsers;
@@ -23,7 +22,7 @@ function AuthProvider({ children }) {
     return mockUsers || [];
   });
 
-  // 2. قراءة الجلسة الحالية والمستخدم الحالي بشكل متزامن دقيق
+  // 2. قراءة الجلسة الحالية والمستخدم الحالي بشكل متزامن دقيق ومباشر
   const [user, setUser] = useState(() => {
     const savedSession = localStorage.getItem("saas_session");
     if (!savedSession) return null;
@@ -42,12 +41,19 @@ function AuthProvider({ children }) {
     return null;
   });
 
-
   // LOGIN
   const login = (email, password) => {
-    const foundUser = users.find(
+    const localUsers = JSON.parse(localStorage.getItem("saas_users")) || users;
+    const foundUser = localUsers.find(
+      
       (u) => u.email === email && u.password === password
     );
+    if (foundUser?.status === "Suspended") {
+  return {
+    success: false,
+    message: "Account suspended",
+  };
+}
 
     if (!foundUser) {
       return {
@@ -63,7 +69,7 @@ function AuthProvider({ children }) {
 
     localStorage.setItem("saas_session", JSON.stringify(session));
 
-    const updatedUsers = users.map((u) =>
+    const updatedUsers = localUsers.map((u) =>
       u.id === foundUser.id
         ? {
             ...u,
@@ -80,8 +86,8 @@ function AuthProvider({ children }) {
         : u
     );
 
-    setUsers(updatedUsers);
     localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
+    setUsers(updatedUsers);
     
     const freshUser = updatedUsers.find((u) => u.id === foundUser.id);
     setUser(freshUser);
@@ -94,7 +100,11 @@ function AuthProvider({ children }) {
 
   // REGISTER
   const register = (name, email, password) => {
-    const existingUser = users.find((u) => u.email === email);
+    console.log("REGISTER START");
+      const localUsers =
+    JSON.parse(localStorage.getItem("saas_users")) || [];
+
+    const existingUser = localUsers.find((u) => u.email === email);
 
     if (existingUser) {
       return {
@@ -110,29 +120,28 @@ function AuthProvider({ children }) {
       };
     }
 
+
+const role =
+  localUsers.length === 0 ? "Owner" : "User";
+
+const status = "Active";
+
     const newUser = {
       id: crypto.randomUUID(),
       name,
       email,
       password,
-      role: "user",
-      plan: "Starter",
+     role,
+      
       avatar: "https://i.pravatar.cc/150",
-      status: "Active",
+   
+status,
       phone: "",
       twoFactor: false,
       language: "en",
       theme: "light",
       emailNotifications: true,
-      notifications: [
-        {
-          id: crypto.randomUUID(),
-          title: "Welcome to Saas core",
-          message: "Your account has been created successfully.",
-          read: false,
-          createdAt: new Date().toISOString(),
-        },
-      ],
+      notifications: [],
       activityLog: [
         {
           id: crypto.randomUUID(),
@@ -143,10 +152,10 @@ function AuthProvider({ children }) {
       ],
       createdAt: new Date().toISOString(),
     };
-
-    const updatedUsers = [...users, newUser];
-    setUsers(updatedUsers);
+console.log("USER CREATED", newUser);
+    const updatedUsers = [...localUsers, newUser];
     localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
+    setUsers(updatedUsers);
 
     const session = {
       token: crypto.randomUUID(),
@@ -154,34 +163,35 @@ function AuthProvider({ children }) {
     };
     localStorage.setItem("saas_session", JSON.stringify(session));
     setUser(newUser);
-
+console.log("REGISTER SUCCESS");
     return {
       success: true,
       user: newUser,
     };
   };
 
-  // UPDATE PROFILE (الحفظ والتعديل الفوري)
+  // UPDATE PROFILE (الحفظ والتعديل الفوري والمزامن الدقيق)
   const updateProfile = (updatedData) => {
     if (!user) return;
 
-    // نقرأ البيانات مباشرة من الـ LocalStorage لنضمن التعديل على آخر نسخة حقيقية
     const localUsers = JSON.parse(localStorage.getItem("saas_users")) || users;
 
     const updatedUsers = localUsers.map((u) =>
       u.id === user.id ? { ...u, ...updatedData } : u
     );
 
-    // الحفظ المتزامن في الـ LocalStorage والـ State معاً لإلغاء أي تعليق من المتصفح
     localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
     setUsers(updatedUsers);
 
-    const updatedUser = updatedUsers.find((u) => u.id === user.id);
-    setUser(updatedUser);
+    const freshUser = updatedUsers.find((u) => u.id === user.id);
+    setUser(freshUser);
   };
 
+  // ADD NOTIFICATION
   const addNotification = (title, message) => {
     if (!user) return;
+    const localUsers = JSON.parse(localStorage.getItem("saas_users")) || users;
+    
     const notification = {
       id: crypto.randomUUID(),
       title,
@@ -190,7 +200,7 @@ function AuthProvider({ children }) {
       createdAt: new Date().toISOString(),
     };
 
-    const updatedUsers = users.map((u) =>
+    const updatedUsers = localUsers.map((u) =>
       u.id === user.id
         ? {
             ...u,
@@ -199,14 +209,17 @@ function AuthProvider({ children }) {
         : u
     );
 
-    setUsers(updatedUsers);
     localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
+    setUsers(updatedUsers);
     setUser(updatedUsers.find((u) => u.id === user.id));
   };
 
+  // MARK NOTIFICATION AS READ
   const markNotificationAsRead = (notificationId) => {
     if (!user) return;
-    const updatedUsers = users.map((u) =>
+    const localUsers = JSON.parse(localStorage.getItem("saas_users")) || users;
+
+    const updatedUsers = localUsers.map((u) =>
       u.id === user.id
         ? {
             ...u,
@@ -217,14 +230,17 @@ function AuthProvider({ children }) {
         : u
     );
 
-    setUsers(updatedUsers);
     localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
+    setUsers(updatedUsers);
     setUser(updatedUsers.find((u) => u.id === user.id));
   };
 
+  // MARK ALL NOTIFICATIONS AS READ
   const markAllNotificationsAsRead = () => {
     if (!user) return;
-    const updatedUsers = users.map((u) =>
+    const localUsers = JSON.parse(localStorage.getItem("saas_users")) || users;
+
+    const updatedUsers = localUsers.map((u) =>
       u.id === user.id
         ? {
             ...u,
@@ -233,14 +249,17 @@ function AuthProvider({ children }) {
         : u
     );
 
-    setUsers(updatedUsers);
     localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
+    setUsers(updatedUsers);
     setUser(updatedUsers.find((u) => u.id === user.id));
   };
 
+  // DELETE NOTIFICATION
   const deleteNotification = (notificationId) => {
     if (!user) return;
-    const updatedUsers = users.map((u) =>
+    const localUsers = JSON.parse(localStorage.getItem("saas_users")) || users;
+
+    const updatedUsers = localUsers.map((u) =>
       u.id === user.id
         ? {
             ...u,
@@ -249,22 +268,26 @@ function AuthProvider({ children }) {
         : u
     );
 
-    setUsers(updatedUsers);
     localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
+    setUsers(updatedUsers);
     setUser(updatedUsers.find((u) => u.id === user.id));
   };
 
+  // CLEAR ALL NOTIFICATIONS
   const clearAllNotifications = () => {
     if (!user) return;
-    const updatedUsers = users.map((u) =>
-      u.id === user.id ? { ...u, ...{ notifications: [] } } : u
+    const localUsers = JSON.parse(localStorage.getItem("saas_users")) || users;
+
+    const updatedUsers = localUsers.map((u) =>
+      u.id === user.id ? { ...u, notifications: [] } : u
     );
 
-    setUsers(updatedUsers);
     localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
+    setUsers(updatedUsers);
     setUser(updatedUsers.find((u) => u.id === user.id));
   };
 
+  // UPDATE PASSWORD
   const updatePassword = (currentPassword, newPassword) => {
     if (!user || user.password !== currentPassword) {
       return {
@@ -273,6 +296,8 @@ function AuthProvider({ children }) {
       };
     }
     
+    const localUsers = JSON.parse(localStorage.getItem("saas_users")) || users;
+
     const activity = {
       id: crypto.randomUUID(),
       action: "Password Changed",
@@ -280,7 +305,7 @@ function AuthProvider({ children }) {
       createdAt: new Date().toISOString(),
     };
 
-    const updatedUsers = users.map((u) =>
+    const updatedUsers = localUsers.map((u) =>
       u.id === user.id
         ? {
             ...u,
@@ -290,8 +315,8 @@ function AuthProvider({ children }) {
         : u
     );
 
-    setUsers(updatedUsers);
     localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
+    setUsers(updatedUsers);
     setUser(updatedUsers.find((u) => u.id === user.id));
 
     return { success: true };
@@ -300,7 +325,8 @@ function AuthProvider({ children }) {
   // LOGOUT
   const logout = () => {
     if (user) {
-      const updatedUsers = users.map((u) =>
+      const localUsers = JSON.parse(localStorage.getItem("saas_users")) || users;
+      const updatedUsers = localUsers.map((u) =>
         u.id === user.id
           ? {
               ...u,
@@ -315,15 +341,19 @@ function AuthProvider({ children }) {
               ],
             }
           : u
-    );
+      );
       localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
+      setUsers(updatedUsers);
     }
     localStorage.removeItem("saas_session");
     setUser(null);
   };
 
+  // ADD ACTIVITY
   const addActivity = (action, description) => {
     if (!user) return;
+    const localUsers = JSON.parse(localStorage.getItem("saas_users")) || users;
+
     const activity = {
       id: crypto.randomUUID(),
       action,
@@ -331,7 +361,7 @@ function AuthProvider({ children }) {
       createdAt: new Date().toISOString(),
     };
 
-    const updatedUsers = users.map((u) =>
+    const updatedUsers = localUsers.map((u) =>
       u.id === user.id
         ? {
             ...u,
@@ -340,8 +370,8 @@ function AuthProvider({ children }) {
         : u
     );
 
-    setUsers(updatedUsers);
     localStorage.setItem("saas_users", JSON.stringify(updatedUsers));
+    setUsers(updatedUsers);
     setUser(updatedUsers.find((u) => u.id === user.id));
   };
 
@@ -364,6 +394,7 @@ function AuthProvider({ children }) {
         deleteNotification,
         clearAllNotifications,
         addActivity,
+        
       }}
     >
       {children}

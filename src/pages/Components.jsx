@@ -30,7 +30,7 @@ function Components() {
 
       {/* Buttons */}
       <section className="rounded-3xl border border-slate-200 dark:border-white/10 p-6 bg-white dark:bg-slate-900">
-        <h2 className="text-2xl font-bold mb-6">
+        <h2 className="text-2xl font-semibold mb-6">
           Buttons
         </h2>
 
@@ -59,7 +59,7 @@ function Components() {
 
       {/* Inputs */}
       <section className="rounded-3xl border border-slate-200 dark:border-white/10 p-6 bg-white dark:bg-slate-900">
-        <h2 className="text-2xl font-bold mb-6">
+        <h2 className="text-2xl font-semibold mb-6">
           Inputs
         </h2>
 
@@ -91,7 +91,7 @@ function Components() {
 
       {/* Badges */}
       <section className="rounded-3xl border border-slate-200 dark:border-white/10 p-6 bg-white dark:bg-slate-900">
-        <h2 className="text-2xl font-bold mb-6">
+        <h2 className="text-2xl font-semibold mb-6">
           Badges
         </h2>
 
@@ -116,7 +116,7 @@ function Components() {
 
       {/* Alerts */}
       <section className="rounded-3xl border border-slate-200 dark:border-white/10 p-6 bg-white dark:bg-slate-900">
-        <h2 className="text-2xl font-bold mb-6">
+        <h2 className="text-2xl font-semibold mb-6">
           Alerts
         </h2>
 
@@ -140,7 +140,7 @@ function Components() {
 
       {/* Cards */}
       <section className="rounded-3xl border border-slate-200 dark:border-white/10 p-6 bg-white dark:bg-slate-900">
-        <h2 className="text-2xl font-bold mb-6">
+        <h2 className="text-2xl font-semibold mb-6">
           Cards
         </h2>
 
@@ -164,7 +164,7 @@ function Components() {
 
       {/* Loaders */}
       <section className="rounded-3xl border border-slate-200 dark:border-white/10 p-6 bg-white dark:bg-slate-900">
-        <h2 className="text-2xl font-bold mb-6">
+        <h2 className="text-2xl font-semibold mb-6">
           Loaders
         </h2>
 
@@ -176,7 +176,7 @@ function Components() {
 
       {/* Empty State */}
       <section className="rounded-3xl border border-slate-200 dark:border-white/10 p-6 bg-white dark:bg-slate-900">
-        <h2 className="text-2xl font-bold mb-6">
+        <h2 className="text-2xl font-semibold mb-6">
           Empty States
         </h2>
 
